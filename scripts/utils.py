@@ -1,8 +1,7 @@
 import logging
 import os
 from pathlib import Path
-from contextlib import contextmanager
-from models import Session
+from models import get_session
 
 def setup_logging(logger_name):
     """
@@ -43,18 +42,8 @@ def setup_logging(logger_name):
     
     return logger
 
-@contextmanager
-def session_scope():
-    """Provide a transactional scope around a series of operations."""
-    session = Session()
-    try:
-        yield session
-        session.commit()
-    except Exception as e:
-        session.rollback()
-        raise
-    finally:
-        session.close()
+# Use the GCS-aware session management
+session_scope = get_session
 
 def get_db_path():
     """Get the path to the SQLite database file"""

@@ -24,9 +24,16 @@ jobs:
           pip install -r requirements.txt
           pip install pytest
 
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
+
       - name: Run integration tests
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GCS_BUCKET_NAME: ${{ secrets.GCS_BUCKET_NAME }}
         run: |
           source venv/bin/activate
           make test-integration

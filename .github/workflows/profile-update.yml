@@ -31,18 +31,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           
-      - name: Restore database cache
-        id: cache-db
-        uses: actions/cache@v3
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
         with:
-          path: career_data.db
-          key: ${{ runner.os }}-career-db-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-career-db-
+          credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
 
       - name: Process profile data
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GCS_BUCKET_NAME: ${{ secrets.GCS_BUCKET_NAME }}
         run: |
           python scripts/init_db.py
           python scripts/profile_scraper.py
@@ -60,7 +58,7 @@ jobs:
             
             - Updated from latest profile documents
             - Includes LinkedIn profile, resume, and cover letter data
-            - Database: ${{ steps.cache-db.outputs.cache-hit == 'true' && 'Restored from cache' || 'Freshly initialized' }}
+            - Using database from GCS bucket
           branch: profile-update
           delete-branch: true
           base: main

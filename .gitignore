@@ -8,6 +8,7 @@ __pycache__/
 
 # Database
 *.db
+*.db.bak
 
 # Environment variables
 .env
@@ -20,3 +21,7 @@ __pycache__/
 .DS_Store
 logs/
 *.log
+
+# Ensure config directory is tracked
+!config/
+!config/*.json

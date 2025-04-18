@@ -11,6 +11,7 @@ This platform uses AI to streamline and enhance your job search process by:
 - Creating tailored resumes and cover letters for specific job opportunities
 - Building a personal career website via GitHub Pages
 - Tracking job applications and opportunities
+- Maintaining persistent data in Google Cloud Storage
 
 ## Getting Started
 
@@ -20,6 +21,7 @@ This platform uses AI to streamline and enhance your job search process by:
 - Git
 - GitHub account (for workflows and GitHub Pages)
 - Google Gemini API key
+- Google Cloud Project with appropriate permissions
 
 ### Setup Instructions
 
@@ -27,12 +29,16 @@ This platform uses AI to streamline and enhance your job search process by:
    - Click "Use this template" on GitHub to create your own repository
    - Clone your new repository locally
 
-2. **Install dependencies**:
+2. **Set up Google Cloud credentials**:
+   - Ensure you have access to your organization's Google Cloud credentials
+   - No manual bucket creation needed - the system will create a unique bucket automatically
+
+3. **Install dependencies**:
    ```
    make install
    ```
 
-3. **Add your documents**:
+4. **Add your documents**:
    - Replace files in the `docs/` directory with your own:
      - `Resume.pdf`: Your current resume
      - `CoverLetter.pdf`: A general cover letter
@@ -41,25 +47,23 @@ This platform uses AI to streamline and enhance your job search process by:
      
    Note: The `profile.json` file will be automatically generated from your resume during initialization - you don't need to create it manually.
 
-4. **Set up environment variables**:
+5. **Set up environment variables and secrets**:
    - Create a `.env` file in the root directory
    - Add your Gemini API key: `GEMINI_API_KEY=your_api_key_here`
-   - For GitHub Actions, add this key as a repository secret
+   - Ensure your GitHub organization has the following secrets:
+     - `GOOGLE_CREDENTIALS`: Organization-wide Google Cloud credentials
+     - `GEMINI_API_KEY`: Your Gemini API key
 
-5. **Initialize the system**:
-   - Option 1: Run GitHub workflow (recommended)
-     ```
-     gh workflow run system-init.yml
-     ```
-   - Option 2: Run locally
-     ```
-     make clean
-     make init-db
-     make scrape-profile
-     make parse-resume
-     make parse-cover-letter
-     make combine-summary
-     ```
+6. **Initialize the system**:
+   ```
+   gh workflow run system-init.yml
+   ```
+   This will:
+   - Create a unique GCS bucket for your data
+   - Initialize the database schema
+   - Process your profile documents
+   - Generate initial job search strategy
+   - Set up GitHub Pages
 
 ## Features
 
@@ -96,6 +100,34 @@ Receive AI-generated job search strategies:
 - Networking suggestions
 - Skill development recommendations
 - Application optimization tips
+
+## Architecture
+
+### Data Storage
+
+The system uses a hybrid storage approach:
+- SQLite database for structured data
+- Google Cloud Storage (GCS) for persistence
+- Automatic database synchronization between workflows
+- Versioned storage with 90-day retention policy
+- Randomly generated, unique bucket names for security
+
+### Workflows
+
+All GitHub Actions workflows are integrated with GCS:
+- `system-init.yml`: Sets up GCS infrastructure and initializes system
+- `github-pages.yml`: Deploys website using latest data from GCS
+- `profile-update.yml`: Updates profile data in GCS
+- `job-strategy.yml`: Generates strategies using current GCS data
+- `document-generation.yml`: Creates documents with latest profile data
+- `integration-tests.yml`: Tests system functionality including GCS
+- `strategy-cleanup.yml`: Manages old strategy files
+
+Each workflow automatically:
+- Authenticates with Google Cloud
+- Syncs with the latest database state
+- Persists changes back to GCS
+- Creates pull requests for review when appropriate
 
 ## Usage
 

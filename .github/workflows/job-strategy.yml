@@ -38,30 +38,16 @@ jobs:
           git config --global user.name "GitHub Actions Bot"
           git config --global user.email "actions@github.com"
 
-      - name: Restore database cache
-        id: cache-db
-        uses: actions/cache@v3
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
         with:
-          path: career_data.db
-          key: ${{ runner.os }}-career-db-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-career-db-
-
-      - name: Initialize database if needed
-        if: steps.cache-db.outputs.cache-hit != 'true'
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: |
-          echo "Cache miss - initializing fresh database"
-          python scripts/init_db.py
-          python scripts/profile_scraper.py
-          python scripts/resume_parser.py
-          python scripts/cover_letter_parser.py
-          python scripts/combine_and_summarize.py
+          credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
 
       - name: Generate job strategy
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GCS_BUCKET_NAME: ${{ secrets.GCS_BUCKET_NAME }}
         run: |
           python scripts/job_strategy.py --job-limit ${{ github.event.inputs.job_limit || '2' }}
           
@@ -76,7 +62,7 @@ jobs:
             - Generated at: $(date)
             - Jobs per search query: ${{ github.event.inputs.job_limit || '2' }}
             - Includes latest job opportunities and market insights
-            - Database: ${{ steps.cache-db.outputs.cache-hit == 'true' && 'Restored from cache' || 'Freshly initialized' }}
+            - Using database from GCS bucket
             
             ## Generated Files
             - New strategy document in Markdown format

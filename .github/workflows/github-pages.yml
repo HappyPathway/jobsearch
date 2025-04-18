@@ -38,9 +38,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
+          
       - name: Generate GitHub Pages
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GCS_BUCKET_NAME: ${{ secrets.GCS_BUCKET_NAME }}
         run: |
           python scripts/generate_github_pages.py
 

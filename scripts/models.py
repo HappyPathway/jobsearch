@@ -1,11 +1,37 @@
-from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, Table, Text
+from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, Table, Text, event
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.orm import relationship, sessionmaker, Session
 from pathlib import Path
+from contextlib import contextmanager
+from .gcs_utils import gcs
+from utils import setup_logging
+
+logger = setup_logging('models')
 
 Base = declarative_base()
-engine = create_engine(f'sqlite:///{Path(__file__).parent.parent}/career_data.db')
-Session = sessionmaker(bind=engine)
+
+def get_engine():
+    """Get SQLAlchemy engine with latest database from GCS"""
+    gcs.sync_db()
+    return create_engine(f'sqlite:///{gcs.local_db_path}')
+
+engine = get_engine()
+SessionFactory = sessionmaker(bind=engine)
+
+@contextmanager
+def get_session():
+    """Session context manager that syncs with GCS"""
+    session = SessionFactory()
+    try:
+        yield session
+        session.commit()
+        # Upload to GCS after successful commit
+        gcs.upload_db()
+    except:
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 # Association table for experience-skill many-to-many relationship
 experience_skills = Table(
