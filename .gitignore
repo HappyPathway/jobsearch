@@ -32,3 +32,5 @@ config/*
 
 # Keep non-sensitive templates
 !config/example.*.json
+
+gha-creds-*.json
