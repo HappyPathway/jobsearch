@@ -1,0 +1,6 @@
+build:
+  commands:
+    - python scripts/generate_github_pages.py
+
+output:
+  dir: pages
