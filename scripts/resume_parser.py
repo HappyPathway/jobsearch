@@ -20,6 +20,30 @@ def extract_text_from_pdf(pdf_path):
             text += page.extract_text() + '\n'
     return text
 
+def clean_json_with_gemini(json_str):
+    """Use Gemini to clean and validate JSON data"""
+    prompt = f"""You are a JSON validation system. Fix and return valid JSON only.
+Input: {json_str}
+
+Rules:
+1. Return ONLY the fixed JSON - no other text, no code markers
+2. Preserve all data but ensure valid JSON format
+3. Remove any non-JSON artifacts
+4. Ensure proper quote usage and escaping"""
+
+    try:
+        model = genai.GenerativeModel("gemini-1.5-pro")
+        response = model.generate_content(
+            prompt,
+            generation_config={
+                "temperature": 0.1,
+            }
+        )
+        return json.loads(response.text.strip())
+    except Exception as e:
+        logger.error(f"Error cleaning JSON with Gemini: {str(e)}")
+        return None
+
 def parse_resume_text(text):
     """Use Gemini to parse resume text into structured data"""
     prompt = f"""You are a resume parsing system. Parse this text into JSON. 
@@ -41,15 +65,32 @@ Return this exact structure:
             "description": "key responsibilities and achievements"
         }}
     ],
-    "education": [],
-    "certifications": []
+    "education": [
+        {{
+            "institution": "school name",
+            "degree": "degree type (e.g., BS, MS, PhD)",
+            "field": "field of study",
+            "graduation_date": "YYYY-MM",
+            "gpa": "optional GPA"
+        }}
+    ],
+    "certifications": [
+        {{
+            "name": "certification name",
+            "issuer": "issuing organization",
+            "date": "YYYY-MM",
+            "expiration": "YYYY-MM or Never"
+        }}
+    ]
 }}
 
 Rules:
 1. Format dates as YYYY-MM (use -01 if month unknown)
-2. Use 'Present' for current positions
+2. Use 'Present' for current positions and 'Never' for non-expiring certifications
 3. Keep descriptions clear and concise
-4. Do not use line breaks in descriptions"""
+4. Do not use line breaks in descriptions
+5. Include all education entries found (degrees, bootcamps, relevant courses)
+6. For certifications, include both active and expired ones"""
 
     try:
         model = genai.GenerativeModel("gemini-1.5-pro")
@@ -61,18 +102,11 @@ Rules:
             }
         )
         
-        # Clean up the response
+        # Clean up the response using Gemini
         json_str = response.text.strip()
+        parsed = clean_json_with_gemini(json_str)
         
-        # Remove any non-JSON content
-        while not json_str.startswith('{'):
-            json_str = json_str[1:]
-        while not json_str.endswith('}'):
-            json_str = json_str[:-1]
-        
-        try:
-            parsed = json.loads(json_str)
-            
+        if parsed:
             # Normalize experience entries
             for exp in parsed.get('experience', []):
                 if not isinstance(exp, dict):
@@ -83,12 +117,8 @@ Rules:
                 exp['end_date'] = exp.get('end_date', 'Present').strip()
                 exp['location'] = exp.get('location', '').strip()
                 exp['description'] = ' '.join(exp.get('description', '').split())
-            
             return parsed
-        except json.JSONDecodeError as je:
-            logger.error(f"JSON parsing error: {str(je)}")
-            logger.debug(f"Problematic JSON string: {json_str}")
-            return None
+        return None
             
     except Exception as e:
         logger.error(f"Error parsing resume with Gemini: {str(e)}")
