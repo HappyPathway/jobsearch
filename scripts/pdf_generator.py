@@ -4,9 +4,8 @@ import datetime as dt
 from jinja2 import Environment, FileSystemLoader
 import os
 from sqlalchemy.orm import Session
-from models import JobApplication, JobCache
-from datetime import datetime
-from utils import setup_logging
+from scripts.models import JobApplication, JobCache
+from scripts.utils import setup_logging
 
 logger = setup_logging('pdf_generator')
 
@@ -158,25 +157,25 @@ def setup_templates():
             margin-bottom: 20px;
         }
         .company {
-            margin-bottom: 5px;
+            margin-bottom: 5px.
         }
         .subject {
             margin-bottom: 20px;
-            font-weight: bold;
+            font-weight: bold.
         }
         .greeting {
-            margin-bottom: 20px;
+            margin-bottom: 20px.
         }
         .content p {
             margin-bottom: 15px;
-            text-align: justify;
+            text-align: justify.
         }
         .closing {
             margin-top: 30px;
-            margin-bottom: 10px;
+            margin-bottom: 10px.
         }
         .signature {
-            margin-top: 40px;
+            margin-top: 40px.
         }
     </style>
 </head>
@@ -214,7 +213,7 @@ def update_document_metadata(application_id, resume_path=None, cover_letter_path
         if cover_letter_path:
             application.cover_letter_path = cover_letter_path
             
-        application.last_modified = datetime.now().isoformat()
+        application.last_modified = dt.datetime.now().isoformat()
         session.commit()
         return True
 
@@ -258,7 +257,7 @@ def create_cover_letter_pdf(content, job_info, output_path, application_id=None)
     
     # Prepare template data
     data = {
-        'date': dt.date.today().strftime("%B %d, %Y"),
+        'date': dt.datetime.now().strftime("%B %d, %Y"),
         'company': job_info['company'],
         'title': job_info['title'],
         'greeting': content['greeting'],

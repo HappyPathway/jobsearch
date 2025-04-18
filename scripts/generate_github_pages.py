@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from pathlib import Path
 import shutil
+import json
 from jinja2 import Environment, FileSystemLoader
 from utils import setup_logging, session_scope
 from models import Experience, Skill, ResumeSection, TargetRole
@@ -20,6 +21,15 @@ def generate_pages():
     template = env.get_template('github_pages.html')
     
     try:
+        # Load profile data from profile.json
+        profile_json_path = Path(__file__).parent.parent / 'docs' / 'profile.json'
+        with open(profile_json_path, 'r') as f:
+            profile = json.load(f)
+        
+        if not profile:
+            logger.error("Profile data is empty or not loaded properly")
+            return False
+        
         with session_scope() as session:
             # Get all required data from database
             experiences = session.query(Experience).order_by(
@@ -39,7 +49,7 @@ def generate_pages():
             
             # Prepare data for template
             template_data = {
-                'name': 'Dave J. Arnold',  # This should come from profile data
+                'name': profile['contact_info']['name'],
                 'summary': summary.content if summary else '',
                 'experiences': [
                     {
@@ -66,7 +76,8 @@ def generate_pages():
                         'reasoning': role.reasoning
                     }
                     for role in target_roles
-                ]
+                ],
+                'profile': profile  # Pass the entire profile to the template for additional data if needed
             }
             
             # Generate HTML
