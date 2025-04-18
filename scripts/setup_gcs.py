@@ -85,9 +85,11 @@ def setup_gcs_infrastructure():
                 # Create the bucket with standard settings
                 bucket = client.create_bucket(
                     bucket_name,
-                    location="us-central1",
-                    storage_class="STANDARD"
+                    location="us-central1"
                 )
+                # Set storage class after creation
+                bucket.storage_class = "STANDARD"
+                bucket.patch()
                 logger.info(f"Created new bucket: {bucket_name}")
                 break
             except Conflict:
