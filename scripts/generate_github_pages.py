@@ -3,8 +3,8 @@ from pathlib import Path
 import shutil
 import json
 from jinja2 import Environment, FileSystemLoader
-from utils import setup_logging, session_scope
-from models import Experience, Skill, ResumeSection, TargetRole
+from utils import setup_logging
+from models import Experience, Skill, ResumeSection, TargetRole, get_session
 
 logger = setup_logging('github_pages')
 
@@ -30,7 +30,7 @@ def generate_pages():
             logger.error("Profile data is empty or not loaded properly")
             return False
         
-        with session_scope() as session:
+        with get_session() as session:
             # Get all required data from database
             experiences = session.query(Experience).order_by(
                 Experience.end_date.desc(),
