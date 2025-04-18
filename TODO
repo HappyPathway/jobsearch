@@ -1,0 +1,22 @@
+Set up GitHub Action for Cronjob & PR:
+
+Create a GitHub Actions workflow YAML file.
+Schedule it to run at 9am and 12pm daily.
+Script the workflow to run the strategy generator and automatically submit a PR with the newest strategy file.
+Make Job Postings Return Configurable:
+
+Refactor the relevant script (likely job_strategy.py) to accept a parameter for the number of job postings to return.
+Ensure it only returns postings with the highest score.
+Update CLI or config file to allow user input for this parameter.
+Investigate Job Application Automation:
+
+
+Research APIs or tools for automating job applications (e.g., LinkedIn, Indeed, company career sites).
+Document findings and feasibility.
+(Optional) Prototype a simple automation for one platform if feasible.
+
+replace web ui with github pages, add profile pic and have system build nice looking profile.
+
+regenerate job descriptions from linkedin profile and resume.
+
+create directory per job that contains cover letter, resume, and job details. Name directory after job opp.

@@ -1,0 +1,61 @@
+INFO:__main__:Generating target roles from profile data
+INFO:__main__:Updating target roles in database
+INFO:__main__:Successfully updated 7 target roles
+INFO:__main__:Combined profile written to combined_profile.md
+INFO: Starting job strategy generation process
+INFO: Retrieving profile data from database
+INFO: Retrieved 6 experiences and 24 skills
+INFO: Searching LinkedIn jobs for query: Cloud Architect, location: United States, limit: 1
+INFO: Retrieving cached jobs
+INFO: Retrieved 24 cached jobs
+INFO: Retrieving applied jobs
+INFO: Retrieved 0 applied jobs
+INFO: Collecting job links for query: Cloud Architect
+INFO: Collected 3 job links for query: Cloud Architect
+INFO: Analyzing job with Gemini: AWS Architect at ASCENDING Inc.
+INFO: Successfully analyzed job: AWS Architect at ASCENDING Inc.
+INFO: Analyzing job with Gemini: AWS Architect at ASCENDING Inc.
+INFO: Successfully analyzed job: AWS Architect at ASCENDING Inc.
+INFO: Analyzing job with Gemini: AWS Solutions Architect at Commit
+INFO: Successfully analyzed job: AWS Solutions Architect at Commit
+INFO: Updating job cache
+INFO: Updated 0 jobs and added 3 new jobs to cache
+INFO: Returning top 1 jobs for query: Cloud Architect (from 3 total)
+INFO: Searching LinkedIn jobs for query: Principal Cloud Engineer, location: United States, limit: 1
+INFO: Retrieving cached jobs
+INFO: Retrieved 27 cached jobs
+INFO: Retrieving applied jobs
+INFO: Retrieved 0 applied jobs
+INFO: Collecting job links for query: Principal Cloud Engineer
+INFO: Collected 3 job links for query: Principal Cloud Engineer
+INFO: Analyzing job with Gemini: Head of Data, Machine Learning, and Application Platform at Socure
+INFO: Successfully analyzed job: Head of Data, Machine Learning, and Application Platform at Socure
+INFO: Analyzing job with Gemini: Principal Machine Learning: Generative AI at Autodesk
+INFO: Successfully analyzed job: Principal Machine Learning: Generative AI at Autodesk
+INFO: Analyzing job with Gemini: Principal Machine Learning: Generative AI at Autodesk
+INFO: Successfully analyzed job: Principal Machine Learning: Generative AI at Autodesk
+INFO: Updating job cache
+INFO: Updated 0 jobs and added 3 new jobs to cache
+INFO: Returning top 1 jobs for query: Principal Cloud Engineer (from 3 total)
+INFO: Searching LinkedIn jobs for query: DevOps Architect, location: United States, limit: 1
+INFO: Retrieving cached jobs
+INFO: Retrieved 30 cached jobs
+INFO: Retrieving applied jobs
+INFO: Retrieved 0 applied jobs
+INFO: Collecting job links for query: DevOps Architect
+INFO: Collected 3 job links for query: DevOps Architect
+INFO: Analyzing job with Gemini: AWS Architect at ASCENDING Inc.
+INFO: Successfully analyzed job: AWS Architect at ASCENDING Inc.
+INFO: Analyzing job with Gemini: AWS Architect at ASCENDING Inc.
+INFO: Successfully analyzed job: AWS Architect at ASCENDING Inc.
+INFO: Analyzing job with Gemini: DevOps Architect at Connexions
+INFO: Successfully analyzed job: DevOps Architect at Connexions
+INFO: Updating job cache
+INFO: Updated 0 jobs and added 3 new jobs to cache
+INFO: Returning top 1 jobs for query: DevOps Architect (from 3 total)
+INFO: Generating tailored documents for high-priority jobs
+INFO: Generating documents for AWS Architect at ASCENDING Inc.
+INFO: Generating documents for AWS Architect at ASCENDING Inc.
+INFO: Generating tailored resume for AWS Architect at ASCENDING Inc.
+INFO: Successfully generated tailored resume content
+INFO: Generating cover letter for AWS Architect at ASCENDING Inc.

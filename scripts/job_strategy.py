@@ -1,0 +1,817 @@
+import sqlite3
+from pathlib import Path
+import google.generativeai as genai
+from dotenv import load_dotenv
+import os
+import json
+import re
+from datetime import datetime, timedelta
+import requests
+from bs4 import BeautifulSoup
+import time
+import random
+from utils import setup_logging
+import argparse
+
+logger = setup_logging('job_strategy')
+
+# Configure Google Generative AI
+load_dotenv()
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+if not GEMINI_API_KEY:
+    raise ValueError("Please set GEMINI_API_KEY environment variable")
+genai.configure(api_key=GEMINI_API_KEY)
+
+def normalize_linkedin_url(url):
+    """Normalize LinkedIn job URLs to ensure consistent matching"""
+    # Extract just the job ID portion to handle different URL formats
+    match = re.search(r'(?:jobs|view)/(\d+)', url)
+    if match:
+        return f"https://www.linkedin.com/jobs/view/{match.group(1)}"
+    return url
+
+def get_cached_jobs():
+    """Get all cached jobs from the database"""
+    logger.info("Retrieving cached jobs")
+    conn = sqlite3.connect('career_data.db')
+    c = conn.cursor()
+    
+    c.execute("""
+        SELECT url, title, company, description, first_seen_date, last_seen_date,
+               match_score, application_priority, key_requirements,
+               culture_indicators, career_growth_potential, search_query
+        FROM job_cache
+    """)
+    cached_jobs = {row[0]: {
+        'title': row[1],
+        'company': row[2],
+        'description': row[3],
+        'first_seen_date': row[4],
+        'last_seen_date': row[5],
+        'match_score': row[6],
+        'application_priority': row[7],
+        'key_requirements': json.loads(row[8]) if row[8] else [],
+        'culture_indicators': json.loads(row[9]) if row[9] else [],
+        'career_growth_potential': row[10],
+        'search_query': row[11]
+    } for row in c.fetchall()}
+    
+    conn.close()
+    logger.info(f"Retrieved {len(cached_jobs)} cached jobs")
+    return cached_jobs
+
+def get_applied_jobs():
+    """Get all jobs that have been applied to"""
+    logger.info("Retrieving applied jobs")
+    conn = sqlite3.connect('career_data.db')
+    c = conn.cursor()
+    
+    c.execute("""
+        SELECT jc.url, ja.application_date, ja.status
+        FROM job_applications ja
+        JOIN job_cache jc ON ja.job_cache_id = jc.id
+    """)
+    applied_jobs = {row[0]: {
+        'application_date': row[1],
+        'status': row[2]
+    } for row in c.fetchall()}
+    
+    conn.close()
+    logger.info(f"Retrieved {len(applied_jobs)} applied jobs")
+    return applied_jobs
+
+def collect_job_links(query, location="United States", limit=5):
+    """Just collect job links and basic info without analysis"""
+    logger.info(f"Collecting job links for query: {query}")
+    try:
+        base_url = "https://www.linkedin.com/jobs/search"
+        params = {
+            "keywords": query,
+            "location": location,
+            "geoId": "103644278",  # United States
+            "f_WT": "2",  # Remote jobs
+            "pageSize": str(limit * 2),  # Request more to account for duplicates
+            "sortBy": "R"  # Sort by relevance
+        }
+        
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+        }
+        
+        response = requests.get(base_url, params=params, headers=headers)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        jobs = []
+        seen_urls = set()  # Track URLs within this query
+        job_cards = soup.find_all("div", class_="base-card")
+        
+        for card in job_cards:
+            try:
+                title_elem = card.find("h3", class_="base-search-card__title")
+                company_elem = card.find("h4", class_="base-search-card__subtitle")
+                link_elem = card.find("a", class_="base-card__full-link")
+                description_elem = card.find("div", class_="base-search-card__metadata")
+                
+                if title_elem and company_elem and link_elem:
+                    url = normalize_linkedin_url(link_elem.get("href"))
+                    
+                    # Skip if we've seen this URL in this query
+                    if url in seen_urls:
+                        continue
+                        
+                    seen_urls.add(url)
+                    jobs.append({
+                        "url": url,
+                        "title": title_elem.get_text(strip=True),
+                        "company": company_elem.get_text(strip=True),
+                        "description": description_elem.get_text(strip=True) if description_elem else "",
+                        "search_query": query
+                    })
+                    
+                    if len(jobs) >= limit:
+                        break
+            except Exception as e:
+                logger.error(f"Error parsing job card: {str(e)}")
+                continue
+        
+        logger.info(f"Collected {len(jobs)} unique job links for query: {query}")
+        return jobs
+    except Exception as e:
+        logger.error(f"Error collecting job links: {str(e)}")
+        return []
+
+def update_job_cache(jobs, analyzed_jobs):
+    """Update the job cache with new or updated job information"""
+    logger.info("Updating job cache")
+    conn = sqlite3.connect('career_data.db')
+    c = conn.cursor()
+    
+    today = datetime.now().strftime("%Y-%m-%d")
+    updated_count = 0
+    new_count = 0
+    
+    try:
+        for job in jobs:
+            url = job['url']
+            analysis = analyzed_jobs.get(url, {})
+            
+            # Check if job exists
+            c.execute("SELECT id FROM job_cache WHERE url = ?", (url,))
+            existing = c.fetchone()
+            
+            if existing:
+                # Update existing job
+                c.execute("""
+                    UPDATE job_cache
+                    SET last_seen_date = ?,
+                        match_score = ?,
+                        application_priority = ?,
+                        key_requirements = ?,
+                        culture_indicators = ?,
+                        career_growth_potential = ?
+                    WHERE url = ?
+                """, (
+                    today,
+                    analysis.get('match_score', 0),
+                    analysis.get('application_priority', 'low'),
+                    json.dumps(analysis.get('key_requirements', [])),
+                    json.dumps(analysis.get('culture_indicators', [])),
+                    analysis.get('career_growth_potential', 'unknown'),
+                    url
+                ))
+                updated_count += 1
+            else:
+                # Insert new job
+                c.execute("""
+                    INSERT INTO job_cache (
+                        url, title, company, description, first_seen_date,
+                        last_seen_date, match_score, application_priority,
+                        key_requirements, culture_indicators,
+                        career_growth_potential, search_query
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    url,
+                    job['title'],
+                    job['company'],
+                    job['description'],
+                    today,
+                    today,
+                    analysis.get('match_score', 0),
+                    analysis.get('application_priority', 'low'),
+                    json.dumps(analysis.get('key_requirements', [])),
+                    json.dumps(analysis.get('culture_indicators', [])),
+                    analysis.get('career_growth_potential', 'unknown'),
+                    job['search_query']
+                ))
+                new_count += 1
+        
+        conn.commit()
+        logger.info(f"Updated {updated_count} jobs and added {new_count} new jobs to cache")
+    except Exception as e:
+        logger.error(f"Error updating job cache: {str(e)}")
+        conn.rollback()
+    finally:
+        conn.close()
+
+def search_linkedin_jobs(query, location="United States", limit=5):
+    """Search LinkedIn jobs, using cache for known jobs"""
+    logger.info(f"Searching LinkedIn jobs for query: {query}, location: {location}, limit: {limit}")
+    
+    # Get cached and applied jobs
+    cached_jobs = get_cached_jobs()
+    applied_jobs = get_applied_jobs()
+    
+    # Collect new job links - request more to account for filtering
+    jobs = collect_job_links(query, location, limit * 3)
+    
+    # Filter out jobs we've already applied to and normalize URLs
+    jobs = [job for job in jobs if normalize_linkedin_url(job['url']) not in 
+            {normalize_linkedin_url(url) for url in applied_jobs.keys()}]
+    
+    # Track which jobs need analysis
+    new_jobs = []
+    analyzed_jobs = {}
+    
+    # Normalize URLs for comparison
+    normalized_cache = {normalize_linkedin_url(url): data for url, data in cached_jobs.items()}
+    
+    for job in jobs:
+        url = normalize_linkedin_url(job['url'])
+        if url in normalized_cache:
+            # Use cached analysis but update last seen date
+            analyzed_jobs[url] = normalized_cache[url]
+            logger.debug(f"Using cached analysis for {job['title']} at {job['company']}")
+        else:
+            new_jobs.append(job)
+            logger.debug(f"Will analyze new job: {job['title']} at {job['company']}")
+    
+    # Analyze only truly new jobs
+    analyzed_urls = set()  # Track which jobs we've analyzed to prevent duplicates
+    for job in new_jobs:
+        url = normalize_linkedin_url(job['url'])
+        if url not in analyzed_urls:
+            analysis = analyze_job_with_gemini(job)
+            if analysis:
+                analyzed_jobs[url] = analysis
+                analyzed_urls.add(url)
+    
+    # Update cache with new information
+    update_job_cache(jobs, analyzed_jobs)
+    
+    # Combine job info with analysis and sort by match score
+    results = []
+    seen_urls = set()  # Track which jobs we've added to results
+    
+    for job in jobs:
+        url = normalize_linkedin_url(job['url'])
+        if url not in seen_urls and url in analyzed_jobs:
+            job_info = job.copy()
+            job_info.update(analyzed_jobs[url])
+            results.append(job_info)
+            seen_urls.add(url)
+    
+    # Sort by match score and application priority
+    priority_scores = {'high': 3, 'medium': 2, 'low': 1}
+    results.sort(key=lambda x: (
+        x.get('match_score', 0),
+        priority_scores.get(x.get('application_priority', 'low'), 0)
+    ), reverse=True)
+    
+    # Return top N unique results
+    top_results = results[:limit]
+    logger.info(f"Returning top {len(top_results)} unique jobs for query: {query} (from {len(results)} total)")
+    return top_results
+
+def analyze_job_with_gemini(job_info):
+    """Use Gemini to analyze job posting and provide insights"""
+    logger.info(f"Analyzing job with Gemini: {job_info['title']} at {job_info['company']}")
+    
+    # Check if we've already analyzed this job in this session
+    cache_key = f"{job_info['title']}::{job_info['company']}"
+    if hasattr(analyze_job_with_gemini, 'analysis_cache'):
+        if cache_key in analyze_job_with_gemini.analysis_cache:
+            logger.debug(f"Using cached analysis for {cache_key}")
+            return analyze_job_with_gemini.analysis_cache[cache_key]
+    else:
+        analyze_job_with_gemini.analysis_cache = {}
+
+    prompt = f"""You are a job analysis expert. Analyze this job posting and return ONLY a valid JSON object with no additional text or formatting.
+
+Job Details:
+Title: {job_info['title']}
+Company: {job_info['company']}
+Description: {job_info['description']}
+
+Required JSON format (replace with actual values, keep structure exactly as shown):
+{{
+    "match_score": 75,
+    "key_requirements": [
+        "requirement 1",
+        "requirement 2",
+        "requirement 3"
+    ],
+    "culture_indicators": [
+        "indicator 1",
+        "indicator 2"
+    ],
+    "career_growth_potential": "high - explanation here",
+    "application_priority": "high"
+}}"""
+
+    try:
+        model = genai.GenerativeModel('gemini-1.5-pro')
+        response = model.generate_content(
+            prompt,
+            generation_config={
+                "max_output_tokens": 1000,
+                "temperature": 0.1,
+            }
+        )
+        
+        # Clean up the response
+        json_str = response.text.strip()
+        json_str = re.sub(r'^```.*?\n', '', json_str)  # Remove opening ```json
+        json_str = re.sub(r'\n```$', '', json_str)     # Remove closing ```
+        
+        # Try to extract just the JSON object if there's other text
+        match = re.search(r'({[\s\S]*})', json_str)
+        if match:
+            json_str = match.group(1)
+        
+        try:
+            # Parse and validate the JSON
+            analysis = json.loads(json_str)
+            
+            # Ensure required fields exist with correct types
+            required_fields = {
+                'match_score': 0,  # Default values
+                'key_requirements': [],
+                'culture_indicators': [],
+                'career_growth_potential': 'unknown',
+                'application_priority': 'low'
+            }
+            
+            for field, default in required_fields.items():
+                if field not in analysis:
+                    analysis[field] = default
+            
+            # Normalize match_score to 0-100
+            try:
+                analysis['match_score'] = max(0, min(100, float(analysis['match_score'])))
+            except (ValueError, TypeError):
+                analysis['match_score'] = 0
+            
+            # Ensure lists are lists and have reasonable lengths
+            if not isinstance(analysis['key_requirements'], list):
+                analysis['key_requirements'] = []
+            analysis['key_requirements'] = [str(req) for req in analysis['key_requirements'][:5]]  # Max 5 requirements, ensure strings
+            
+            if not isinstance(analysis['culture_indicators'], list):
+                analysis['culture_indicators'] = []
+            analysis['culture_indicators'] = [str(ind) for ind in analysis['culture_indicators'][:3]]  # Max 3 indicators, ensure strings
+            
+            # Normalize strings
+            analysis['career_growth_potential'] = str(analysis['career_growth_potential']).lower()
+            analysis['application_priority'] = str(analysis['application_priority']).lower()
+            
+            # Validate application priority
+            if analysis['application_priority'] not in ['high', 'medium', 'low']:
+                analysis['application_priority'] = 'low'
+            
+            # Cache the analysis for this session
+            analyze_job_with_gemini.analysis_cache[cache_key] = analysis
+            
+            logger.info(f"Successfully analyzed job: {job_info['title']} at {job_info['company']}")
+            return analysis
+            
+        except json.JSONDecodeError as je:
+            logger.error(f"JSON parsing error: {str(je)}")
+            logger.debug(f"Problematic JSON string: {json_str}")
+    except Exception as e:
+        logger.error(f"Error analyzing job with Gemini: {str(e)}")
+    
+    # Return default analysis on any error
+    default_analysis = {
+        "match_score": 0,
+        "key_requirements": [],
+        "culture_indicators": [],
+        "career_growth_potential": "unknown",
+        "application_priority": "low"
+    }
+    analyze_job_with_gemini.analysis_cache[cache_key] = default_analysis
+    return default_analysis
+
+def generate_documents_for_jobs(job_searches):
+    """Generate tailored documents for high-priority jobs"""
+    logger.info("Generating tailored documents for high-priority jobs")
+    from generate_documents import generate_job_documents
+    
+    generated_docs = []
+    for search in job_searches:
+        for job in search['listings']:
+            # Only generate documents for high-priority jobs
+            if job.get('application_priority', '').lower() == 'high':
+                logger.info(f"Generating documents for {job['title']} at {job['company']}")
+                resume_path, cover_letter_path = generate_job_documents(job)
+                if resume_path and cover_letter_path:
+                    generated_docs.append({
+                        "job": job,
+                        "resume": resume_path,
+                        "cover_letter": cover_letter_path
+                    })
+    return generated_docs
+
+def get_profile_data():
+    """Retrieve profile data from the database"""
+    logger.info("Retrieving profile data from database")
+    try:
+        conn = sqlite3.connect('career_data.db')
+        c = conn.cursor()
+        
+        # Get experiences
+        c.execute("""
+            SELECT company, title, start_date, end_date, description
+            FROM experiences
+            ORDER BY 
+                CASE WHEN end_date = 'Present' THEN '9999-12'
+                     ELSE end_date 
+                END DESC,
+                start_date DESC
+        """)
+        experiences = [
+            {
+                "company": row[0],
+                "title": row[1],
+                "start_date": row[2],
+                "end_date": row[3],
+                "description": row[4]
+            }
+            for row in c.fetchall()
+        ]
+        
+        # Get skills
+        c.execute("SELECT skill_name FROM skills")
+        skills = [row[0] for row in c.fetchall()]
+        
+        logger.info(f"Retrieved {len(experiences)} experiences and {len(skills)} skills")
+        return experiences, skills
+    except Exception as e:
+        logger.error(f"Error retrieving profile data: {str(e)}")
+        raise
+    finally:
+        conn.close()
+
+def get_target_roles():
+    """Get target roles from database"""
+    logger.info("Retrieving target roles from database")
+    conn = sqlite3.connect('career_data.db')
+    c = conn.cursor()
+    
+    try:
+        c.execute("""
+            SELECT role_name, priority, match_score, reasoning 
+            FROM target_roles 
+            ORDER BY priority ASC
+        """)
+        roles = [
+            {
+                "name": row[0],
+                "priority": row[1],
+                "match_score": row[2],
+                "reasoning": row[3]
+            }
+            for row in c.fetchall()
+        ]
+        
+        if not roles:
+            logger.warning("No target roles found in database, using defaults")
+            roles = [
+                {
+                    "name": "Cloud Architect",
+                    "priority": 1,
+                    "match_score": 90,
+                    "reasoning": "Default role - matches current experience"
+                },
+                {
+                    "name": "Principal Cloud Engineer",
+                    "priority": 2,
+                    "match_score": 85,
+                    "reasoning": "Default role - natural progression"
+                }
+            ]
+        
+        logger.info(f"Retrieved {len(roles)} target roles")
+        return roles
+    except Exception as e:
+        logger.error(f"Error retrieving target roles: {str(e)}")
+        return []
+    finally:
+        conn.close()
+
+def generate_daily_strategy(experiences, skills, job_limit=5):
+    """Use Gemini to generate a personalized job search strategy"""
+    logger.info("Generating daily job search strategy")
+    current_role = experiences[0] if experiences else None
+    
+    job_searches = []
+    target_roles = get_target_roles()
+    
+    for role in target_roles:
+        jobs = search_linkedin_jobs(role['name'], limit=job_limit)
+        if jobs:
+            job_searches.append({
+                "role": role['name'],
+                "priority": role['priority'],
+                "match_score": role['match_score'],
+                "reasoning": role['reasoning'],
+                "listings": jobs
+            })
+        time.sleep(random.uniform(1, 2))
+    
+    prompt = f"""As an expert career strategist with deep knowledge of the tech industry, create a detailed daily job search strategy.
+Use this professional's background to create a highly specific and actionable plan.
+
+Current Role:
+Company: {current_role['company'] if current_role else 'N/A'}
+Title: {current_role['title'] if current_role else 'N/A'}
+
+Key Skills: {', '.join(skills[:10])} (and {len(skills) - 10} more)
+
+Recent Experience Highlights:
+{experiences[0]['description'] if experiences else 'N/A'}
+
+Available Job Opportunities:
+{json.dumps(job_searches, indent=2)}
+
+Return a JSON object with this structure:
+{{
+    "daily_focus": {{
+        "morning": [
+            {{
+                "task": "specific task description",
+                "time": "estimated time in minutes",
+                "priority": "High/Medium/Low",
+                "reasoning": "why this task is important"
+            }}
+        ],
+        "afternoon": [
+            {{
+                "task": "specific task description",
+                "time": "estimated time in minutes",
+                "priority": "High/Medium/Low",
+                "reasoning": "why this task is important"
+            }}
+        ]
+    }},
+    "target_roles": [
+        {{
+            "title": "specific job title to target",
+            "reasoning": "why this role matches your profile",
+            "key_skills_to_emphasize": ["skill1", "skill2", "skill3"],
+            "suggested_companies": ["company1", "company2", "company3"],
+            "current_opportunities": [
+                {{
+                    "title": "job title",
+                    "company": "company name",
+                    "url": "job listing url"
+                }}
+            ]
+        }}
+    ],
+    "networking_strategy": {{
+        "platforms": ["platform1", "platform2"],
+        "daily_connections": number,
+        "message_template": "personalized outreach template",
+        "target_individuals": ["role/position type to connect with"]
+    }},
+    "skill_development": [
+        {{
+            "skill": "skill to develop/highlight",
+            "action": "specific action to improve/showcase this skill",
+            "timeline": "timeframe for this action"
+        }}
+    ],
+    "application_strategy": {{
+        "daily_target": number,
+        "quality_checklist": ["item1", "item2"],
+        "customization_points": ["area1", "area2"],
+        "tracking_method": "method to track applications"
+    }}
+}}
+
+Rules:
+1. Be extremely specific and actionable
+2. Focus on the candidate's strongest skills
+3. Include realistic time estimates
+4. Prioritize high-impact activities
+5. Consider current market conditions
+6. Leverage the candidate's experience level
+7. Include both active and passive job search strategies
+8. Focus on quality over quantity
+9. Include networking strategies
+10. Consider skill development opportunities
+11. Include direct links to job opportunities found"""
+
+    try:
+        model = genai.GenerativeModel('gemini-1.5-pro')
+        response = model.generate_content(
+            prompt,
+            generation_config={
+                "max_output_tokens": 2000,
+                "temperature": 0.2,
+            }
+        )
+        
+        json_str = response.text.strip()
+        json_str = re.sub(r'^```.*\n', '', json_str)
+        json_str = re.sub(r'\n```$', '', json_str)
+        
+        match = re.search(r'({.*})', json_str, re.DOTALL)
+        if match:
+            json_str = match.group(1)
+        
+        strategy = json.loads(json_str)
+        logger.info("Successfully generated daily strategy")
+        return strategy
+    except Exception as e:
+        logger.error(f"Error generating strategy: {str(e)}")
+        return None
+
+def generate_weekly_focus():
+    """Generate a weekly focus area based on the day of the week"""
+    logger.info("Generating weekly focus")
+    prompt = """Create a mapping of days of the week to job search focus areas.
+Return only a JSON object with this structure:
+{
+    "Monday": {
+        "focus": "main focus area",
+        "reason": "why this focus is good for Monday",
+        "success_metrics": ["metric1", "metric2"]
+    },
+    // ...repeat for all weekdays
+}"""
+    
+    try:
+        model = genai.GenerativeModel('gemini-1.5-pro')
+        response = model.generate_content(
+            prompt,
+            generation_config={
+                "max_output_tokens": 1000,
+                "temperature": 0.1,
+            }
+        )
+        
+        json_str = response.text.strip()
+        json_str = re.sub(r'^```.*\n', '', json_str)
+        json_str = re.sub(r'\n```$', '', json_str)
+        
+        match = re.search(r'({.*})', json_str, re.DOTALL)
+        if match:
+            json_str = match.group(1)
+        
+        weekly_focus = json.loads(json_str)
+        logger.info("Successfully generated weekly focus")
+        return weekly_focus
+    except Exception as e:
+        logger.error(f"Error generating weekly focus: {str(e)}")
+        return None
+
+def format_strategy_output(strategy, weekly_focus):
+    """Format the strategy and weekly focus into a readable output"""
+    today = datetime.now()
+    day_of_week = today.strftime("%A")
+    
+    output = []
+    output.append(f"\n=== Job Search Strategy for {today.strftime('%A, %B %d, %Y')} ===\n")
+    
+    if weekly_focus and day_of_week in weekly_focus:
+        focus = weekly_focus[day_of_week]
+        output.append(f"Today's Focus: {focus['focus']}")
+        output.append(f"Why: {focus['reason']}")
+        output.append("\nSuccess Metrics:")
+        for metric in focus['success_metrics']:
+            output.append(f"- {metric}")
+        output.append("")
+    
+    if strategy:
+        output.append("\n=== Morning Tasks ===")
+        for task in strategy['daily_focus']['morning']:
+            output.append(f"\n[{task['priority']}] {task['task']}")
+            output.append(f"Time: {task['time']} minutes")
+            output.append(f"Why: {task['reasoning']}")
+        
+        output.append("\n=== Afternoon Tasks ===")
+        for task in strategy['daily_focus']['afternoon']:
+            output.append(f"\n[{task['priority']}] {task['task']}")
+            output.append(f"Time: {task['time']} minutes")
+            output.append(f"Why: {task['reasoning']}")
+        
+        output.append("\n=== Target Roles & Current Opportunities ===")
+        for role in strategy['target_roles']:
+            output.append(f"\nRole: {role['title']}")
+            output.append(f"Why: {role['reasoning']}")
+            output.append("Key Skills to Emphasize:")
+            for skill in role['key_skills_to_emphasize']:
+                output.append(f"- {skill}")
+            output.append("\nSuggested Companies:")
+            for company in role['suggested_companies']:
+                output.append(f"- {company}")
+            
+            if role.get('current_opportunities'):
+                output.append("\nCurrent Job Openings:")
+                for job in role['current_opportunities']:
+                    output.append(f"- {job['title']} at {job['company']}")
+                    output.append(f"  Apply here: {job['url']}")
+        
+        output.append("\n=== Networking Strategy ===")
+        output.append(f"Daily Connection Target: {strategy['networking_strategy']['daily_connections']}")
+        output.append("\nPlatforms:")
+        for platform in strategy['networking_strategy']['platforms']:
+            output.append(f"- {platform}")
+        output.append("\nOutreach Template:")
+        output.append(strategy['networking_strategy']['message_template'])
+        output.append("\nTarget Roles for Networking:")
+        for role in strategy['networking_strategy']['target_individuals']:
+            output.append(f"- {role}")
+        
+        output.append("\n=== Skill Development Plan ===")
+        for item in strategy['skill_development']:
+            output.append(f"\nSkill: {item['skill']}")
+            output.append(f"Action: {item['action']}")
+            output.append(f"Timeline: {item['timeline']}")
+        
+        output.append("\n=== Application Strategy ===")
+        output.append(f"Daily Application Target: {strategy['application_strategy']['daily_target']}")
+        output.append("\nQuality Checklist:")
+        for item in strategy['application_strategy']['quality_checklist']:
+            output.append(f"- {item}")
+        output.append("\nCustomization Points:")
+        for point in strategy['application_strategy']['customization_points']:
+            output.append(f"- {point}")
+        output.append(f"\nTracking Method: {strategy['application_strategy']['tracking_method']}")
+        
+        output.append("\n=== Generated Application Documents ===")
+        for docs in strategy.get('generated_documents', []):
+            job = docs['job']
+            output.append(f"\nJob: {job['title']} at {job['company']}")
+            output.append(f"Resume: {docs['resume']}")
+            output.append(f"Cover Letter: {docs['cover_letter']}")
+            output.append(f"Match Score: {job.get('match_score', 'N/A')}")
+            output.append(f"Application Priority: {job.get('application_priority', 'N/A')}")
+            output.append("")
+    
+    return "\n".join(output)
+
+def main():
+    logger.info("Starting job strategy generation process")
+    load_dotenv()
+    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+    
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description='Generate job search strategy')
+    parser.add_argument('--job-limit', type=int, default=5,
+                      help='Number of job postings to return per search query (default: 5)')
+    args = parser.parse_args()
+    
+    try:
+        experiences, skills = get_profile_data()
+        search_queries = [
+            "Cloud Architect",
+            "Principal Cloud Engineer",
+            "DevOps Architect"
+        ]
+        
+        job_searches = []
+        for query in search_queries:
+            jobs = search_linkedin_jobs(query, limit=args.job_limit)
+            if jobs:
+                job_searches.append({
+                    "role": query,
+                    "listings": jobs
+                })
+            time.sleep(random.uniform(1, 2))
+        
+        # Generate tailored documents for high-priority jobs
+        generated_docs = generate_documents_for_jobs(job_searches)
+        
+        strategy = generate_daily_strategy(experiences, skills, job_limit=args.job_limit)
+        if strategy:
+            strategy['generated_documents'] = generated_docs
+            
+        weekly_focus = generate_weekly_focus()
+        output = format_strategy_output(strategy, weekly_focus)
+        print(output)
+        
+        today = datetime.now().strftime("%Y-%m-%d")
+        output_dir = Path(__file__).parent.parent / "strategies"
+        output_dir.mkdir(exist_ok=True)
+        
+        with open(output_dir / f"strategy_{today}.txt", "w") as f:
+            f.write(output)
+        
+        logger.info(f"Strategy saved to strategies/strategy_{today}.txt")
+    except Exception as e:
+        logger.error(f"Failed to generate job strategy: {str(e)}")
+
+if __name__ == "__main__":
+    main()

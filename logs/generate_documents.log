@@ -1,0 +1,235 @@
+2025-04-18 00:51:08,941 - generate_documents - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 00:51:08,942 - generate_documents - INFO - Generating tailored resume for AWS Architect at ASCENDING Inc.
+2025-04-18 00:51:18,579 - generate_documents - ERROR - Error generating resume: Expecting value: line 1 column 1 (char 0)
+2025-04-18 00:51:18,579 - generate_documents - ERROR - Failed to generate resume content
+2025-04-18 00:51:18,579 - generate_documents - INFO - Generating documents for AWS Solutions Architect at Commit
+2025-04-18 00:51:18,579 - generate_documents - INFO - Generating tailored resume for AWS Solutions Architect at Commit
+2025-04-18 00:51:27,960 - generate_documents - ERROR - Error generating resume: Expecting value: line 1 column 1 (char 0)
+2025-04-18 00:51:27,960 - generate_documents - ERROR - Failed to generate resume content
+2025-04-18 00:51:27,961 - generate_documents - INFO - Generating documents for Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 00:51:27,963 - generate_documents - INFO - Generating tailored resume for Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 00:51:38,695 - generate_documents - ERROR - Error generating resume: Expecting value: line 1 column 1 (char 0)
+2025-04-18 00:51:38,696 - generate_documents - ERROR - Failed to generate resume content
+2025-04-18 00:51:38,696 - generate_documents - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 00:51:38,696 - generate_documents - INFO - Generating tailored resume for AWS Architect at ASCENDING Inc.
+2025-04-18 00:54:26,773 - generate_documents - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 00:54:26,774 - generate_documents - INFO - Generating tailored resume for AWS Architect at ASCENDING Inc.
+2025-04-18 00:54:34,511 - generate_documents - INFO - Successfully generated tailored resume content
+2025-04-18 00:54:34,511 - generate_documents - INFO - Generating cover letter for AWS Architect at ASCENDING Inc.
+2025-04-18 00:54:41,709 - generate_documents - ERROR - JSON parsing error: Expecting value: line 9 column 3 (char 2145)
+2025-04-18 00:54:41,709 - generate_documents - DEBUG - Problematic JSON string: {
+  "greeting": "Dear Hiring Manager,",
+  "opening": "I am writing to express my enthusiastic interest in the AWS Architect position at ASCENDING Inc., as advertised on LinkedIn.  Having closely followed ASCENDING's innovative work in [mention specific area if known, otherwise remove this phrase], I am confident that my experience in architecting and managing robust, secure, and scalable AWS cloud solutions aligns perfectly with your requirements.",
+  "body_paragraphs": [
+    "With a proven track record of success in designing and implementing cloud-based solutions using AWS, I possess a deep understanding of core services such as EC2, S3, Lambda, RDS, and IAM. My expertise in Infrastructure as Code (IaC), particularly with Terraform, allows me to automate infrastructure provisioning, ensuring consistency, repeatability, and adherence to security best practices.  This aligns directly with your need for an architect capable of building and maintaining secure and efficient cloud environments.",
+    "In my recent role as Sr. Cloud SME at FedSoft, Inc., I spearheaded cloud modernization initiatives, automating infrastructure and governance using Terraform and AWS. I developed reusable Terraform modules, enforcing compliance and security standards, and implemented automated security controls using HashiCorp Vault and AWS IAM.  Prior to this, at Clover, I led the design and deployment of scalable and secure cloud infrastructure on AWS, developing a standardized IaC framework using Terraform and integrating cost optimization strategies.  These experiences have equipped me with the skills to effectively address the challenges outlined in the job description.",
+    "I am a highly motivated and results-oriented individual with a passion for leveraging cloud technologies to drive innovation and efficiency. I am eager to contribute my expertise to a forward-thinking organization like ASCENDING Inc. and collaborate with a team dedicated to pushing the boundaries of cloud computing. I am particularly drawn to [mention company culture aspect, e.g., ASCENDING's commitment to innovation/collaborative work environment].",
+
+  ],
+  "closing": "I am confident that my skills and experience make me an ideal candidate for this position.  My resume, attached for your review, provides further details on my qualifications. I would welcome the opportunity to discuss how my expertise can benefit ASCENDING Inc. Thank you for your time and consideration.",
+  "signature": "Sincerely,\nYour Name"
+}
+2025-04-18 00:54:41,709 - generate_documents - ERROR - Failed to generate cover letter content
+2025-04-18 00:54:41,710 - generate_documents - INFO - Generating documents for Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 00:54:41,712 - generate_documents - INFO - Generating tailored resume for Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 00:54:50,203 - generate_documents - INFO - Successfully generated tailored resume content
+2025-04-18 00:54:50,203 - generate_documents - INFO - Generating cover letter for Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 00:54:57,986 - generate_documents - INFO - Successfully generated cover letter content
+2025-04-18 00:54:57,987 - generate_documents - ERROR - Error generating job documents: sequence item 10: expected str instance, list found
+2025-04-18 00:54:57,987 - generate_documents - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 00:54:57,988 - generate_documents - INFO - Generating tailored resume for AWS Architect at ASCENDING Inc.
+2025-04-18 00:55:05,905 - generate_documents - INFO - Successfully generated tailored resume content
+2025-04-18 00:55:05,906 - generate_documents - INFO - Generating cover letter for AWS Architect at ASCENDING Inc.
+2025-04-18 00:55:13,654 - generate_documents - INFO - Successfully generated cover letter content
+2025-04-18 00:55:13,655 - generate_documents - ERROR - Error generating job documents: sequence item 10: expected str instance, list found
+2025-04-18 00:58:18,455 - generate_documents - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 00:58:18,456 - generate_documents - INFO - Generating tailored resume for AWS Architect at ASCENDING Inc.
+2025-04-18 00:58:26,534 - generate_documents - INFO - Successfully generated tailored resume content
+2025-04-18 00:58:26,534 - generate_documents - INFO - Generating cover letter for AWS Architect at ASCENDING Inc.
+2025-04-18 00:58:33,235 - generate_documents - INFO - Successfully generated cover letter content
+2025-04-18 00:58:33,235 - generate_documents - ERROR - Error generating job documents: sequence item 10: expected str instance, list found
+2025-04-18 00:58:33,236 - generate_documents - INFO - Generating documents for Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 00:58:33,237 - generate_documents - INFO - Generating tailored resume for Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 00:58:42,614 - generate_documents - INFO - Successfully generated tailored resume content
+2025-04-18 00:58:42,614 - generate_documents - INFO - Generating cover letter for Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 00:58:50,335 - generate_documents - ERROR - JSON parsing error: Expecting value: line 8 column 3 (char 2491)
+2025-04-18 00:58:50,335 - generate_documents - DEBUG - Problematic JSON string: {
+  "greeting": "Dear Hiring Manager,",
+  "opening": "I am writing to express my enthusiastic interest in the Head of Data, Machine Learning, and Application Platform position at Socure, as advertised on LinkedIn.  Socure's mission to eliminate identity fraud through advanced analytics and machine learning deeply resonates with my passion for leveraging technology to solve complex challenges.  My experience architecting and scaling cloud-native applications and data platforms, combined with my leadership in machine learning and data modeling, aligns perfectly with the key requirements of this role.",
+  "body_paragraphs": [
+    "In my current role as Chief Solutions Architect at HappyPathway, I have spearheaded the design and deployment of cloud-agnostic Kubernetes solutions, demonstrating a deep understanding of container orchestration and microservices architecture, crucial for building a robust and scalable application platform.  My experience with Terraform, AWS, GCP, and Azure, coupled with my expertise in implementing DevSecOps practices, directly addresses Socure's need for a secure and compliant infrastructure.  Furthermore, my success in leading cloud migrations and optimizing cloud costs will be invaluable in managing and scaling Socure's data platform.",
+    "At HappyPathway and Clover, I have consistently translated business needs into technical solutions, delivering impactful results.  At Clover, as Infra Architect, I led the design and deployment of scalable and secure cloud infrastructure, aligning technical solutions with business objectives.  My experience in developing standardized IaC frameworks using Terraform and AWS, along with my expertise in Kubernetes-based container platforms, will enable me to effectively build and manage the data and application platforms required for Socure's continued growth.  Moreover, my experience driving compliance efforts for SOC 2, PCI DSS, and ISO 27001 demonstrates my commitment to security and compliance, essential for a company dealing with sensitive data.",
+    "I am a highly collaborative and results-oriented leader with a proven ability to build and motivate high-performing teams.  I thrive in fast-paced environments and am passionate about fostering a culture of innovation and continuous improvement.  I am confident that my leadership skills, technical expertise, and passion for leveraging data and machine learning will enable me to make significant contributions to Socure's mission.",
+  ],
+  "closing": "I am eager to learn more about this opportunity and discuss how my skills and experience can benefit Socure. Thank you for your time and consideration. I look forward to hearing from you soon.",
+  "signature": "Sincerely,\nYour Name"
+}
+2025-04-18 00:58:50,335 - generate_documents - ERROR - Failed to generate cover letter content
+2025-04-18 00:58:50,335 - generate_documents - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 00:58:50,337 - generate_documents - INFO - Generating tailored resume for AWS Architect at ASCENDING Inc.
+2025-04-18 00:58:58,219 - generate_documents - INFO - Successfully generated tailored resume content
+2025-04-18 00:58:58,219 - generate_documents - INFO - Generating cover letter for AWS Architect at ASCENDING Inc.
+2025-04-18 00:59:05,497 - generate_documents - INFO - Successfully generated cover letter content
+2025-04-18 00:59:05,497 - generate_documents - ERROR - Error generating job documents: sequence item 10: expected str instance, list found
+2025-04-18 01:06:49,110 - generate_documents - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 01:06:49,111 - generate_documents - INFO - Generating tailored resume for AWS Architect at ASCENDING Inc.
+2025-04-18 01:06:57,248 - generate_documents - INFO - Successfully generated tailored resume content
+2025-04-18 01:06:57,248 - generate_documents - INFO - Generating cover letter for AWS Architect at ASCENDING Inc.
+2025-04-18 01:07:04,746 - generate_documents - INFO - Successfully generated cover letter content
+2025-04-18 01:07:04,747 - generate_documents - ERROR - Error generating job documents: sequence item 10: expected str instance, list found
+2025-04-18 01:07:04,747 - generate_documents - INFO - Generating documents for Principal Technical Architect at Salesforce
+2025-04-18 01:07:04,748 - generate_documents - INFO - Generating tailored resume for Principal Technical Architect at Salesforce
+2025-04-18 01:07:18,611 - generate_documents - INFO - Successfully generated tailored resume content
+2025-04-18 01:07:18,612 - generate_documents - INFO - Generating cover letter for Principal Technical Architect at Salesforce
+2025-04-18 01:07:25,822 - generate_documents - ERROR - JSON parsing error: Expecting value: line 9 column 3 (char 2132)
+2025-04-18 01:07:25,822 - generate_documents - DEBUG - Problematic JSON string: {
+  "greeting": "Dear Hiring Manager,",
+  "opening": "I am writing to express my enthusiastic interest in the Principal Technical Architect position at Salesforce, as advertised on LinkedIn.  Having closely followed Salesforce's innovative work in cloud technology for years, I am particularly drawn to this opportunity to contribute my expertise in architecting scalable, secure, and high-performing cloud solutions.",
+  "body_paragraphs": [
+    "My experience aligns perfectly with the key requirements of this role.  In my recent role as Sr. Cloud SME at FedSoft, Inc., I led cloud modernization initiatives, leveraging technologies like Terraform, AWS, and Kubernetes – all crucial to Salesforce's infrastructure.  I have a deep understanding of building and maintaining scalable architectures, implementing robust security controls, and automating infrastructure provisioning and governance.  This experience mirrors the challenges and opportunities presented by this position, and I am confident I can seamlessly transition my skills to contribute to Salesforce's continued success.",
+    "Throughout my career, I have consistently delivered impactful results. At FedSoft, I designed and implemented a multi-cloud architecture that significantly improved scalability and reduced operational costs.  Prior to that, as Infra Architect at Clover, I led the development of a standardized IaC framework using Terraform and AWS, and architected Kubernetes-based container platforms.  I also spearheaded compliance efforts for SOC 2, PCI DSS, and ISO 27001, demonstrating my commitment to security best practices – a critical aspect of the Principal Technical Architect role.",
+    "I am a highly motivated and collaborative leader with a passion for innovation and a proven ability to drive positive change within technical teams.  I believe my leadership style, technical expertise, and commitment to excellence align seamlessly with Salesforce's values and culture. I am eager to contribute to a company that prioritizes innovation and customer success, and I am confident I can make a significant contribution to your team.",
+
+  ],
+  "closing": "I am excited about the prospect of discussing my qualifications further and how I can contribute to Salesforce's mission. Thank you for your time and consideration. I look forward to hearing from you soon.",
+  "signature": "Sincerely,\nYour Name"
+}
+2025-04-18 01:07:25,822 - generate_documents - ERROR - Failed to generate cover letter content
+2025-04-18 01:07:25,822 - generate_documents - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 01:07:25,823 - generate_documents - INFO - Generating tailored resume for AWS Architect at ASCENDING Inc.
+2025-04-18 01:07:33,602 - generate_documents - INFO - Successfully generated tailored resume content
+2025-04-18 01:07:33,602 - generate_documents - INFO - Generating cover letter for AWS Architect at ASCENDING Inc.
+2025-04-18 01:07:41,030 - generate_documents - INFO - Successfully generated cover letter content
+2025-04-18 01:07:41,031 - generate_documents - ERROR - Error generating job documents: sequence item 10: expected str instance, list found
+2025-04-18 01:13:00,550 - generate_documents - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 01:13:00,550 - generate_documents - INFO - Generating tailored resume for AWS Architect at ASCENDING Inc.
+2025-04-18 01:13:08,182 - generate_documents - INFO - Successfully generated tailored resume content
+2025-04-18 01:13:08,182 - generate_documents - INFO - Generating cover letter for AWS Architect at ASCENDING Inc.
+2025-04-18 01:13:15,621 - generate_documents - INFO - Successfully generated cover letter content
+2025-04-18 01:13:15,621 - generate_documents - ERROR - Error generating job documents: sequence item 10: expected str instance, list found
+2025-04-18 01:13:15,622 - generate_documents - INFO - Generating documents for Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 01:13:15,623 - generate_documents - INFO - Generating tailored resume for Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 01:13:24,735 - generate_documents - INFO - Successfully generated tailored resume content
+2025-04-18 01:13:24,735 - generate_documents - INFO - Generating cover letter for Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 01:13:33,131 - generate_documents - ERROR - JSON parsing error: Expecting value: line 9 column 3 (char 2586)
+2025-04-18 01:13:33,131 - generate_documents - DEBUG - Problematic JSON string: {
+  "greeting": "Dear Hiring Manager,",
+  "opening": "I am writing to express my enthusiastic interest in the Head of Data, Machine Learning, and Application Platform position at Socure, as advertised on LinkedIn.  Having closely followed Socure's innovative work in identity verification and fraud prevention, I am deeply impressed by your commitment to leveraging cutting-edge technology to solve critical challenges in the digital economy. My experience architecting and scaling high-performance cloud platforms, coupled with my leadership in data science and machine learning initiatives, aligns perfectly with the requirements of this role and Socure's mission.",
+  "body_paragraphs": [
+    "My background in leading cross-functional teams, building and deploying robust data platforms, and implementing secure and compliant infrastructure directly addresses the key requirements outlined in the job description.  As Chief Solutions Architect at HappyPathway, I spearheaded the design and implementation of a cloud-agnostic Kubernetes platform, providing a flexible and scalable foundation for data science and machine learning workloads.  This experience, combined with my deep understanding of data engineering principles and my proven ability to develop and execute data strategies, makes me confident in my ability to lead Socure's data, machine learning, and application platform teams to new heights.",
+    "At HappyPathway and Clover, I consistently delivered impactful results by leveraging my expertise in cloud technologies, automation, and security.  I architected self-service infrastructure using Terraform, Packer, and Ansible, enabling rapid deployment and scalability of applications.  Furthermore, my experience leading migrations to AWS, GCP, and Azure, coupled with my implementation of DevSecOps practices and compliance with SOC 2 and ISO 27001, demonstrates my ability to build and manage secure, compliant, and cost-effective cloud environments.  These accomplishments highlight my ability to not only build robust platforms but also to ensure their security, scalability, and alignment with business objectives.",
+    "I am a highly motivated and results-oriented leader with a passion for innovation and a collaborative approach to problem-solving. I believe my leadership style, technical expertise, and commitment to building high-performing teams would be a valuable asset to Socure's dynamic and forward-thinking culture. I am eager to contribute to your continued success and am confident that I can make a significant contribution to your team.",
+
+  ],
+  "closing": "I am excited about the opportunity to discuss my qualifications further and how I can contribute to Socure's continued growth. Thank you for your time and consideration. I look forward to hearing from you soon.",
+  "signature": "Sincerely,\nYour Name"
+}
+2025-04-18 01:13:33,131 - generate_documents - ERROR - Failed to generate cover letter content
+2025-04-18 01:13:33,131 - generate_documents - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 01:13:33,132 - generate_documents - INFO - Generating tailored resume for AWS Architect at ASCENDING Inc.
+2025-04-18 01:13:40,707 - generate_documents - INFO - Successfully generated tailored resume content
+2025-04-18 01:13:40,707 - generate_documents - INFO - Generating cover letter for AWS Architect at ASCENDING Inc.
+2025-04-18 01:13:47,773 - generate_documents - INFO - Successfully generated cover letter content
+2025-04-18 01:13:47,773 - generate_documents - ERROR - Error generating job documents: sequence item 10: expected str instance, list found
+2025-04-18 01:15:33,735 - generate_documents - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 01:15:33,736 - generate_documents - INFO - Generating tailored resume for AWS Architect at ASCENDING Inc.
+2025-04-18 01:15:41,644 - generate_documents - INFO - Successfully generated tailored resume content
+2025-04-18 01:15:41,644 - generate_documents - INFO - Generating cover letter for AWS Architect at ASCENDING Inc.
+2025-04-18 01:15:48,518 - generate_documents - INFO - Successfully generated cover letter content
+2025-04-18 01:15:48,518 - generate_documents - ERROR - Error generating job documents: sequence item 10: expected str instance, list found
+2025-04-18 01:15:48,518 - generate_documents - INFO - Generating documents for Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 01:15:48,518 - generate_documents - INFO - Generating tailored resume for Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 01:15:57,633 - generate_documents - INFO - Successfully generated tailored resume content
+2025-04-18 01:15:57,633 - generate_documents - INFO - Generating cover letter for Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 01:16:05,399 - generate_documents - INFO - Successfully generated cover letter content
+2025-04-18 01:16:05,400 - generate_documents - ERROR - Error generating job documents: sequence item 10: expected str instance, list found
+2025-04-18 01:16:05,401 - generate_documents - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 01:16:05,402 - generate_documents - INFO - Generating tailored resume for AWS Architect at ASCENDING Inc.
+2025-04-18 01:19:23,701 - generate_documents - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 01:19:23,701 - generate_documents - INFO - Generating tailored resume for AWS Architect at ASCENDING Inc.
+2025-04-18 01:19:33,273 - generate_documents - INFO - Successfully generated tailored resume content
+2025-04-18 01:19:33,274 - generate_documents - INFO - Generating cover letter for AWS Architect at ASCENDING Inc.
+2025-04-18 01:19:40,854 - generate_documents - INFO - Successfully generated cover letter content
+2025-04-18 01:19:40,855 - generate_documents - ERROR - Error generating job documents: sequence item 10: expected str instance, list found
+2025-04-18 01:19:40,855 - generate_documents - INFO - Generating documents for Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 01:19:40,856 - generate_documents - INFO - Generating tailored resume for Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 01:19:49,652 - generate_documents - INFO - Successfully generated tailored resume content
+2025-04-18 01:19:49,652 - generate_documents - INFO - Generating cover letter for Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 01:19:55,967 - generate_documents - INFO - Successfully generated cover letter content
+2025-04-18 01:19:55,967 - generate_documents - ERROR - Error generating job documents: sequence item 10: expected str instance, list found
+2025-04-18 01:19:55,968 - generate_documents - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 01:19:55,970 - generate_documents - INFO - Generating tailored resume for AWS Architect at ASCENDING Inc.
+2025-04-18 01:20:04,694 - generate_documents - INFO - Successfully generated tailored resume content
+2025-04-18 01:20:04,694 - generate_documents - INFO - Generating cover letter for AWS Architect at ASCENDING Inc.
+2025-04-18 01:20:12,086 - generate_documents - INFO - Successfully generated cover letter content
+2025-04-18 01:20:12,087 - generate_documents - ERROR - Error generating job documents: sequence item 10: expected str instance, list found
+2025-04-18 01:25:31,212 - generate_documents - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 01:25:31,212 - generate_documents - INFO - Generating tailored resume for AWS Architect at ASCENDING Inc.
+2025-04-18 01:25:39,459 - generate_documents - INFO - Successfully generated tailored resume content
+2025-04-18 01:25:39,459 - generate_documents - INFO - Generating cover letter for AWS Architect at ASCENDING Inc.
+2025-04-18 01:25:47,038 - generate_documents - INFO - Successfully generated cover letter content
+2025-04-18 01:25:47,040 - generate_documents - INFO - Successfully generated documents:
+- docs/Resume_2025-04-18_ascending-inc._aws-architect.txt
+- docs/CoverLetter_2025-04-18_ascending-inc._aws-architect.txt
+2025-04-18 01:25:47,040 - generate_documents - INFO - Generating documents for Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 01:25:47,041 - generate_documents - INFO - Generating tailored resume for Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 01:25:56,139 - generate_documents - INFO - Successfully generated tailored resume content
+2025-04-18 01:25:56,140 - generate_documents - INFO - Generating cover letter for Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 01:26:03,526 - generate_documents - INFO - Successfully generated cover letter content
+2025-04-18 01:26:03,528 - generate_documents - INFO - Successfully generated documents:
+- docs/Resume_2025-04-18_socure_head-of-data,-machine-learning,-and-application-platform.txt
+- docs/CoverLetter_2025-04-18_socure_head-of-data,-machine-learning,-and-application-platform.txt
+2025-04-18 01:26:03,528 - generate_documents - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 01:26:03,529 - generate_documents - INFO - Generating tailored resume for AWS Architect at ASCENDING Inc.
+2025-04-18 01:26:11,089 - generate_documents - INFO - Successfully generated tailored resume content
+2025-04-18 01:26:11,090 - generate_documents - INFO - Generating cover letter for AWS Architect at ASCENDING Inc.
+2025-04-18 01:26:18,614 - generate_documents - ERROR - JSON parsing error: Expecting value: line 8 column 3 (char 2223)
+2025-04-18 01:26:18,614 - generate_documents - DEBUG - Problematic JSON string: {
+  "greeting": "Dear Hiring Manager,",
+  "opening": "I am writing to express my enthusiastic interest in the AWS Architect position at ASCENDING Inc., as advertised on LinkedIn.  Having closely followed ASCENDING's innovative work in [mention specific area if known, otherwise remove this phrase], I am confident that my extensive experience in architecting, implementing, and managing robust AWS cloud infrastructure aligns perfectly with your requirements.",
+  "body_paragraphs": [
+    "My background as a Senior Cloud SME at FedSoft, Inc. and Infrastructure Architect at Clover has equipped me with the precise skills outlined in your job description.  I have a deep understanding of core AWS services such as EC2, S3, VPC, and Lambda, and I am proficient in leveraging infrastructure-as-code tools like Terraform and CloudFormation to automate and secure cloud environments.  At FedSoft, I led cloud modernization initiatives, developing reusable Terraform modules that enforced security and compliance standards, and implemented automated security controls using AWS IAM, HashiCorp Vault, and Sentinel. This experience directly addresses your need for an architect capable of building secure and scalable solutions within AWS.",
+    "My track record demonstrates a consistent ability to deliver impactful results. At Clover, I spearheaded the design and deployment of a scalable and secure AWS cloud infrastructure, utilizing Terraform for IaC and integrating cost optimization strategies. I also played a key role in achieving and maintaining compliance with SOC 2, PCI DSS, and ISO 27001, showcasing my commitment to security best practices.  Furthermore, my experience at FedSoft in designing multi-cloud architectures demonstrates my adaptability and forward-thinking approach to cloud solutions.",
+    "I am a highly motivated and results-oriented individual with a passion for leveraging cloud technologies to solve complex business challenges. I thrive in collaborative environments and possess excellent communication and problem-solving skills. I am confident that my technical expertise, combined with my collaborative spirit, makes me an ideal candidate to contribute to ASCENDING's continued success.",
+  ],
+  "closing": "I am eager to learn more about this opportunity and discuss how my skills and experience can benefit ASCENDING Inc. Thank you for your time and consideration. I look forward to hearing from you soon.",
+  "signature": "Sincerely,\nYour Name"
+}
+2025-04-18 01:26:18,614 - generate_documents - ERROR - Failed to generate cover letter content
+2025-04-18 01:33:07,706 - generate_documents - INFO - Generating documents for Senior Cloud Architect at Example Corp
+2025-04-18 01:33:07,709 - generate_documents - INFO - Generating tailored resume for Senior Cloud Architect at Example Corp
+2025-04-18 01:33:14,111 - generate_documents - INFO - Successfully generated tailored resume content
+2025-04-18 01:33:14,111 - generate_documents - INFO - Generating cover letter for Senior Cloud Architect at Example Corp
+2025-04-18 01:33:20,869 - generate_documents - INFO - Successfully generated cover letter content
+2025-04-18 01:33:20,869 - generate_documents - INFO - Creating directory for Senior Cloud Architect at Example Corp
+2025-04-18 01:33:20,881 - generate_documents - WARNING - LaTeX environment not available, using text versions only
+2025-04-18 01:33:20,882 - generate_documents - INFO - Successfully generated documents in /Users/darnold/git/jobsearch/applications/2025-04-18_example-corp_senior-cloud-architect
+2025-04-18 01:50:20,821 - generate_documents - INFO - Generating documents for Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 01:50:20,825 - generate_documents - INFO - Generating tailored resume for Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 01:50:29,891 - generate_documents - INFO - Successfully generated tailored resume content
+2025-04-18 01:50:38,489 - generate_documents - INFO - Successfully generated engaging resume content
+2025-04-18 01:50:38,490 - generate_documents - INFO - Generating cover letter for Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 01:50:45,966 - generate_documents - INFO - Successfully generated cover letter content
+2025-04-18 01:50:54,771 - generate_documents - INFO - Successfully generated engaging cover letter content
+2025-04-18 01:50:54,771 - generate_documents - INFO - Creating directory for Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 01:50:55,101 - generate_documents - INFO - Successfully generated PDF documents
+2025-04-18 01:50:55,102 - generate_documents - INFO - Successfully generated documents in /Users/darnold/git/jobsearch/applications/2025-04-18_socure_head-of-data-machine-learning-and-application-platform
+2025-04-18 01:56:06,353 - generate_documents - INFO - Generating documents for Software Engineer at TestCo
+2025-04-18 01:56:06,355 - generate_documents - INFO - Generating tailored resume for Software Engineer at TestCo
+2025-04-18 01:56:13,549 - generate_documents - INFO - Successfully generated tailored resume content
+2025-04-18 01:56:19,755 - generate_documents - INFO - Successfully generated engaging resume content
+2025-04-18 01:56:19,755 - generate_documents - INFO - Generating cover letter for Software Engineer at TestCo
+2025-04-18 01:56:26,580 - generate_documents - ERROR - JSON parsing error: Expecting value: line 9 column 3 (char 2006)
+2025-04-18 01:56:26,580 - generate_documents - DEBUG - Problematic JSON string: {
+  "greeting": "Dear Hiring Manager,",
+  "opening": "I am writing to express my enthusiastic interest in the Software Engineer position at TestCo, as advertised on [Platform where you saw the ad - e.g., LinkedIn].  Having closely followed TestCo's innovative work in [Mention something specific about TestCo or their industry], I am confident that my skills and experience in Python development and automated testing align perfectly with your requirements.",
+  "body_paragraphs": [
+    "My background as a software engineer specializing in Python and automated testing frameworks makes me a strong candidate for this role.  I have a proven track record of designing, developing, and deploying robust and scalable applications.  My experience with IaC tools like Terraform, coupled with my expertise in CI/CD pipelines, ensures the delivery of high-quality software, which directly addresses your need for a skilled engineer capable of contributing to efficient and reliable software development.",
+    "At RetailNext, I developed a scalable continuous deployment pipeline, significantly improving the speed and efficiency of software releases.  Furthermore, I architected and automated AWS infrastructure using Terraform, demonstrating my proficiency in cloud technologies and infrastructure management.  During my time at AppDynamics, I further honed my CI/CD expertise by migrating configuration management from Ansible to Chef and establishing a Jenkins-driven CI/CD process. These experiences have equipped me with the practical skills to make an immediate impact at TestCo.",
+    "I am eager to contribute to a company that values innovation and technical excellence.  TestCo's reputation for [Mention something positive about TestCo's culture or values, e.g., fostering a collaborative environment or commitment to cutting-edge technology] resonates deeply with my own professional values. I am confident that I can seamlessly integrate into your team and contribute to your continued success.",
+
+  ],
+  "closing": "Thank you for your time and consideration. I am eager to learn more about this opportunity and discuss how my skills can benefit TestCo. I have attached my resume for your review and welcome the opportunity to speak with you further.  I look forward to hearing from you soon.",
+  "signature": "Sincerely,\nYour Name"
+}
+2025-04-18 01:56:26,580 - generate_documents - ERROR - Failed to generate cover letter content
