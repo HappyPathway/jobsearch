@@ -8,7 +8,7 @@ import requests
 from bs4 import BeautifulSoup
 import time
 import random
-from utils import setup_logging
+from utils import setup_logging, session_scope
 import argparse
 from models import (
     Experience, Skill, JobCache, JobApplication,
@@ -36,7 +36,7 @@ def get_cached_jobs():
     """Get all cached jobs from the database"""
     logger.info("Retrieving cached jobs")
     try:
-        with get_session() as session:
+        with session_scope() as session:
             jobs = session.query(JobCache).all()
             cached_jobs = {
                 job.url: {
