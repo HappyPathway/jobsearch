@@ -1,0 +1,48 @@
+Summary
+
+Highly accomplished and results-oriented Cloud Engineer Principal with 10+ years of experience architecting, implementing, and securing robust cloud solutions on AWS, Azure, and GCP. Proven ability to lead cloud modernization efforts, automate infrastructure provisioning and governance, and implement security best practices. Expertise in Terraform, Kubernetes, and CI/CD pipelines. Passionate about driving innovation and delivering scalable, cost-optimized cloud architectures.
+
+
+Experience
+
+FedSoft, Inc.
+Sr. Cloud SME, Dec 2023 - Present
+* Led cloud modernization initiatives, automating infrastructure provisioning and governance using Terraform and AWS.
+* Designed and implemented scalable, multi-cloud architectures leveraging Kubernetes.
+* Developed reusable Terraform modules, enforcing security best practices and compliance.
+* Implemented automated security controls using HashiCorp Vault and AWS IAM.
+* Optimized cloud cost management and collaborated with cross-functional teams to establish cloud governance policies.
+
+HappyPathway
+Chief Solutions Architect, Oct 2016 - Present
+* Architected self-service infrastructure using Terraform, Packer, and Ansible.
+* Designed and deployed cloud-agnostic Kubernetes solutions across AWS, GCP, and Azure, reducing cloud costs.
+* Implemented DevSecOps practices, improving compliance with SOC 2 and ISO 27001.
+
+Clover
+Infra Architect, Dec 2020 - Dec 2023
+* Led the design and deployment of scalable and secure cloud infrastructure on AWS using Terraform.
+* Architected Kubernetes-based container platforms and integrated cost optimization strategies.
+* Implemented DevSecOps practices and drove compliance efforts for SOC 2, PCI DSS, and ISO 27001.
+
+HashiCorp
+Sr. Solutions Engineer, Jun 2018 - Dec 2018
+* Delivered Terraform and Vault workshops, showcasing expertise in infrastructure automation and security best practices.
+* Built scalable demo environments and served as a Terraform Enterprise SME.
+
+AppDynamics
+Sr. Site Reliability Engineer, Mar 2015 - Oct 2016
+* Led production support and monitoring efforts.
+* Automated deployment pipelines and migrated configuration management to Chef.
+* Developed an automated AWS AMI pipeline and integrated Consul for centralized configuration management.
+
+RetailNext
+DevOps Engineer, Jun 2014 - Mar 2015
+* Architected and automated AWS infrastructure using IaC.
+* Developed a scalable continuous deployment pipeline and implemented a real-time monitoring framework.
+* Integrated cloud security best practices.
+
+
+Skills
+
+Cloud Architecture Design and Implementation, AWS, Azure, Terraform, Kubernetes, CI/CD Pipelines, Security Best Practices, Cloud Security, Automation, Collaboration, Communication

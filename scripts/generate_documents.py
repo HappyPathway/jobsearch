@@ -364,7 +364,7 @@ def track_job_application(job_info, resume_path, cover_letter_path):
         
         return job.id, application.id
 
-def generate_job_documents(job_info, use_writing_pass=True):
+def generate_job_documents(job_info, use_writing_pass=True, use_visual_resume=True):
     """Generate both resume and cover letter for a specific job"""
     logger.info(f"Generating documents for {job_info['title']} at {job_info['company']}")
     
@@ -417,21 +417,39 @@ def generate_job_documents(job_info, use_writing_pass=True):
             f.write(cover_letter_text)
         
         # Generate PDF versions
-        resume_pdf_path = job_dir / "resume.pdf"
+        ats_resume_pdf_path = job_dir / "resume_ats.pdf"  # ATS-friendly version
+        visual_resume_pdf_path = job_dir / "resume_visual.pdf" if use_visual_resume else None
+        default_resume_pdf_path = job_dir / "resume.pdf"  # The main resume file
         cover_letter_pdf_path = job_dir / "cover_letter.pdf"
         
         if setup_pdf_environment():
             try:
-                create_resume_pdf(resume_content, str(resume_pdf_path.with_suffix('')))
+                # Create ATS-friendly resume (simple format for parsing)
+                create_resume_pdf(resume_content, str(ats_resume_pdf_path.with_suffix('')))
+                
+                # Create visual resume if requested
+                if use_visual_resume:
+                    from pdf_generator import create_visual_resume_pdf
+                    create_visual_resume_pdf(resume_content, str(visual_resume_pdf_path.with_suffix('')))
+                    
+                # Create default resume (copy of visual resume if enabled, otherwise ATS version)
+                if use_visual_resume and visual_resume_pdf_path.exists():
+                    import shutil
+                    shutil.copy(visual_resume_pdf_path, default_resume_pdf_path)
+                else:
+                    import shutil
+                    shutil.copy(ats_resume_pdf_path, default_resume_pdf_path)
+                
+                # Create cover letter
                 create_cover_letter_pdf(cover_letter_content, job_info, str(cover_letter_pdf_path.with_suffix('')))
                 logger.info("Successfully generated PDF documents")
             except Exception as e:
                 logger.error(f"Error generating PDF documents: {str(e)}")
-                resume_pdf_path = resume_txt_path
-                cover_letter_pdf_path = cover_letter_txt_path
+                default_resume_pdf_path = resume_txt_path
+                cover_letter_pdf_path = resume_txt_path
         else:
             logger.warning("PDF environment not available, using text versions only")
-            resume_pdf_path = resume_txt_path
+            default_resume_pdf_path = resume_txt_path
             cover_letter_pdf_path = cover_letter_txt_path
             
         # Save job details for reference
@@ -449,12 +467,60 @@ def generate_job_documents(job_info, use_writing_pass=True):
                 'generated_date': datetime.now().isoformat()
             }, f, indent=2)
         
-        # Track job application in the database
-        track_job_application(job_info, str(resume_pdf_path), str(cover_letter_pdf_path))
+        # Track job application in the database - use default resume as the main resume
+        track_job_application(job_info, str(default_resume_pdf_path), str(cover_letter_pdf_path))
         
         logger.info(f"Successfully generated documents in {job_dir}")
-        return str(resume_pdf_path), str(cover_letter_pdf_path)
+        
+        # Return paths to the main resume and cover letter
+        return str(default_resume_pdf_path), str(cover_letter_pdf_path)
         
     except Exception as e:
         logger.error(f"Error generating job documents: {str(e)}")
         return None, None
+
+def main():
+    """Main entry point for document generation"""
+    import argparse
+    parser = argparse.ArgumentParser(description='Generate tailored resume and cover letter')
+    parser.add_argument('job_info_path', help='Path to job details JSON file')
+    parser.add_argument('--no-writing-pass', action='store_true', 
+                      help='Skip the writing enhancement pass')
+    parser.add_argument('--no-visual-resume', action='store_false', dest='use_visual_resume',
+                      help='Skip generating the visual resume (only generate ATS-friendly version)')
+    parser.add_argument('--ats-only', action='store_false', dest='use_visual_resume',
+                      help='Only generate the ATS-friendly resume (synonym for --no-visual-resume)')
+    parser.set_defaults(use_visual_resume=True)
+    args = parser.parse_args()
+
+    try:
+        # Load job info from file
+        with open(args.job_info_path, 'r') as f:
+            job_info = json.load(f)
+        
+        # Generate documents
+        resume_path, cover_letter_path = generate_job_documents(
+            job_info, 
+            use_writing_pass=not args.no_writing_pass,
+            use_visual_resume=args.use_visual_resume
+        )
+        
+        if resume_path and cover_letter_path:
+            print(f"Successfully generated documents:")
+            print(f"Resume: {resume_path}")
+            if args.use_visual_resume:
+                visual_resume_path = str(Path(resume_path).parent / "resume_visual.pdf")
+                ats_resume_path = str(Path(resume_path).parent / "resume_ats.pdf")
+                print(f"Visual Resume: {visual_resume_path}")
+                print(f"ATS-friendly Resume: {ats_resume_path}")
+            print(f"Cover Letter: {cover_letter_path}")
+            return 0
+        else:
+            print("Failed to generate documents")
+            return 1
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return 1
+
+if __name__ == "__main__":
+    exit(main())

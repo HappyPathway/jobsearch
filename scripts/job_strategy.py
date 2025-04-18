@@ -1,10 +1,10 @@
 import os
 import json
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 import google.generativeai as genai
 from dotenv import load_dotenv
-from models import get_session, Experience, Skill, TargetRole, JobCache
+from models import Experience, Skill, TargetRole, JobCache, JobApplication
 from logging_utils import setup_logging
 from utils import session_scope
 import re
@@ -13,6 +13,7 @@ from bs4 import BeautifulSoup
 import time
 import random
 import argparse
+import generate_documents
 
 logger = setup_logging('job_strategy')
 
@@ -62,7 +63,7 @@ def get_applied_jobs():
     """Get all jobs that have been applied to"""
     logger.info("Retrieving applied jobs")
     try:
-        with get_session() as session:
+        with session_scope() as session:
             applications = session.query(JobApplication).join(JobCache).all()
             applied_jobs = {
                 app.job.url: {
@@ -143,7 +144,7 @@ def update_job_cache(jobs, analyzed_jobs):
     new_count = 0
     
     try:
-        with get_session() as session:
+        with session_scope() as session:
             for job in jobs:
                 url = job['url']
                 analysis = analyzed_jobs.get(url, {})
@@ -192,16 +193,33 @@ def search_linkedin_jobs(query, location="United States", limit=2):
     cached_jobs = get_cached_jobs()
     applied_jobs = get_applied_jobs()
     
+    # Get one week ago date
+    one_week_ago = datetime.now() - timedelta(days=7)
+    
+    # Set up root directory
+    root_dir = Path(__file__).resolve().parent.parent
+    
     # Collect new job links - request more to account for filtering
     jobs = collect_job_links(query, location, limit * 2)
     
-    # Filter out jobs we've already applied to and normalize URLs
-    jobs = [job for job in jobs if normalize_linkedin_url(job['url']) not in 
-            {normalize_linkedin_url(url) for url in applied_jobs.keys()}]
-    
+    # Filter out jobs we've already applied to, normalize URLs, and apply one-week filter
+    jobs = [
+        job for job in jobs 
+        if normalize_linkedin_url(job['url']) not in {normalize_linkedin_url(url) for url in applied_jobs.keys()} 
+        and (
+            'first_seen_date' not in job 
+            or datetime.strptime(job['first_seen_date'], '%Y-%m-%d') > one_week_ago
+        )
+    ]
+
     # Track which jobs need analysis
     new_jobs = []
     analyzed_jobs = {}
+    
+    # Load profile data for personalization
+    with open(os.path.join(root_dir, 'docs', 'profile.json')) as f:
+        profile_data = json.load(f)
+    contact_info = profile_data.get('contact_info', {})
     
     # Normalize URLs for comparison
     normalized_cache = {normalize_linkedin_url(url): data for url, data in cached_jobs.items()}
@@ -210,9 +228,12 @@ def search_linkedin_jobs(query, location="United States", limit=2):
         url = normalize_linkedin_url(job['url'])
         if url in normalized_cache:
             # Use cached analysis but update last seen date
-            analyzed_jobs[url] = normalized_cache[url]
+            cached_data = normalized_cache[url]
+            cached_data['contact_info'] = contact_info  # Add contact info
+            analyzed_jobs[url] = cached_data
             logger.debug(f"Using cached analysis for {job['title']} at {job['company']}")
         else:
+            job['contact_info'] = contact_info  # Add contact info to new jobs
             new_jobs.append(job)
             logger.debug(f"Will analyze new job: {job['title']} at {job['company']}")
     
@@ -375,28 +396,32 @@ Required JSON format (replace with actual values, keep structure exactly as show
 def generate_documents_for_jobs(job_searches):
     """Generate tailored documents for high-priority jobs"""
     logger.info("Generating tailored documents for high-priority jobs")
-    from generate_documents import generate_job_documents
-    
-    generated_docs = []
-    for search in job_searches:
-        for job in search['listings']:
-            # Only generate documents for high-priority jobs
-            if job.get('application_priority', '').lower() == 'high':
-                logger.info(f"Generating documents for {job['title']} at {job['company']}")
-                resume_path, cover_letter_path = generate_job_documents(job)
-                if resume_path and cover_letter_path:
-                    generated_docs.append({
-                        "job": job,
-                        "resume": resume_path,
-                        "cover_letter": cover_letter_path
-                    })
-    return generated_docs
+    try:
+        import generate_documents
+        
+        generated_docs = []
+        for search in job_searches:
+            for job in search['listings']:
+                # Only generate documents for high-priority jobs
+                if job.get('application_priority', '').lower() == 'high':
+                    logger.info(f"Generating documents for {job['title']} at {job['company']}")
+                    resume_path, cover_letter_path = generate_documents.generate_job_documents(job)
+                    if resume_path and cover_letter_path:
+                        generated_docs.append({
+                            "job": job,
+                            "resume": resume_path,
+                            "cover_letter": cover_letter_path
+                        })
+        return generated_docs
+    except Exception as e:
+        logger.error(f"Failed to generate job strategy: {str(e)}")
+        return []
 
 def get_profile_data():
     """Retrieve profile data from the database"""
     logger.info("Retrieving profile data from database")
     try:
-        with get_session() as session:
+        with session_scope() as session:
             # Get experiences
             experiences = session.query(Experience).order_by(
                 Experience.end_date.desc(),
@@ -427,7 +452,7 @@ def get_target_roles():
     """Get target roles from database"""
     logger.info("Retrieving target roles from database")
     try:
-        with get_session() as session:
+        with session_scope() as session:
             roles = session.query(TargetRole).order_by(TargetRole.priority).all()
             role_list = [
                 {
@@ -649,20 +674,57 @@ def format_strategy_output_plain(strategy, weekly_focus):
     """Format strategy output in plain text format for backwards compatibility"""
     output = []
     output.append(f"Job Search Strategy - {datetime.now().strftime('%Y-%m-%d')}")
-    output.append("\nWeekly Focus Areas:")
-    for area in weekly_focus:
-        output.append(f"- {area}")
     
-    output.append("\nTarget Companies:")
-    for company in strategy['target_companies']:
-        output.append(f"- {company}")
+    # Daily Focus
+    daily_focus = strategy.get('daily_focus', {})
+    output.append(f"\nToday's Focus: {daily_focus.get('title', 'Daily Planning')}")
+    output.append(f"Reasoning: {daily_focus.get('reasoning', '')}")
     
-    output.append("\nTarget Positions:")
-    for position in strategy['target_positions']:
-        output.append(f"- {position}")
+    output.append("\nSuccess Metrics:")
+    for metric in daily_focus.get('success_metrics', []):
+        output.append(f"- {metric}")
     
-    output.append("\nAction Items:")
-    for item in strategy['action_items']:
+    # Target Roles
+    output.append("\nTarget Roles:")
+    for role in strategy.get('target_roles', []):
+        output.append(f"\n{role['title']}")
+        output.append(f"Reasoning: {role.get('reasoning', '')}")
+        output.append("\nKey Skills:")
+        for skill in role.get('key_skills_to_emphasize', []):
+            output.append(f"- {skill}")
+        output.append("\nTarget Companies:")
+        for company in role.get('suggested_companies', []):
+            output.append(f"- {company}")
+        if role.get('current_opportunities'):
+            output.append("\nCurrent Opportunities:")
+            for opp in role['current_opportunities']:
+                output.append(f"- {opp['title']} at {opp['company']}")
+                output.append(f"  URL: {opp.get('url', 'No URL')}")
+    
+    # Networking Strategy
+    network = strategy.get('networking_strategy', {})
+    output.append("\nNetworking Strategy:")
+    output.append(f"Daily Connections Target: {network.get('daily_connections', 3)}")
+    output.append("\nTarget Individuals:")
+    for target in network.get('target_individuals', []):
+        output.append(f"- {target}")
+    
+    # Skill Development
+    output.append("\nSkill Development:")
+    for skill in strategy.get('skill_development', []):
+        output.append(f"\n- {skill['skill']}")
+        output.append(f"  Goal: {skill['action']}")
+        output.append(f"  Timeline: {skill['timeline']}")
+        if skill.get('status'):
+            output.append(f"  Status: {skill['status']}")
+    
+    # Application Strategy
+    app_strategy = strategy.get('application_strategy', {})
+    output.append("\nApplication Strategy:")
+    output.append(f"Daily Target: {app_strategy.get('daily_target', 1)} application(s)")
+    
+    output.append("\nQuality Checklist:")
+    for item in app_strategy.get('quality_checklist', []):
         output.append(f"- {item}")
     
     return "\n".join(output)
@@ -790,6 +852,14 @@ def format_strategy_output(strategy, weekly_focus):
 
 def main():
     logger.info("Starting job strategy generation process")
+    
+    # Add the parent directory to Python path to find local modules
+    import sys
+    from pathlib import Path
+    root_dir = Path(__file__).resolve().parent.parent
+    sys.path.insert(0, str(root_dir))
+    
+    
     load_dotenv()
     genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
     
@@ -835,7 +905,7 @@ def main():
         base_filename = f"strategy_{current_date}"
         
         # Save Markdown version
-        STRATEGY_DIR = 'strategies'
+        STRATEGY_DIR = os.path.join(root_dir, 'strategies')
         md_path = os.path.join(STRATEGY_DIR, f"{base_filename}.md")
         with open(md_path, 'w') as f:
             f.write(markdown_content)
@@ -850,6 +920,7 @@ def main():
         return strategy
     except Exception as e:
         logger.error(f"Failed to generate job strategy: {str(e)}")
+        raise  # Re-raise the exception to see the full traceback
 
 if __name__ == "__main__":
     main()

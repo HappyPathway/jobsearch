@@ -85,7 +85,8 @@
             display: grid;
             grid-template-columns: 1fr 2fr;
             gap: 4rem;
-            align-items: center;
+            align-items: start;
+            padding-top: 2rem;
         }
 
         .profile-img {
@@ -93,6 +94,7 @@
             max-width: 300px;
             border-radius: 0.5rem;
             border: 1px solid var(--border);
+            margin-top: 0.5rem;
         }
 
         .hero h1 {
@@ -106,6 +108,13 @@
             font-size: 1.25rem;
             color: var(--text-muted);
             margin-bottom: 1.5rem;
+        }
+
+        .professional-summary {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            line-height: 1.8;
+            margin-top: 1rem;
         }
 
         .skills-section {
@@ -216,8 +225,35 @@
             color: var(--text-muted);
         }
 
+        .experience-skills {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(31, 41, 55, 0.5);
+            border-radius: 0.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .skill-tag {
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .skill-tag:hover {
+            color: var(--text);
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
         .contact-section {
-            padding: 4rem 0;
+            padding: 3rem 0;
             background: var(--bg-light);
             border-top: 1px solid var(--border);
         }
@@ -236,26 +272,23 @@
             border-radius: 0.5rem;
         }
 
-        .contact-icon {
-            font-size: 1.5rem;
-            color: var(--primary);
-            margin-bottom: 1rem;
-        }
-
-        .contact-item h3 {
-            font-size: 1rem;
-            margin-bottom: 0.5rem;
-            color: var(--text);
-        }
-
-        .contact-item a {
+        .contact-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
             color: var(--text-muted);
             text-decoration: none;
             transition: color 0.2s;
+            font-size: 1.1rem;
         }
 
-        .contact-item a:hover {
+        .contact-link:hover {
             color: var(--primary);
+        }
+
+        .contact-icon {
+            font-size: 1.5rem;
         }
 
         footer {
@@ -300,9 +333,10 @@
             <img src="{{ profile_image }}" alt="Profile Photo" class="profile-img">
             {% endif %}
             <div>
-                <h1>{{ profile.contact_info.name }}</h1>
-                <p class="hero-title">{{ profile.experience[0].title if profile.experience else "" }}</p>
-                <p class="text-muted">{{ profile.contact_info.location }}</p>
+                <h1>{{ tagline }}</h1>
+                <div class="professional-summary">
+                    {{ professional_summary | replace('\n', '<br><br>') | safe }}
+                </div>
             </div>
         </div>
     </section>
@@ -311,9 +345,9 @@
         <div class="container">
             <h2 class="section-title">Professional Skills</h2>
             <div class="skills-grid">
-                {% for category, skills in profile.core_skills.items() %}
+                {% for category, skills in categorized_skills.items() %}
                 <div class="skill-category">
-                    <h3>{{ category | replace('_', ' ') | title }}</h3>
+                    <h3>{{ category }}</h3>
                     {% for skill in skills %}
                     <div class="skill-item">
                         <div class="skill-header">
@@ -324,8 +358,13 @@
                             <div class="skill-progress" style="width: {{ '100%' if skill.proficiency == 'expert' else '75%' if skill.proficiency == 'advanced' else '50%' }}"></div>
                         </div>
                         <p class="text-muted" style="font-size: 0.875rem">
-                            {{ skill.years }} years • Last used: {{ skill.last_used }}
+                            {{ skill.years }} years{% if skill.count > 0 %} • Mentioned in {{ skill.count }} roles{% endif %}
                         </p>
+                        {% if skill.context %}
+                        <p class="skill-context text-muted" style="font-size: 0.875rem; margin-top: 0.5rem;">
+                            {{ skill.context }}
+                        </p>
+                        {% endif %}
                     </div>
                     {% endfor %}
                 </div>
@@ -337,19 +376,22 @@
     <section id="experience" class="experience-section">
         <div class="container">
             <h2 class="section-title">Professional Experience</h2>
-            {% for job in profile.experience %}
+            {% for exp in experiences %}
             <div class="timeline-item">
                 <div class="timeline-header">
-                    <h3 class="timeline-title">{{ job.title }}</h3>
-                    <p class="timeline-company">{{ job.company }}</p>
-                    <p class="timeline-period">{{ job.dates }} • {{ job.location }}</p>
+                    <h3 class="timeline-title">{{ exp.title }}</h3>
+                    <p class="timeline-company">{{ exp.company }}</p>
+                    <p class="timeline-period">{{ exp.start_date }} - {{ exp.end_date }}</p>
                 </div>
                 <div class="timeline-description">
-                    <ul>
-                    {% for point in job.description %}
-                        <li>{{ point }}</li>
-                    {% endfor %}
-                    </ul>
+                    {{ exp.description }}
+                    {% if exp.skills %}
+                    <div class="experience-skills">
+                        {% for skill in exp.skills %}
+                        <span class="skill-tag">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
                 </div>
             </div>
             {% endfor %}
@@ -358,27 +400,18 @@
 
     <section id="contact" class="contact-section">
         <div class="container">
-            <h2 class="section-title">Contact Information</h2>
-            <div class="contact-grid">
-                <div class="contact-item">
-                    <i class="fas fa-map-marker-alt contact-icon"></i>
-                    <h3>Location</h3>
-                    <p>{{ profile.contact_info.location }}</p>
-                </div>
-                {% if profile.contact_info.linkedin %}
-                <div class="contact-item">
-                    <i class="fab fa-linkedin contact-icon"></i>
-                    <h3>LinkedIn</h3>
-                    <a href="{{ profile.contact_info.linkedin }}" target="_blank">View Profile</a>
-                </div>
-                {% endif %}
-            </div>
+            {% if profile.contact_info.linkedin %}
+            <a href="{{ profile.contact_info.linkedin }}" target="_blank" class="contact-link">
+                <i class="fab fa-linkedin contact-icon"></i>
+                <span>Connect on LinkedIn</span>
+            </a>
+            {% endif %}
         </div>
     </section>
 
     <footer>
         <div class="container">
-            <p>Last Updated: {{ last_updated }}</p>
+            <p>Last Updated: {{ current_date }}</p>
         </div>
     </footer>
 

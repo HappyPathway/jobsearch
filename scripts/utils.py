@@ -3,18 +3,12 @@ import logging
 from contextlib import contextmanager
 from sqlalchemy.orm import Session
 from pathlib import Path
-from models import get_session
-
-# Use the GCS-aware session management
-def get_session():
-    # Import here to avoid circular import
-    from models import get_session as models_get_session
-    return models_get_session()
+from models import SessionFactory
 
 @contextmanager
 def session_scope():
     """Provide a transactional scope around a series of operations."""
-    session = get_session()
+    session = SessionFactory()
     try:
         yield session
         session.commit()
@@ -22,7 +16,8 @@ def session_scope():
         session.rollback()
         raise
     finally:
-        session.close()
+        if session:
+            session.close()
 
 def get_db_path():
     """Get the path to the SQLite database file"""

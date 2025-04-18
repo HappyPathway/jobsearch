@@ -1,0 +1,18 @@
+Dear Hiring Manager,
+
+I am writing to express my keen interest in the Principal Machine Learning: Generative AI position at Autodesk, as advertised on LinkedIn. While my background is deeply rooted in cloud architecture and automation, I'm eager to pivot my expertise towards the exciting challenges and opportunities presented by Generative AI.  My passion for innovative technology and experience building and scaling complex systems aligns perfectly with Autodesk's forward-thinking approach to design and make software.
+
+Throughout my career, I have consistently demonstrated the ability to architect, implement, and manage sophisticated cloud infrastructure. As Chief Solutions Architect at HappyPathway and Sr. Cloud SME at FedSoft, I led large-scale cloud modernization initiatives, leveraging tools like Terraform, Kubernetes, and AWS to build robust, scalable, and secure systems.  This experience with automation, CI/CD pipelines, and infrastructure-as-code will be invaluable in developing and deploying Generative AI models efficiently and effectively.
+
+My experience at HashiCorp as a Sr. Solutions Engineer provided me with in-depth knowledge of Terraform and Vault, further strengthening my understanding of infrastructure automation and security. This experience, coupled with my focus on cost optimization and cloud governance, will allow me to contribute to building sustainable and cost-effective Generative AI solutions at Autodesk. I am a quick learner and highly adaptable, and I am confident in my ability to rapidly acquire the necessary Generative AI-specific skills to excel in this role.  I am particularly excited by the prospect of applying my skills to such a cutting-edge field.
+
+I am particularly drawn to Autodesk's innovation-driven culture and collaborative team environment. I believe my collaborative leadership style and proven ability to deliver complex projects on time and within budget will make me a valuable asset to your team. I am eager to learn more about this opportunity and discuss how my skills and experience can contribute to Autodesk's success in the Generative AI space.
+
+Thank you for your time and consideration. I look forward to hearing from you soon.
+
+Sincerely,
+
+Dave J. Arnold
+(707) 480-6346
+dave@roknsound.com
+LinkedIn Profile URL

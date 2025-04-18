@@ -4,6 +4,7 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 import os
 import json
+import re
 from logging_utils import setup_logging
 from models import Session, ResumeSection, ResumeExperience, ResumeEducation
 
@@ -22,6 +23,10 @@ def extract_text_from_pdf(pdf_path):
 
 def clean_json_with_gemini(json_str):
     """Use Gemini to clean and validate JSON data"""
+    if not json_str or not json_str.strip():
+        logger.error("Empty JSON string provided to clean_json_with_gemini")
+        return None
+
     prompt = f"""You are a JSON validation system. Fix and return valid JSON only.
 Input: {json_str}
 
@@ -29,7 +34,8 @@ Rules:
 1. Return ONLY the fixed JSON - no other text, no code markers
 2. Preserve all data but ensure valid JSON format
 3. Remove any non-JSON artifacts
-4. Ensure proper quote usage and escaping"""
+4. Ensure proper quote usage and escaping
+5. If the input is invalid, return a basic valid JSON structure"""
 
     try:
         model = genai.GenerativeModel("gemini-1.5-pro")
@@ -37,9 +43,40 @@ Rules:
             prompt,
             generation_config={
                 "temperature": 0.1,
+                "max_output_tokens": 1000,
             }
         )
-        return json.loads(response.text.strip())
+        
+        # Check for empty response
+        if not response or not response.text or not response.text.strip():
+            logger.error("Empty response received from Gemini")
+            return None
+            
+        # Clean up the response
+        json_str = response.text.strip()
+        
+        # Remove markdown formatting if present
+        json_str = re.sub(r'^```.*?\n', '', json_str)  # Remove opening ```json
+        json_str = re.sub(r'\n```$', '', json_str)     # Remove closing ```
+        
+        # Try to extract just the JSON object if there's other text
+        match = re.search(r'({[\s\S]*})', json_str)
+        if match:
+            json_str = match.group(1)
+            
+        # Fix common JSON issues
+        json_str = re.sub(r':\s*null\b', ': ""', json_str)  # Replace null with empty string
+        json_str = re.sub(r':\s*undefined\b', ': ""', json_str)  # Replace undefined with empty string
+        json_str = re.sub(r',\s*}', '}', json_str)  # Remove trailing commas
+        json_str = re.sub(r',\s*]', ']', json_str)  # Remove trailing commas in arrays
+        
+        try:
+            return json.loads(json_str)
+        except json.JSONDecodeError as je:
+            logger.error(f"JSON parsing error after cleaning: {str(je)}")
+            logger.debug(f"Cleaned but invalid JSON: {json_str}")
+            return None
+            
     except Exception as e:
         logger.error(f"Error cleaning JSON with Gemini: {str(e)}")
         return None

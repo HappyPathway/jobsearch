@@ -1,0 +1,15 @@
+Dear Mr. Arnold,
+
+I am writing to express my enthusiastic interest in the Cloud Architect position at PingWind Inc., as advertised on LinkedIn.  Having closely followed PingWind's innovative work and commitment to leveraging cloud technologies, I am particularly drawn to your focus on cutting-edge solutions and collaborative culture. My 10+ years of experience architecting, implementing, and managing secure and scalable cloud solutions across AWS, Azure, and GCP strongly aligns with the requirements outlined in the job description.
+
+In my current role as Sr. Cloud SME at FedSoft, Inc., I lead cloud modernization initiatives, leveraging Terraform and AWS to automate infrastructure provisioning and governance.  I design and implement scalable, multi-cloud architectures using Kubernetes, ensuring best practices are enforced through reusable Terraform modules.  Furthermore, I implement automated security controls using HashiCorp Vault and AWS IAM, integrating CI/CD pipelines via GitHub Actions, and optimizing cloud cost management. This experience directly mirrors PingWind's need for a skilled architect proficient in infrastructure as code, containerization, and cloud security.
+
+Prior to FedSoft, I served as Infra Architect at Clover, where I led the design and implementation of secure and scalable cloud infrastructure on AWS using Terraform.  I architected Kubernetes-based container platforms, integrated cost optimization strategies, and established a self-service infrastructure model.  Crucially, I also spearheaded compliance efforts for SOC 2, PCI DSS, and ISO 27001, demonstrating my commitment to robust security practices, a key requirement for this role.  My experience at HashiCorp as a Sr. Solutions Engineer further solidified my expertise in Terraform and Vault, allowing me to effectively communicate and implement complex infrastructure automation and security solutions.
+
+My background also includes architecting cloud-agnostic, self-service infrastructure using Terraform, Packer, and Ansible at HappyPathway, deploying Kubernetes solutions across AWS, GCP, and Azure. This experience, coupled with my proven ability to drive compliance with SOC 2 and ISO 27001 while reducing cloud costs, makes me confident in my ability to contribute significantly to PingWind's success.
+
+I am confident that my technical expertise, combined with my passion for innovation and collaborative approach, makes me an ideal candidate for this position. I am eager to learn more about this opportunity and discuss how my skills and experience can benefit PingWind Inc.  Thank you for your time and consideration.
+
+Sincerely,
+
+[Your Name]

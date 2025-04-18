@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            size: letter;
+            margin: 0.75in;
+        }
+        body {
+            font-family: 'Calibri', 'Helvetica', 'Arial', sans-serif;
+            line-height: 1.4;
+            color: #333333;
+            font-size: 11pt;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .header-left {
+            flex: 2;
+        }
+        .header-right {
+            flex: 1;
+            text-align: right;
+        }
+        .name {
+            font-size: 24pt;
+            font-weight: bold;
+            color: #2a5885;
+            margin-bottom: 5px;
+        }
+        .contact-info {
+            font-size: 10pt;
+            line-height: 1.3;
+            color: #666;
+        }
+        .contact-info a {
+            color: #2a5885;
+            text-decoration: none;
+        }
+        .section {
+            margin-bottom: 16px;
+        }
+        .section-title {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #2a5885;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #2a5885;
+            padding-bottom: 3px;
+        }
+        .experience-item {
+            margin-bottom: 14px;
+        }
+        .job-header {
+            margin-bottom: 6px;
+        }
+        .job-title {
+            font-weight: bold;
+            font-size: 12pt;
+            color: #333;
+        }
+        .company {
+            font-weight: bold;
+            color: #2a5885;
+        }
+        .dates {
+            font-style: italic;
+            color: #666;
+        }
+        .description {
+            margin: 6px 0;
+        }
+        .description ul {
+            margin: 6px 0;
+            padding-left: 20px;
+        }
+        .description li {
+            margin-bottom: 4px;
+        }
+        .skills-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .skills-category {
+            margin-bottom: 10px;
+        }
+        .skills-category-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #2a5885;
+        }
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            list-style-type: none;
+            padding-left: 0;
+            margin: 0;
+        }
+        .skill-item {
+            background-color: #f2f7fb;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 10pt;
+        }
+        .core-competencies {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+        .competency {
+            background-color: #f2f7fb;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 10pt;
+            text-align: center;
+        }
+        .horizontal-rule {
+            border-top: 1px solid #ddd;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <div class="name">{{ contact_info.name }}</div>
+            <div class="contact-info">
+                {% if contact_info.location %}{{ contact_info.location }}{% endif %}
+                {% if contact_info.phone %} • {{ contact_info.phone }}{% endif %}
+                {% if contact_info.email %} • {{ contact_info.email }}{% endif %}
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="contact-info">
+                {% if contact_info.linkedin %}<a href="{{ contact_info.linkedin }}">LinkedIn Profile</a>{% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="horizontal-rule"></div>
+
+    <div class="section">
+        <div class="section-title">Professional Summary</div>
+        <div class="description">{{ summary }}</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Core Competencies</div>
+        <div class="core-competencies">
+            {% for skill in skills[:9] %}
+            <div class="competency">{{ skill }}</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Professional Experience</div>
+        {% for exp in experiences %}
+        <div class="experience-item">
+            <div class="job-header">
+                <span class="job-title">{{ exp.title }}</span>, 
+                <span class="company">{{ exp.company }}</span> | 
+                <span class="dates">{{ exp.dates }}</span>
+            </div>
+            <div class="description">
+                {% if exp.description is string %}
+                    {{ exp.description }}
+                {% else %}
+                    <ul>
+                    {% for bullet in exp.description %}
+                        <li>{{ bullet }}</li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            {% if exp.skills %}
+            <div class="skills-category">
+                <div class="skills-category-title">Key Skills:</div>
+                <div class="skills-list">
+                    {% for skill in exp.skills %}
+                    <span class="skill-item">{{ skill }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="section">
+        <div class="section-title">Technical Skills</div>
+        <div class="skills-grid">
+            {% if skill_categories %}
+                {% for category, category_skills in skill_categories.items() %}
+                <div class="skills-category">
+                    <div class="skills-category-title">{{ category }}</div>
+                    <div class="skills-list">
+                        {% for skill in category_skills %}
+                        <span class="skill-item">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                {% set chunks = (skills|length / 4)|round|int %}
+                {% if chunks < 3 %}{% set chunks = 3 %}{% endif %}
+                {% for i in range(0, skills|length, chunks) %}
+                <div class="skills-category">
+                    <div class="skills-list">
+                        {% for skill in skills[i:i+chunks] %}
+                        <span class="skill-item">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+    {% for section_name, content in additional_sections.items() %}
+    <div class="section">
+        <div class="section-title">{{ section_name | upper }}</div>
+        <div class="description">{{ content }}</div>
+    </div>
+    {% endfor %}
+</body>
+</html>

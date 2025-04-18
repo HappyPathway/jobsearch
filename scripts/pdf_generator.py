@@ -4,8 +4,8 @@ import datetime as dt
 from jinja2 import Environment, FileSystemLoader
 import os
 from sqlalchemy.orm import Session
-from scripts.models import JobApplication, JobCache
-from scripts.utils import setup_logging
+from models import JobApplication, JobCache
+from logging_utils import setup_logging
 
 logger = setup_logging('pdf_generator')
 
@@ -209,8 +209,17 @@ def update_document_metadata(application_id, resume_path=None, cover_letter_path
             return False
             
         if resume_path:
+            # Ensure path ends with .pdf
+            resume_path = str(resume_path)
+            if not resume_path.endswith('.pdf'):
+                resume_path += '.pdf'
             application.resume_path = resume_path
+            
         if cover_letter_path:
+            # Ensure path ends with .pdf
+            cover_letter_path = str(cover_letter_path)
+            if not cover_letter_path.endswith('.pdf'):
+                cover_letter_path += '.pdf'
             application.cover_letter_path = cover_letter_path
             
         application.last_modified = dt.datetime.now().isoformat()
@@ -223,6 +232,11 @@ def create_resume_pdf(content, output_path, application_id=None):
     env = Environment(loader=FileSystemLoader(template_dir))
     template = env.get_template('resume.html')
     
+    # Ensure output path ends with .pdf
+    output_path = str(output_path)
+    if not output_path.endswith('.pdf'):
+        output_path += '.pdf'
+    
     # Prepare template data
     data = {
         'summary': content['summary'],
@@ -232,7 +246,8 @@ def create_resume_pdf(content, output_path, application_id=None):
             reverse=True
         ),
         'skills': content['highlighted_skills'],
-        'additional_sections': content.get('additional_sections', {})
+        'additional_sections': content.get('additional_sections', {}),
+        'contact_info': content.get('contact_info', {})  # Add contact info from profile
     }
     
     try:
@@ -243,7 +258,7 @@ def create_resume_pdf(content, output_path, application_id=None):
         HTML(string=html_content).write_pdf(output_path)
         
         if application_id:
-            update_document_metadata(application_id, resume_path=f"{output_path}.pdf")
+            update_document_metadata(application_id, resume_path=output_path)
             
     except Exception as e:
         logger.error(f"Error creating resume PDF: {str(e)}")
@@ -255,6 +270,11 @@ def create_cover_letter_pdf(content, job_info, output_path, application_id=None)
     env = Environment(loader=FileSystemLoader(template_dir))
     template = env.get_template('cover_letter.html')
     
+    # Ensure output path ends with .pdf
+    output_path = str(output_path)
+    if not output_path.endswith('.pdf'):
+        output_path += '.pdf'
+    
     # Prepare template data
     data = {
         'date': dt.datetime.now().strftime("%B %d, %Y"),
@@ -264,7 +284,8 @@ def create_cover_letter_pdf(content, job_info, output_path, application_id=None)
         'opening': content['opening'],
         'body_paragraphs': content['body_paragraphs'],
         'closing': content['closing'],
-        'signature': content['signature'].replace('\\n', '\n')
+        'signature': content['signature'].replace('\\n', '\n'),
+        'contact_info': content.get('contact_info', {})  # Add contact info from profile
     }
     
     try:
@@ -275,10 +296,80 @@ def create_cover_letter_pdf(content, job_info, output_path, application_id=None)
         HTML(string=html_content).write_pdf(output_path)
         
         if application_id:
-            update_document_metadata(application_id, cover_letter_path=f"{output_path}.pdf")
+            update_document_metadata(application_id, cover_letter_path=output_path)
             
     except Exception as e:
         logger.error(f"Error creating cover letter PDF: {str(e)}")
+        raise
+
+def create_visual_resume_pdf(content, output_path, application_id=None):
+    """Generate a visually enhanced PDF resume using the visual HTML/CSS template"""
+    env = Environment(loader=FileSystemLoader(template_dir))
+    template = env.get_template('resume_visual.html')
+    
+    # Ensure output path ends with .pdf
+    output_path = str(output_path)
+    if not output_path.endswith('.pdf'):
+        output_path += '.pdf'
+    
+    # Extract contact information from content
+    contact_info = content.get('contact_info', {})
+    if not contact_info:
+        # Try to build contact info from additional sections
+        contact_sections = content.get('additional_sections', {}).get('Contact Information', '')
+        if contact_sections:
+            lines = contact_sections.split('\n')
+            if lines:
+                contact_info['name'] = lines[0].strip()
+                # Extract email from contact info
+                email_match = [line for line in lines if '@' in line]
+                if email_match:
+                    contact_info['email'] = email_match[0].strip()
+                # Extract phone from contact info
+                phone_match = [line for line in lines if any(c.isdigit() for c in line) and '@' not in line]
+                if phone_match:
+                    contact_info['phone'] = phone_match[0].strip()
+                # Extract location from contact info
+                if len(lines) > 1:
+                    contact_info['location'] = lines[1].strip()
+    
+    # Organize skills into categories based on keywords if available
+    skills = content['highlighted_skills']
+    skill_categories = {}
+    
+    # Allow the calling function to provide pre-categorized skills
+    if 'skill_categories' in content:
+        skill_categories = content['skill_categories']
+    
+    # Prepare template data
+    data = {
+        'summary': content['summary'],
+        'experiences': sorted(
+            content['selected_experiences'], 
+            key=lambda x: x.get('relevance_score', 0), 
+            reverse=True
+        ),
+        'skills': skills,
+        'skill_categories': skill_categories,
+        'additional_sections': content.get('additional_sections', {}),
+        'contact_info': contact_info
+    }
+    
+    try:
+        # Render HTML
+        html_content = template.render(**data)
+        
+        # Generate PDF
+        HTML(string=html_content).write_pdf(output_path)
+        
+        if application_id:
+            update_document_metadata(application_id, resume_path=output_path)
+        
+        logger.info(f"Successfully created visual resume PDF at {output_path}")
+        return True
+            
+    except Exception as e:
+        logger.error(f"Error creating visual resume PDF: {str(e)}")
         raise
 
 def setup_pdf_environment():

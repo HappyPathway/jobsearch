@@ -1,0 +1,15 @@
+Dear Mr. Arnold,
+
+I am writing to express my keen interest in the AWS Architect position at ASCENDING Inc., as advertised on LinkedIn. My extensive experience in designing, implementing, and managing scalable and secure cloud architectures on AWS, coupled with my deep understanding of DevOps principles, aligns perfectly with the requirements outlined in the job description.  I am particularly drawn to ASCENDING Inc.'s focus on innovation and fast-paced environment, as these are the types of settings where I thrive and consistently deliver impactful results.  The dynamic nature of a growing team, hinted at by your early applicant preference, is especially exciting.
+
+In my current role as Sr. Cloud SME at FedSoft, Inc., I lead cloud modernization initiatives, leveraging Terraform and AWS to automate infrastructure provisioning and governance. I have designed and implemented scalable, multi-cloud architectures incorporating Kubernetes, and developed reusable Terraform modules to enforce best practices and ensure compliance.  My experience implementing automated security controls using HashiCorp Vault and AWS IAM directly addresses your need for expertise in cloud security best practices, ensuring robust security within your AWS environment.
+
+Prior to FedSoft, I served as Infra Architect at Clover, where I spearheaded the design and deployment of secure and scalable cloud infrastructure on AWS, utilizing Terraform for efficient and repeatable deployments.  My responsibilities included architecting Kubernetes-based container platforms and integrating cost optimization strategies. This experience, combined with my successful implementation of DevSecOps practices and compliance efforts for SOC 2, PCI DSS, and ISO 27001, has prepared me to contribute significantly to ASCENDING Inc.'s security posture and operational efficiency.
+
+My experience at HappyPathway as Chief Solutions Architect further solidified my expertise in cloud-agnostic Kubernetes solutions and infrastructure automation using Terraform and Ansible. Leading migrations to AWS, I successfully reduced cloud costs and improved compliance with SOC 2 and ISO 27001, demonstrating my ability to deliver tangible business value through strategic cloud management.  This background will allow me to quickly contribute to optimizing your AWS infrastructure and ensuring its cost-effectiveness.
+
+I am confident that my skills and experience make me an ideal candidate for this position and a valuable asset to your team. I am eager to learn more about this opportunity and discuss how my expertise can contribute to ASCENDING Inc.'s continued success.  Please feel free to contact me at your earliest convenience.
+
+Sincerely,
+
+[Your Name]

@@ -1,0 +1,14 @@
+Dear Mr. Arnold,
+
+I am writing to express my enthusiastic interest in the AWS Solutions Architect (Remote) position at Serverless Guru, as advertised on LinkedIn.  My deep experience in designing, implementing, and managing serverless architectures on AWS, coupled with my passion for serverless technologies and commitment to continuous learning, aligns perfectly with your requirements and the innovative culture at Serverless Guru.
+
+In my current role as Sr. Cloud SME at FedSoft, Inc., I lead cloud modernization initiatives, focusing heavily on serverless architectures and infrastructure automation using Terraform and AWS.  I have hands-on experience with key AWS services such as Lambda, API Gateway, DynamoDB, S3, and Step Functions, developing reusable Terraform modules to ensure best practices and compliance. This experience has honed my ability to build robust, cost-effective, and secure serverless solutions, mirroring the core focus of Serverless Guru.
+
+Prior to FedSoft, I served as an Infra Architect at Clover, where I led the design and deployment of scalable and secure cloud infrastructure on AWS, again leveraging Terraform for IaC.  I architected Kubernetes-based container platforms and implemented cost optimization strategies, further solidifying my understanding of cloud-native principles and best practices. My experience at HashiCorp as a Sr. Solutions Engineer, delivering Terraform and Vault workshops, also provides me with a unique perspective on infrastructure automation and security, which I believe would be invaluable to your team.
+
+My commitment to continuous learning and growth is evident in my consistent pursuit of new technologies and best practices.  I am eager to contribute my expertise to a company like Serverless Guru, which is at the forefront of serverless innovation.  My strong communication and collaboration skills, honed through years of working in cross-functional teams, will allow me to seamlessly integrate into your remote work environment and contribute effectively from day one.
+
+I am confident that my skills and experience make me an ideal candidate for this position. I am eager to learn more about this opportunity and discuss how I can contribute to the success of Serverless Guru.  Thank you for your time and consideration. I look forward to hearing from you soon.
+
+Sincerely,
+[Your Name]

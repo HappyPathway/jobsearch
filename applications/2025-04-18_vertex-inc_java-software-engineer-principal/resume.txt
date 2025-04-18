@@ -1,0 +1,43 @@
+Summary
+
+Highly accomplished and results-oriented Principal Cloud Engineer with 10+ years of experience architecting, implementing, and managing robust, scalable, and secure cloud infrastructure. Proven ability to lead cloud modernization efforts, optimize cloud costs, and implement DevSecOps practices. Expertise in infrastructure automation, container orchestration, and configuration management using Terraform, Kubernetes, Ansible, and AWS. Seeking a challenging Principal Java Software Engineer role at Vertex Inc. to leverage extensive experience building and managing complex systems.
+
+
+Experience
+
+FedSoft, Inc.
+Sr. Cloud SME, Dec 2023 - Present
+* Led cloud modernization initiatives, automating infrastructure provisioning and governance using Terraform and AWS.
+* Implemented scalable, multi-cloud architectures and CI/CD pipelines using GitHub Actions.
+* Enhanced cloud security posture using HashiCorp Vault and AWS IAM.
+
+HappyPathway
+Chief Solutions Architect, Oct 2016 - Present
+* Architected self-service infrastructure using Terraform, Packer, and Ansible.
+* Designed and deployed cloud-agnostic Kubernetes solutions.
+* Implemented DevSecOps practices, improving compliance with SOC 2 and ISO 27001.
+* Led cloud migrations to AWS, GCP, and Azure, significantly reducing costs.
+
+Clover
+Infra Architect, Dec 2020 - Dec 2023
+* Led the design and deployment of scalable and secure cloud infrastructure on AWS using Terraform and Kubernetes.
+* Implemented cost optimization strategies and a self-service infrastructure model.
+* Drove compliance efforts for SOC 2, PCI DSS, and ISO 27001.
+
+AppDynamics
+Sr. Site Reliability Engineer, Mar 2015 - Oct 2016
+* Led production support and monitoring efforts.
+* Automated deployment pipelines and migrated configuration management.
+* Developed an automated AWS AMI pipeline and integrated Consul for centralized configuration management with Terraform.
+* Established a Jenkins-driven CI/CD process.
+
+RetailNext
+DevOps Engineer, Jun 2014 - Mar 2015
+* Architected and automated AWS infrastructure using Infrastructure as Code (IaC).
+* Developed a scalable continuous deployment pipeline and implemented a real-time monitoring framework.
+* Integrated cloud security best practices.
+
+
+Skills
+
+AWS, Terraform, Kubernetes, Ansible, CI/CD, Cloud Security, Cost Optimization
