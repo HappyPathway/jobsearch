@@ -1,0 +1,61 @@
+name: Profile Data Management
+
+on:
+  workflow_dispatch:  # Manual trigger
+  push:
+    paths:
+      - 'docs/Profile.pdf'
+      - 'docs/Resume.pdf'
+      - 'docs/CoverLetter.pdf'
+      - 'docs/profile.json'
+
+jobs:
+  update-profile:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: Restore database cache
+        id: cache-db
+        uses: actions/cache@v3
+        with:
+          path: career_data.db
+          key: ${{ runner.os }}-career-db-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-career-db-
+
+      - name: Process profile data
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python scripts/init_db.py
+          python scripts/profile_scraper.py
+          python scripts/resume_parser.py
+          python scripts/cover_letter_parser.py
+          python scripts/combine_and_summarize.py
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: 'chore: Update profile data'
+          title: 'Update Profile Data'
+          body: |
+            Automated profile data update
+            
+            - Updated from latest profile documents
+            - Includes LinkedIn profile, resume, and cover letter data
+            - Database: ${{ steps.cache-db.outputs.cache-hit == 'true' && 'Restored from cache' || 'Freshly initialized' }}
+          branch: profile-update
+          delete-branch: true
+          base: main

@@ -1,0 +1,102 @@
+{
+  "contact_info": {
+    "name": "Dave J. Arnold",
+    "email": "dave@roknsound.com",
+    "phone": "(707) 480-6346",
+    "location": "",
+    "linkedin": "https:"
+  },
+  "core_skills": {
+    "infrastructure_and_cloud": [
+      {
+        "name": "AWS",
+        "proficiency": "expert",
+        "years": 9,
+        "last_used": "2024",
+        "mentions": 6,
+        "context": "Extensive experience across multiple roles, including building and managing infrastructure, automating deployments, and leveraging various AWS services (e.g., VPC, Elastic Load Balancing, S3, EC2).  Led efforts to implement managed execution environments across all internal AWS accounts for a US Census project."
+      }
+    ],
+    "development_and_automation": [
+      {
+        "name": "Terraform",
+        "proficiency": "expert",
+        "years": 9,
+        "last_used": "2024",
+        "mentions": 8,
+        "context": "Extensive experience in infrastructure as code using Terraform, including building and managing workspaces, onboarding, state management, refactoring, upgrading, module testing, and integrating with CI/CD pipelines. Developed custom Terraform Workspace code for Github Actions."
+      },
+      {
+        "name": "Ansible",
+        "proficiency": "advanced",
+        "years": 7,
+        "last_used": "2020",
+        "mentions": 5,
+        "context": "Used Ansible for configuration management, automation, infrastructure provisioning, and building custom solutions. Developed custom callback scripts, dynamic inventory scripts, and modules."
+      },
+      {
+        "name": "Python",
+        "proficiency": "advanced",
+        "years": 7,
+        "last_used": "2020",
+        "mentions": 4,
+        "context": "Developed custom scripts and tools for automation, monitoring, and infrastructure management."
+      },
+      {
+        "name": "CI/CD",
+        "proficiency": "advanced",
+        "years": 7,
+        "last_used": "2024",
+        "mentions": 4,
+        "context": "Experience designing and implementing CI/CD pipelines, including integrating with tools like Jenkins, Github Actions, and various configuration management tools."
+      }
+    ],
+    "platforms_and_tools": [
+      {
+        "name": "Packer",
+        "proficiency": "advanced",
+        "years": 5,
+        "last_used": "2017",
+        "mentions": 3,
+        "context": "Used Packer for building base AMIs and automating image creation."
+      },
+      {
+        "name": "Kubernetes",
+        "proficiency": "intermediate",
+        "years": 4,
+        "last_used": "2020",
+        "mentions": 2,
+        "context": "Provisioned and maintained Kubernetes clusters and deployed services using Terraform and Harness."
+      },
+      {
+        "name": "Chef",
+        "proficiency": "intermediate",
+        "years": 3,
+        "last_used": "2017",
+        "mentions": 3,
+        "context": "Used Chef for configuration management and provisioning, including migrating teams from Ansible to Chef."
+      }
+    ],
+    "methodologies": [
+      {
+        "name": "DevOps",
+        "proficiency": "expert",
+        "years": 9,
+        "last_used": "2024",
+        "mentions": 5,
+        "context": "Held multiple DevOps roles with increasing responsibility, demonstrating expertise in implementing DevOps best practices, automation, and infrastructure management."
+      },
+      {
+        "name": "Infrastructure as Code (IaC)",
+        "proficiency": "expert",
+        "years": 7,
+        "last_used": "2024",
+        "mentions": 3,
+        "context": "Led projects focused on implementing and modernizing Infrastructure as Code using tools like Terraform."
+      }
+    ]
+  },
+  "experience": [],
+  "education": [],
+  "last_updated": 1730243492.1950848
+}

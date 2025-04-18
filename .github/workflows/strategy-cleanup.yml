@@ -1,0 +1,52 @@
+name: Strategy File Cleanup
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Run daily at midnight UTC
+  workflow_dispatch:  # Manual trigger
+    inputs:
+      retention_days:
+        description: 'Number of days of strategy files to keep'
+        required: false
+        default: '7'
+        type: string
+
+# Ensure only one cleanup runs at a time
+concurrency:
+  group: strategy-cleanup
+  cancel-in-progress: true
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+      
+      - name: Clean up old strategy files
+        run: |
+          # Set retention period (use input if provided, otherwise default to 7 days)
+          RETENTION_DAYS="${{ github.event.inputs.retention_days || '7' }}"
+          
+          # Find and remove old strategy files
+          find strategies -type f -name "strategy_*.md" -mtime +$RETENTION_DAYS -delete
+          find strategies -type f -name "strategy_*.txt" -mtime +$RETENTION_DAYS -delete
+          
+          # Create commit if files were removed
+          if [[ -n $(git status -s) ]]; then
+            git add strategies/
+            git commit -m "chore: Remove strategy files older than $RETENTION_DAYS days"
+            git push
+          else
+            echo "No files to clean up"
+          fi

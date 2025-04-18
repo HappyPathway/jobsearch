@@ -1,0 +1,116 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            size: letter;
+            margin: 1in;
+        }
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            line-height: 1.4;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .section-title {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            font-size: 18px;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+        }
+        .experience-item {
+            margin-bottom: 15px;
+        }
+        .job-title {
+            font-weight: bold;
+            color: #34495e;
+        }
+        .company {
+            font-weight: bold;
+        }
+        .dates {
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        .description {
+            margin-top: 5px;
+            padding-left: 20px;
+        }
+        .description ul {
+            margin: 5px 0;
+            padding-left: 20px;
+        }
+        .skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .skill {
+            background-color: #f6f8fa;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>PROFESSIONAL RESUME</h1>
+    
+    <div class="section">
+        <div class="section-title">PROFESSIONAL SUMMARY</div>
+        <div>{{ summary }}</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">PROFESSIONAL EXPERIENCE</div>
+        {% for exp in experiences %}
+        <div class="experience-item">
+            <div>
+                <span class="job-title">{{ exp.title }}</span> - 
+                <span class="company">{{ exp.company }}</span>
+            </div>
+            <div class="dates">{{ exp.dates }}</div>
+            <div class="description">
+                {% if exp.description is string %}
+                    {{ exp.description }}
+                {% else %}
+                    <ul>
+                    {% for bullet in exp.description %}
+                        <li>{{ bullet }}</li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="section">
+        <div class="section-title">TECHNICAL SKILLS</div>
+        <div class="skills">
+            {% for skill in skills %}
+            <span class="skill">{{ skill }}</span>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% for section_name, content in additional_sections.items() %}
+    <div class="section">
+        <div class="section-title">{{ section_name | upper }}</div>
+        <div>{{ content }}</div>
+    </div>
+    {% endfor %}
+</body>
+</html>
+        
