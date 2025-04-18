@@ -1,5 +1,0 @@
-2025-04-18 03:38:39,416 - cover_letter_parser - INFO - Successfully saved cover letter data
-2025-04-18 03:38:39,416 - cover_letter_parser - INFO - Successfully processed cover letter from /Users/darnold/git/jobsearch/docs/CoverLetter.pdf
-2025-04-18 03:38:39,416 - cover_letter_parser - INFO - Found:
-2025-04-18 03:38:39,416 - cover_letter_parser - INFO - - 3 body paragraphs
-2025-04-18 03:38:39,416 - cover_letter_parser - INFO - - 5 key points
