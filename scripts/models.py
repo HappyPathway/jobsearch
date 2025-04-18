@@ -3,7 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker, Session
 from pathlib import Path
 from contextlib import contextmanager
-from .gcs_utils import gcs
+from gcs_utils import gcs
 from utils import setup_logging
 
 logger = setup_logging('models')
