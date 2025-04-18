@@ -210,15 +210,41 @@ Return a JSON object with:
             }
         )
         
-        content = json.loads(response.text)
+        # Check if response is empty
+        if not response or not response.text or response.text.strip() == "":
+            logger.error("Empty response received from Gemini API")
+            return None
+            
+        # Clean up response text
+        json_str = response.text.strip()
         
-        # Add any custom sections from the database
-        content['additional_sections'] = {
-            name: text for name, text in sections.items()
-            if name.lower() not in ['summary', 'experience', 'skills', 'contact information']
-        }
+        # Add debug logging for the response
+        logger.debug(f"API response first 100 chars: {json_str[:100]}...")
         
-        return content
+        # Clean up any markdown code block formatting
+        json_str = re.sub(r'^```.*?\n', '', json_str)  # Remove opening ```json
+        json_str = re.sub(r'\n```$', '', json_str)     # Remove closing ```
+        
+        # Try to extract just a JSON object if there's other text
+        match = re.search(r'({[\s\S]*})', json_str)
+        if match:
+            json_str = match.group(1)
+            
+        try:
+            content = json.loads(json_str)
+            
+            # Add any custom sections from the database
+            content['additional_sections'] = {
+                name: text for name, text in sections.items()
+                if name.lower() not in ['summary', 'experience', 'skills', 'contact information']
+            }
+            
+            return content
+            
+        except json.JSONDecodeError as je:
+            logger.error(f"JSON parsing error: {str(je)}")
+            logger.debug(f"Invalid JSON content: {json_str}")
+            return None
         
     except Exception as e:
         logger.error(f"Error generating tailored resume: {str(e)}")
@@ -262,7 +288,34 @@ Return a JSON object with:
             }
         )
         
-        return json.loads(response.text)
+        # Check if response is empty
+        if not response or not response.text or response.text.strip() == "":
+            logger.error("Empty response received from Gemini API for cover letter")
+            return None
+            
+        # Clean up response text
+        json_str = response.text.strip()
+        
+        # Add debug logging for the response
+        logger.debug(f"Cover letter API response first 100 chars: {json_str[:100]}...")
+        
+        # Clean up any markdown code block formatting
+        json_str = re.sub(r'^```.*?\n', '', json_str)  # Remove opening ```json
+        json_str = re.sub(r'\n```$', '', json_str)     # Remove closing ```
+        
+        # Try to extract just a JSON object if there's other text
+        match = re.search(r'({[\s\S]*})', json_str)
+        if match:
+            json_str = match.group(1)
+            
+        try:
+            content = json.loads(json_str)
+            return content
+            
+        except json.JSONDecodeError as je:
+            logger.error(f"Cover letter JSON parsing error: {str(je)}")
+            logger.debug(f"Invalid cover letter JSON content: {json_str}")
+            return None
         
     except Exception as e:
         logger.error(f"Error generating cover letter: {str(e)}")
