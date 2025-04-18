@@ -1,24 +1,16 @@
 import pdfplumber
 from pathlib import Path
-import sqlite3
 import google.generativeai as genai
 from dotenv import load_dotenv
 import os
 import json
+from utils import setup_logging
+from models import Session, CoverLetterSection
+
+logger = setup_logging('cover_letter_parser')
 
 load_dotenv()
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-
-def setup_cover_letter_tables(conn):
-    c = conn.cursor()
-    
-    c.execute('''CREATE TABLE IF NOT EXISTS cover_letter_sections (
-        id INTEGER PRIMARY KEY,
-        section_name TEXT UNIQUE,
-        content TEXT
-    )''')
-    
-    conn.commit()
 
 def extract_text_from_pdf(pdf_path):
     """Extract text from PDF file"""
@@ -61,7 +53,7 @@ Rules:
 4. Keep paragraphs in their original order"""
 
     try:
-        model = genai.GenerativeModel("gemini-1.5-pro")
+        model = genai.GenerativeModel('gemini-1.5-pro')
         response = model.generate_content(
             prompt,
             generation_config={
@@ -81,59 +73,53 @@ Rules:
             
         return json.loads(json_str)
     except Exception as e:
-        print(f"Error parsing cover letter with Gemini: {str(e)}")
+        logger.error(f"Error parsing cover letter with Gemini: {str(e)}")
         return None
 
-def save_cover_letter_data(conn, data):
-    """Save parsed cover letter data to database"""
+def save_cover_letter_data(data):
+    """Save parsed cover letter data to database using SQLAlchemy"""
     if not data:
         return
+
+    session = Session()
+    
+    try:
+        # Clear existing data
+        session.query(CoverLetterSection).delete()
         
-    c = conn.cursor()
-    
-    # Clear existing data
-    c.execute("DELETE FROM cover_letter_sections")
-    
-    # Save greeting
-    if data.get('greeting'):
-        c.execute("INSERT INTO cover_letter_sections (section_name, content) VALUES (?, ?)",
-                 ('greeting', data['greeting']))
-    
-    # Save introduction
-    if data.get('introduction'):
-        c.execute("INSERT INTO cover_letter_sections (section_name, content) VALUES (?, ?)",
-                 ('introduction', data['introduction']))
-    
-    # Save body paragraphs
-    if data.get('body'):
-        c.execute("INSERT INTO cover_letter_sections (section_name, content) VALUES (?, ?)",
-                 ('body', '\n\n'.join(data['body'])))
-    
-    # Save closing
-    if data.get('closing'):
-        c.execute("INSERT INTO cover_letter_sections (section_name, content) VALUES (?, ?)",
-                 ('closing', data['closing']))
-    
-    # Save signature
-    if data.get('signature'):
-        c.execute("INSERT INTO cover_letter_sections (section_name, content) VALUES (?, ?)",
-                 ('signature', data['signature']))
-    
-    # Save key points
-    if data.get('key_points'):
-        c.execute("INSERT INTO cover_letter_sections (section_name, content) VALUES (?, ?)",
-                 ('key_points', '\n'.join(data['key_points'])))
-    
-    conn.commit()
+        # Save each section
+        sections_to_save = {
+            'greeting': data.get('greeting'),
+            'introduction': data.get('introduction'),
+            'body': '\n\n'.join(data.get('body', [])),
+            'closing': data.get('closing'),
+            'signature': data.get('signature'),
+            'key_points': '\n'.join(data.get('key_points', []))
+        }
+        
+        for section_name, content in sections_to_save.items():
+            if content:
+                section = CoverLetterSection(
+                    section_name=section_name,
+                    content=content
+                )
+                session.add(section)
+        
+        session.commit()
+        logger.info("Successfully saved cover letter data")
+        
+    except Exception as e:
+        logger.error(f"Error saving cover letter data: {str(e)}")
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 def main():
     pdf_path = Path(__file__).parent.parent / 'docs' / 'CoverLetter.pdf'
     if not pdf_path.exists():
-        print(f"Error: Cover Letter PDF not found at {pdf_path}")
+        logger.error(f"Error: Cover Letter PDF not found at {pdf_path}")
         return
-    
-    conn = sqlite3.connect(str(Path(__file__).parent.parent / 'career_data.db'))
-    setup_cover_letter_tables(conn)
     
     try:
         # Extract text from PDF
@@ -143,17 +129,15 @@ def main():
         parsed_data = parse_cover_letter_text(cover_letter_text)
         
         # Save the parsed data
-        save_cover_letter_data(conn, parsed_data)
+        save_cover_letter_data(parsed_data)
         
-        print(f"Successfully parsed and saved cover letter data from {pdf_path}")
+        logger.info(f"Successfully processed cover letter from {pdf_path}")
         if parsed_data:
-            print(f"Found:")
-            print(f"- {len(parsed_data.get('body', []))} body paragraphs")
-            print(f"- {len(parsed_data.get('key_points', []))} key points")
+            logger.info(f"Found:")
+            logger.info(f"- {len(parsed_data.get('body', []))} body paragraphs")
+            logger.info(f"- {len(parsed_data.get('key_points', []))} key points")
     except Exception as e:
-        print(f"Error processing cover letter: {str(e)}")
-    finally:
-        conn.close()
+        logger.error(f"Error processing cover letter: {str(e)}")
 
 if __name__ == "__main__":
     main()

@@ -1,5 +1,4 @@
 import pdfplumber
-import sqlite3
 from pathlib import Path
 import google.generativeai as genai
 from dotenv import load_dotenv
@@ -7,70 +6,12 @@ import os
 import json
 import re
 from utils import setup_logging
+from models import Session, Experience, Skill, engine
 
 logger = setup_logging('profile_scraper')
 
 load_dotenv()
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-
-class ProfileScraper:
-    def __init__(self):
-        logger.info("Initializing ProfileScraper")
-    
-    def scrape(self, url):
-        logger.info(f"Starting profile scrape for URL: {url}")
-        try:
-            # Scraping logic here
-            logger.debug(f"Successfully scraped data from {url}")
-        except Exception as e:
-            logger.error(f"Error scraping profile from {url}: {str(e)}")
-            raise
-    
-    def parse(self, content):
-        logger.debug("Parsing scraped content")
-        try:
-            # Parsing logic here
-            logger.debug("Successfully parsed profile content")
-        except Exception as e:
-            logger.error(f"Error parsing profile content: {str(e)}")
-            raise
-
-    def save(self, data):
-        logger.info("Saving scraped profile data")
-        try:
-            # Saving logic here
-            logger.info("Successfully saved profile data")
-        except Exception as e:
-            logger.error(f"Error saving profile data: {str(e)}")
-            raise
-
-def setup_database():
-    conn = sqlite3.connect('career_data.db')
-    c = conn.cursor()
-    
-    c.execute('''CREATE TABLE IF NOT EXISTS experiences (
-        id INTEGER PRIMARY KEY,
-        company TEXT,
-        title TEXT,
-        start_date TEXT,
-        end_date TEXT,
-        description TEXT
-    )''')
-    
-    c.execute('''CREATE TABLE IF NOT EXISTS skills (
-        id INTEGER PRIMARY KEY,
-        skill_name TEXT UNIQUE
-    )''')
-    
-    c.execute('''CREATE TABLE IF NOT EXISTS experience_skills (
-        experience_id INTEGER,
-        skill_id INTEGER,
-        FOREIGN KEY (experience_id) REFERENCES experiences (id),
-        FOREIGN KEY (skill_id) REFERENCES skills (id)
-    )''')
-    
-    conn.commit()
-    return conn
 
 def extract_text_from_pdf(pdf_path):
     """Extract text from PDF file"""
@@ -181,67 +122,58 @@ Rules:
         logger.error(f"Error parsing profile with Gemini: {str(e)}")
         return None
 
-def save_to_database(conn, parsed_data):
-    """Save parsed profile data to database"""
+def save_to_database(parsed_data):
+    """Save parsed profile data to database using SQLAlchemy"""
     if not parsed_data:
         logger.warning("No parsed data to save to database")
         return
         
     logger.info("Saving parsed data to database")
-    c = conn.cursor()
+    session = Session()
     
     try:
         # Clear existing data
-        c.execute("DELETE FROM experiences")
-        c.execute("DELETE FROM skills")
-        c.execute("DELETE FROM experience_skills")
-        logger.debug("Cleared existing data from database")
+        session.query(Experience).delete()
+        session.query(Skill).delete()
         
-        # Save skills first to get their IDs
+        # Save skills first
         skill_count = 0
-        skill_ids = {}
-        for skill in parsed_data.get('skills', []):
-            c.execute("INSERT OR IGNORE INTO skills (skill_name) VALUES (?)", (skill,))
-            c.execute("SELECT id FROM skills WHERE skill_name = ?", (skill,))
-            skill_ids[skill] = c.fetchone()[0]
+        skill_objects = {}
+        for skill_name in parsed_data.get('skills', []):
+            skill = Skill(skill_name=skill_name)
+            session.add(skill)
+            skill_objects[skill_name] = skill
             skill_count += 1
-        logger.info(f"Saved {skill_count} skills to database")
         
         # Save experiences and link skills
         exp_count = 0
-        for exp in parsed_data.get('experiences', []):
-            c.execute("""
-                INSERT INTO experiences (company, title, start_date, end_date, description)
-                VALUES (?, ?, ?, ?, ?)
-            """, (
-                exp.get('company', ''),
-                exp.get('title', ''),
-                exp.get('start_date', ''),
-                exp.get('end_date', 'Present'),
-                exp.get('description', '')
-            ))
+        for exp_data in parsed_data.get('experiences', []):
+            exp = Experience(
+                company=exp_data.get('company', ''),
+                title=exp_data.get('title', ''),
+                start_date=exp_data.get('start_date', ''),
+                end_date=exp_data.get('end_date', 'Present'),
+                description=exp_data.get('description', '')
+            )
             
-            exp_id = c.lastrowid
+            # Link relevant skills
+            exp_text = exp_data.get('description', '').lower()
+            for skill_name, skill in skill_objects.items():
+                if skill_name.lower() in exp_text:
+                    exp.skills.append(skill)
+            
+            session.add(exp)
             exp_count += 1
-            
-            # Link skills mentioned in the description
-            skill_links = 0
-            for skill, skill_id in skill_ids.items():
-                if skill.lower() in exp.get('description', '').lower():
-                    c.execute("""
-                        INSERT INTO experience_skills (experience_id, skill_id)
-                        VALUES (?, ?)
-                    """, (exp_id, skill_id))
-                    skill_links += 1
-            logger.debug(f"Linked {skill_links} skills to experience '{exp.get('title')}'")
         
-        logger.info(f"Saved {exp_count} experiences to database")
-        conn.commit()
-        logger.info("Successfully committed all data to database")
+        session.commit()
+        logger.info(f"Saved {skill_count} skills and {exp_count} experiences to database")
+        
     except Exception as e:
         logger.error(f"Error saving to database: {str(e)}")
-        conn.rollback()
+        session.rollback()
         raise
+    finally:
+        session.close()
 
 def main():
     pdf_path = Path(__file__).parent.parent / 'docs' / 'Profile.pdf'
@@ -251,31 +183,23 @@ def main():
         logger.error(f"Error: LinkedIn profile PDF not found at {pdf_path}")
         return
     
-    conn = setup_database()
-    logger.info("Database connection established")
-    
     try:
         # Extract text from PDF
         profile_text = extract_text_from_pdf(pdf_path)
         
-        # Use Gemini to parse into structured data
+        # Parse into structured data
         parsed_data = parse_profile_text(profile_text)
         
         # Save the parsed data
-        save_to_database(conn, parsed_data)
+        save_to_database(parsed_data)
         
         logger.info(f"Successfully completed profile scraping process")
         if parsed_data:
             logger.info(f"Summary of processed data:")
             logger.info(f"- {len(parsed_data.get('experiences', []))} experiences")
             logger.info(f"- {len(parsed_data.get('skills', []))} skills")
-            logger.info(f"- {len(parsed_data.get('certifications', []))} certifications")
-            logger.info(f"- {len(parsed_data.get('education', []))} education entries")
     except Exception as e:
         logger.error(f"Error processing profile: {str(e)}")
-    finally:
-        conn.close()
-        logger.info("Database connection closed")
 
 if __name__ == "__main__":
     main()

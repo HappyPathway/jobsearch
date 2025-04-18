@@ -1,8 +1,2 @@
-2025-04-18 00:38:24,093 - init_db - INFO - Database already exists, skipping initialization
-2025-04-18 01:05:32,876 - init_db - INFO - Database already exists, skipping initialization
-2025-04-18 01:06:11,802 - init_db - INFO - Initializing/updating database schema
-2025-04-18 01:06:11,808 - init_db - INFO - Database schema update complete
-2025-04-18 01:14:24,767 - init_db - INFO - Initializing/updating database schema
-2025-04-18 01:14:24,772 - init_db - INFO - Database schema update complete
-2025-04-18 01:30:06,890 - init_db - INFO - Initializing/updating database schema
-2025-04-18 01:30:06,892 - init_db - INFO - Database schema update complete
+2025-04-18 03:38:05,152 - init_db - INFO - Initializing/updating database schema
+2025-04-18 03:38:05,156 - init_db - INFO - Database schema update complete

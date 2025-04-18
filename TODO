@@ -3,13 +3,14 @@ Set up GitHub Action for Cronjob & PR:
 Create a GitHub Actions workflow YAML file.
 Schedule it to run at 9am and 12pm daily.
 Script the workflow to run the strategy generator and automatically submit a PR with the newest strategy file.
+
 Make Job Postings Return Configurable:
 
 Refactor the relevant script (likely job_strategy.py) to accept a parameter for the number of job postings to return.
 Ensure it only returns postings with the highest score.
 Update CLI or config file to allow user input for this parameter.
-Investigate Job Application Automation:
 
+Investigate Job Application Automation:
 
 Research APIs or tools for automating job applications (e.g., LinkedIn, Indeed, company career sites).
 Document findings and feasibility.
@@ -20,3 +21,36 @@ replace web ui with github pages, add profile pic and have system build nice loo
 regenerate job descriptions from linkedin profile and resume.
 
 create directory per job that contains cover letter, resume, and job details. Name directory after job opp.
+
+Integrate Slack Notifications for Resume Generation and Job Links:
+
+1. Set up Slack API Integration:
+   - Create a Slack App in the Slack API dashboard (api.slack.com)
+   - Set up appropriate permissions (chat:write, files:write)
+   - Generate and securely store OAuth tokens
+   - Add to environment variables (SLACK_API_TOKEN, SLACK_CHANNEL_ID)
+
+2. Create a Slack Notification Module (scripts/slack_notifier.py):
+   - Implement function to send basic text notifications
+   - Implement function to upload and share resume/cover letter PDFs
+   - Implement function to send job application summaries with links
+
+3. Integrate with Document Generation Process:
+   - Modify generate_documents.py to call Slack notification functions
+   - Send notification when new resume/cover letter is generated
+   - Include job title, company, and match score in the notification
+   - Upload generated PDFs as attachments
+
+4. Create Job Application Status Dashboard in Slack:
+   - Daily summary of pending applications
+   - Notifications for status changes
+   - Reminders for follow-ups
+
+5. Add Command-line Options:
+   - Make Slack notifications optional via command line flags
+   - Allow specifying different channels for different notification types
+
+6. Security Considerations:
+   - Store API tokens securely
+   - Ensure no sensitive personal information is shared in public channels
+   - Implement rate limiting to avoid API throttling

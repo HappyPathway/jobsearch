@@ -1,27 +1,14 @@
-2025-04-18 00:38:25,293 - profile_scraper - INFO - Starting profile scraping process
-2025-04-18 00:38:25,298 - profile_scraper - INFO - Database connection established
-2025-04-18 00:38:25,298 - profile_scraper - INFO - Extracting text from PDF: /Users/darnold/git/jobsearch/docs/Profile.pdf
-2025-04-18 00:38:25,512 - profile_scraper - INFO - Successfully extracted 7647 characters from PDF
-2025-04-18 00:38:25,513 - profile_scraper - INFO - Starting profile text parsing with Gemini
-2025-04-18 00:38:25,513 - profile_scraper - DEBUG - Sending text to Gemini for parsing
-2025-04-18 00:38:36,017 - profile_scraper - DEBUG - Received response from Gemini
-2025-04-18 00:38:36,019 - profile_scraper - INFO - Normalizing parsed data
-2025-04-18 00:38:36,019 - profile_scraper - INFO - Successfully parsed profile data: 6 experiences, 24 skills
-2025-04-18 00:38:36,019 - profile_scraper - INFO - Saving parsed data to database
-2025-04-18 00:38:36,022 - profile_scraper - DEBUG - Cleared existing data from database
-2025-04-18 00:38:36,024 - profile_scraper - INFO - Saved 24 skills to database
-2025-04-18 00:38:36,024 - profile_scraper - DEBUG - Linked 9 skills to experience 'Sr. Cloud SME'
-2025-04-18 00:38:36,024 - profile_scraper - DEBUG - Linked 7 skills to experience 'Chief Solutions Architect'
-2025-04-18 00:38:36,024 - profile_scraper - DEBUG - Linked 4 skills to experience 'Infra Architect'
-2025-04-18 00:38:36,025 - profile_scraper - DEBUG - Linked 1 skills to experience 'Sr. Solutions Engineer'
-2025-04-18 00:38:36,025 - profile_scraper - DEBUG - Linked 6 skills to experience 'Sr. Site Reliability Engineer'
-2025-04-18 00:38:36,025 - profile_scraper - DEBUG - Linked 2 skills to experience 'DevOps Engineer'
-2025-04-18 00:38:36,025 - profile_scraper - INFO - Saved 6 experiences to database
-2025-04-18 00:38:36,025 - profile_scraper - INFO - Successfully committed all data to database
-2025-04-18 00:38:36,025 - profile_scraper - INFO - Successfully completed profile scraping process
-2025-04-18 00:38:36,025 - profile_scraper - INFO - Summary of processed data:
-2025-04-18 00:38:36,025 - profile_scraper - INFO - - 6 experiences
-2025-04-18 00:38:36,025 - profile_scraper - INFO - - 24 skills
-2025-04-18 00:38:36,025 - profile_scraper - INFO - - 0 certifications
-2025-04-18 00:38:36,025 - profile_scraper - INFO - - 2 education entries
-2025-04-18 00:38:36,026 - profile_scraper - INFO - Database connection closed
+2025-04-18 03:38:05,851 - profile_scraper - INFO - Starting profile scraping process
+2025-04-18 03:38:05,851 - profile_scraper - INFO - Extracting text from PDF: /Users/darnold/git/jobsearch/docs/Profile.pdf
+2025-04-18 03:38:06,081 - profile_scraper - INFO - Successfully extracted 7647 characters from PDF
+2025-04-18 03:38:06,081 - profile_scraper - INFO - Starting profile text parsing with Gemini
+2025-04-18 03:38:06,081 - profile_scraper - DEBUG - Sending text to Gemini for parsing
+2025-04-18 03:38:16,265 - profile_scraper - DEBUG - Received response from Gemini
+2025-04-18 03:38:16,266 - profile_scraper - INFO - Normalizing parsed data
+2025-04-18 03:38:16,266 - profile_scraper - INFO - Successfully parsed profile data: 6 experiences, 24 skills
+2025-04-18 03:38:16,266 - profile_scraper - INFO - Saving parsed data to database
+2025-04-18 03:38:16,281 - profile_scraper - INFO - Saved 24 skills and 6 experiences to database
+2025-04-18 03:38:16,281 - profile_scraper - INFO - Successfully completed profile scraping process
+2025-04-18 03:38:16,281 - profile_scraper - INFO - Summary of processed data:
+2025-04-18 03:38:16,281 - profile_scraper - INFO - - 6 experiences
+2025-04-18 03:38:16,281 - profile_scraper - INFO - - 24 skills

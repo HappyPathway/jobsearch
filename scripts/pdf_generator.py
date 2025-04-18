@@ -3,6 +3,9 @@ from pathlib import Path
 import datetime
 from jinja2 import Environment, FileSystemLoader
 import os
+from sqlalchemy.orm import Session
+from models import JobApplication, JobCache
+from datetime import datetime
 
 # Set up Jinja2 environment for HTML templates
 template_dir = Path(__file__).parent / 'templates'
@@ -196,7 +199,23 @@ def setup_templates():
 </html>
         ''')
 
-def create_resume_pdf(content, output_path):
+def update_document_metadata(application_id, resume_path=None, cover_letter_path=None):
+    """Update document metadata in the database"""
+    with Session() as session:
+        application = session.query(JobApplication).get(application_id)
+        if not application:
+            return False
+            
+        if resume_path:
+            application.resume_path = resume_path
+        if cover_letter_path:
+            application.cover_letter_path = cover_letter_path
+            
+        application.last_modified = datetime.now().isoformat()
+        session.commit()
+        return True
+
+def create_resume_pdf(content, output_path, application_id=None):
     """Generate a professional PDF resume using HTML/CSS"""
     setup_templates()
     env = Environment(loader=FileSystemLoader(template_dir))
@@ -214,13 +233,21 @@ def create_resume_pdf(content, output_path):
         'additional_sections': content.get('additional_sections', {})
     }
     
-    # Render HTML
-    html_content = template.render(**data)
-    
-    # Generate PDF
-    HTML(string=html_content).write_pdf(output_path)
+    try:
+        # Render HTML
+        html_content = template.render(**data)
+        
+        # Generate PDF
+        HTML(string=html_content).write_pdf(output_path)
+        
+        if application_id:
+            update_document_metadata(application_id, resume_path=f"{output_path}.pdf")
+            
+    except Exception as e:
+        logger.error(f"Error creating resume PDF: {str(e)}")
+        raise
 
-def create_cover_letter_pdf(content, job_info, output_path):
+def create_cover_letter_pdf(content, job_info, output_path, application_id=None):
     """Generate a professional PDF cover letter using HTML/CSS"""
     setup_templates()
     env = Environment(loader=FileSystemLoader(template_dir))
@@ -238,11 +265,19 @@ def create_cover_letter_pdf(content, job_info, output_path):
         'signature': content['signature'].replace('\\n', '\n')
     }
     
-    # Render HTML
-    html_content = template.render(**data)
-    
-    # Generate PDF
-    HTML(string=html_content).write_pdf(output_path)
+    try:
+        # Render HTML
+        html_content = template.render(**data)
+        
+        # Generate PDF
+        HTML(string=html_content).write_pdf(output_path)
+        
+        if application_id:
+            update_document_metadata(application_id, cover_letter_path=f"{output_path}.pdf")
+            
+    except Exception as e:
+        logger.error(f"Error creating cover letter PDF: {str(e)}")
+        raise
 
 def setup_pdf_environment():
     """Check if WeasyPrint and its dependencies are installed"""

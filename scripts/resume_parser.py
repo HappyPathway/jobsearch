@@ -1,45 +1,16 @@
 import pdfplumber
-import re
 from pathlib import Path
-import sqlite3
 import google.generativeai as genai
 from dotenv import load_dotenv
 import os
 import json
+from utils import setup_logging
+from models import Session, ResumeSection, ResumeExperience, ResumeEducation
+
+logger = setup_logging('resume_parser')
 
 load_dotenv()
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-
-def setup_resume_tables(conn):
-    c = conn.cursor()
-    
-    # Create resume-specific tables
-    c.execute('''CREATE TABLE IF NOT EXISTS resume_sections (
-        id INTEGER PRIMARY KEY,
-        section_name TEXT UNIQUE,
-        content TEXT
-    )''')
-    
-    c.execute('''CREATE TABLE IF NOT EXISTS resume_experience (
-        id INTEGER PRIMARY KEY,
-        company TEXT,
-        title TEXT,
-        start_date TEXT,
-        end_date TEXT,
-        location TEXT,
-        description TEXT
-    )''')
-    
-    c.execute('''CREATE TABLE IF NOT EXISTS resume_education (
-        id INTEGER PRIMARY KEY,
-        institution TEXT,
-        degree TEXT,
-        field TEXT,
-        graduation_date TEXT,
-        gpa TEXT
-    )''')
-    
-    conn.commit()
 
 def extract_text_from_pdf(pdf_path):
     """Extract text from PDF file"""
@@ -48,44 +19,6 @@ def extract_text_from_pdf(pdf_path):
         for page in pdf.pages:
             text += page.extract_text() + '\n'
     return text
-
-def clean_json_structure(json_str):
-    """Clean and fix common JSON structure issues"""
-    # Remove any non-JSON text before the first {
-    while not json_str.startswith('{'):
-        json_str = json_str[1:]
-    
-    # Properly escape URLs in the text
-    json_str = re.sub(r'(https?://[^\s,"]+)', r'\\"\1\\"', json_str)
-    
-    # Fix incomplete experience entries
-    json_str = re.sub(r'}\s*}\s*]\s*$', '}]}', json_str)
-    json_str = re.sub(r'}\s*,\s*}\s*]\s*$', '}]}', json_str)
-    
-    # Ensure all string values are properly quoted
-    def fix_quotes(match):
-        key = match.group(1)
-        value = match.group(2)
-        if not value.startswith('"') and not value.endswith('"'):
-            value = f'"{value}"'
-        return f'"{key}": {value}'
-    
-    json_str = re.sub(r'"([^"]+)":\s*([^,}\]]+)', fix_quotes, json_str)
-    
-    # Balance braces and brackets
-    open_braces = json_str.count('{')
-    close_braces = json_str.count('}')
-    open_brackets = json_str.count('[')
-    close_brackets = json_str.count(']')
-    
-    # Remove trailing commas before closing braces/brackets
-    json_str = re.sub(r',(\s*[}\]])', r'\1', json_str)
-    
-    # Add missing closing braces/brackets
-    json_str += '}' * (open_braces - close_braces)
-    json_str += ']' * (open_brackets - close_brackets)
-    
-    return json_str
 
 def parse_resume_text(text):
     """Use Gemini to parse resume text into structured data"""
@@ -149,99 +82,104 @@ Rules:
                 exp['start_date'] = exp.get('start_date', '').strip()
                 exp['end_date'] = exp.get('end_date', 'Present').strip()
                 exp['location'] = exp.get('location', '').strip()
-                # Remove any line breaks in descriptions
                 exp['description'] = ' '.join(exp.get('description', '').split())
             
             return parsed
         except json.JSONDecodeError as je:
-            print(f"JSON parsing error: {str(je)}")
-            print(f"Problematic JSON string: {json_str}")
+            logger.error(f"JSON parsing error: {str(je)}")
+            logger.debug(f"Problematic JSON string: {json_str}")
             return None
             
     except Exception as e:
-        print(f"Error parsing resume with Gemini: {str(e)}")
+        logger.error(f"Error parsing resume with Gemini: {str(e)}")
         return None
 
-def save_resume_data(conn, data):
-    """Save parsed resume data to database"""
+def save_resume_data(data):
+    """Save parsed resume data to database using SQLAlchemy"""
     if not data:
         return
         
-    c = conn.cursor()
+    session = Session()
     
-    # Clear existing data
-    c.execute("DELETE FROM resume_experience")
-    c.execute("DELETE FROM resume_education")
-    c.execute("DELETE FROM resume_sections WHERE section_name IN ('summary', 'certifications')")
-    
-    # Save summary
-    if data.get('summary'):
-        c.execute("INSERT OR REPLACE INTO resume_sections (section_name, content) VALUES (?, ?)",
-                 ('summary', data['summary']))
-    
-    # Save experiences
-    for exp in data.get('experience', []):
-        c.execute("""
-            INSERT INTO resume_experience (company, title, start_date, end_date, location, description)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (
-            exp.get('company', ''),
-            exp.get('title', ''),
-            exp.get('start_date', ''),
-            exp.get('end_date', 'Present'),
-            exp.get('location', ''),
-            exp.get('description', '')
-        ))
-    
-    # Save education
-    for edu in data.get('education', []):
-        c.execute("""
-            INSERT INTO resume_education (institution, degree, field, graduation_date, gpa)
-            VALUES (?, ?, ?, ?, ?)
-        """, (
-            edu.get('institution', ''),
-            edu.get('degree', ''),
-            edu.get('field', ''),
-            edu.get('graduation_date', ''),
-            edu.get('gpa', '')
-        ))
-    
-    # Save certifications
-    if data.get('certifications'):
-        c.execute("INSERT OR REPLACE INTO resume_sections (section_name, content) VALUES (?, ?)",
-                 ('certifications', '\n'.join(data['certifications'])))
-    
-    conn.commit()
+    try:
+        # Clear existing data
+        session.query(ResumeExperience).delete()
+        session.query(ResumeEducation).delete()
+        session.query(ResumeSection).filter(ResumeSection.section_name.in_(['summary', 'certifications'])).delete()
+        
+        # Save summary
+        if data.get('summary'):
+            summary_section = ResumeSection(
+                section_name='summary',
+                content=data['summary']
+            )
+            session.add(summary_section)
+        
+        # Save experiences
+        for exp_data in data.get('experience', []):
+            exp = ResumeExperience(
+                company=exp_data.get('company', ''),
+                title=exp_data.get('title', ''),
+                start_date=exp_data.get('start_date', ''),
+                end_date=exp_data.get('end_date', 'Present'),
+                location=exp_data.get('location', ''),
+                description=exp_data.get('description', '')
+            )
+            session.add(exp)
+        
+        # Save education
+        for edu_data in data.get('education', []):
+            edu = ResumeEducation(
+                institution=edu_data.get('institution', ''),
+                degree=edu_data.get('degree', ''),
+                field=edu_data.get('field', ''),
+                graduation_date=edu_data.get('graduation_date', ''),
+                gpa=edu_data.get('gpa', '')
+            )
+            session.add(edu)
+        
+        # Save certifications
+        if data.get('certifications'):
+            cert_section = ResumeSection(
+                section_name='certifications',
+                content='\n'.join(data['certifications'])
+            )
+            session.add(cert_section)
+        
+        session.commit()
+        logger.info("Successfully saved resume data to database")
+        
+    except Exception as e:
+        logger.error(f"Error saving resume data: {str(e)}")
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 def main():
     pdf_path = Path(__file__).parent.parent / 'docs' / 'Resume.pdf'
     if not pdf_path.exists():
-        print(f"Error: Resume PDF not found at {pdf_path}")
+        logger.error(f"Error: Resume PDF not found at {pdf_path}")
         return
-    
-    conn = sqlite3.connect(str(Path(__file__).parent.parent / 'career_data.db'))
-    setup_resume_tables(conn)
     
     try:
         # Extract text from PDF
         resume_text = extract_text_from_pdf(pdf_path)
         
-        # Use Gemini to parse the text into structured data
+        # Parse into structured data
         parsed_data = parse_resume_text(resume_text)
         
         # Save the parsed data
-        save_resume_data(conn, parsed_data)
+        save_resume_data(parsed_data)
         
-        print(f"Successfully parsed and saved resume data from {pdf_path}")
+        logger.info(f"Successfully processed resume from {pdf_path}")
         if parsed_data:
-            print(f"Found:")
-            print(f"- {len(parsed_data.get('experience', []))} experiences")
-            print(f"- {len(parsed_data.get('education', []))} education entries")
-            print(f"- {len(parsed_data.get('certifications', []))} certifications")
+            logger.info(f"Found:")
+            logger.info(f"- {len(parsed_data.get('experience', []))} experiences")
+            logger.info(f"- {len(parsed_data.get('education', []))} education entries")
+            logger.info(f"- {len(parsed_data.get('certifications', []))} certifications")
     except Exception as e:
-        print(f"Error processing resume: {str(e)}")
-    finally:
-        conn.close()
+        logger.error(f"Error processing resume: {str(e)}")
 
 if __name__ == "__main__":
     main()

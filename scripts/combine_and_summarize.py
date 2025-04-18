@@ -1,10 +1,10 @@
-import sqlite3
-import os
-import json
 import logging
 from datetime import datetime
 from dotenv import load_dotenv
+import os
+import json
 import google.generativeai as genai
+from models import Session, Experience, Skill, TargetRole
 
 load_dotenv()
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
@@ -13,16 +13,21 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 def fetch_data():
-    conn = sqlite3.connect('career_data.db')
-    c = conn.cursor()
-    c.execute("SELECT company, title, start_date, end_date, description FROM experiences")
-    linkedin_exp = c.fetchall()
-    c.execute("SELECT company, title, start_date, end_date, location, description FROM resume_experience")
-    resume_exp = c.fetchall()
-    c.execute("SELECT skill_name FROM skills")
-    linkedin_skills = [row[0] for row in c.fetchall()]
-    conn.close()
-    return linkedin_exp, resume_exp, linkedin_skills
+    """Get experiences and skills from database using SQLAlchemy"""
+    session = Session()
+    try:
+        linkedin_exp = session.query(Experience).order_by(Experience.start_date.desc()).all()
+        linkedin_exp = [
+            (exp.company, exp.title, exp.start_date, exp.end_date, exp.description)
+            for exp in linkedin_exp
+        ]
+        
+        skills = session.query(Skill).all()
+        skill_names = [skill.skill_name for skill in skills]
+        
+        return linkedin_exp, skill_names
+    finally:
+        session.close()
 
 def format_experiences(exps):
     out = []
@@ -31,48 +36,38 @@ def format_experiences(exps):
         out.append(f"- **{e[1]}** at **{e[0]}** ({e[2]} - {e[3]}): {e[4]}")
     return "\n".join(out)
 
-def format_resume_experiences(exps):
-    out = []
-    for e in exps:
-        # e: (company, title, start_date, end_date, location, description)
-        loc = f", {e[4]}" if e[4] else ""
-        out.append(f"- **{e[1]}** at **{e[0]}** ({e[2]} - {e[3]}{loc}): {e[5]}")
-    return "\n".join(out)
-
 def generate_target_roles(experiences, skills):
     """Use Gemini to generate and score target roles based on profile data"""
-    logger.info("Generating target roles from profile data")
-    
-    prompt = f"""As a career strategist, analyze this professional's background and generate a prioritized list of target roles.
-Focus on roles that match their experience level and skill set.
+    prompt = f"""You are an expert career advisor with deep knowledge of tech industry roles.
+Analyze this professional's background and generate appropriate target roles.
+Return ONLY a JSON array with no additional text or formatting.
 
 Experience:
 {format_experiences(experiences)}
 
-Skills:
-{', '.join(skills)}
+Skills: {', '.join(skills)}
 
-Return a JSON array of role objects with this structure:
+Return this format:
 [
     {{
-        "role_name": "exact job title to search for",
+        "role_name": "exact job title",
         "priority": 1,
-        "match_score": 95.5,
-        "reasoning": "brief explanation of why this role is a good fit"
-    }}
+        "match_score": 95.0,
+        "reasoning": "detailed explanation of fit",
+        "source": "derived from current experience"
+    }},
+    // ... more roles ...
 ]
 
-Rules:
-1. Return 5-8 roles
-2. Priority should be 1-8 (1 is highest)
-3. Match score should be 0-100
+Notes:
+1. priority should be 1-5 (1 is highest)
+2. match_score should be 0-100
+3. Be specific with role names
 4. Focus on senior/principal level roles
-5. Include both exact current role matches and logical next-step roles
-6. Consider industry trends and career progression
-7. Roles should be specific enough to use as search terms"""
+5. Consider cloud, DevOps, and platform engineering roles"""
 
     try:
-        model = genai.GenerativeModel("gemini-1.5-pro")
+        model = genai.GenerativeModel('gemini-1.5-pro')
         response = model.generate_content(
             prompt,
             generation_config={
@@ -82,95 +77,70 @@ Rules:
         )
         
         json_str = response.text.strip()
-        while not json_str.startswith('['):
-            json_str = json_str[1:]
-        while not json_str.endswith(']'):
-            json_str = json_str[:-1]
-            
+        json_str = json_str.replace('```json', '').replace('```', '')
+        
+        # Try to extract just the JSON array
+        match = re.search(r'(\[[\s\S]*\])', json_str)
+        if match:
+            json_str = match.group(1)
+        
         roles = json.loads(json_str)
+        
+        # Validate and normalize
+        for role in roles:
+            role['priority'] = max(1, min(5, int(role.get('priority', 5))))
+            role['match_score'] = max(0, min(100, float(role.get('match_score', 0))))
+            role['role_name'] = str(role.get('role_name', '')).strip()
+            role['reasoning'] = str(role.get('reasoning', '')).strip()
+            role['source'] = str(role.get('source', 'AI generated')).strip()
+        
         return roles
     except Exception as e:
         logger.error(f"Error generating target roles: {str(e)}")
         return []
 
-def update_target_roles(conn, roles):
+def update_target_roles(roles):
     """Update target roles in the database"""
-    logger.info("Updating target roles in database")
-    c = conn.cursor()
-    today = datetime.now().strftime("%Y-%m-%d")
-    
+    if not roles:
+        return
+        
+    session = Session()
     try:
         # Clear existing roles
-        c.execute("DELETE FROM target_roles")
+        session.query(TargetRole).delete()
         
-        # Insert new roles
+        # Add new roles
         for role in roles:
-            c.execute("""
-                INSERT INTO target_roles 
-                    (role_name, priority, match_score, reasoning, source, last_updated)
-                VALUES (?, ?, ?, ?, ?, ?)
-            """, (
-                role['role_name'],
-                role['priority'],
-                role['match_score'],
-                role['reasoning'],
-                'profile_analysis',
-                today
-            ))
+            target_role = TargetRole(
+                role_name=role['role_name'],
+                priority=role['priority'],
+                match_score=role['match_score'],
+                reasoning=role['reasoning'],
+                source=role['source'],
+                last_updated=datetime.now().strftime("%Y-%m-%d")
+            )
+            session.add(target_role)
         
-        conn.commit()
+        session.commit()
         logger.info(f"Successfully updated {len(roles)} target roles")
     except Exception as e:
         logger.error(f"Error updating target roles: {str(e)}")
-        conn.rollback()
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 def main():
-    conn = sqlite3.connect('career_data.db')
     try:
-        linkedin_exp, resume_exp, linkedin_skills = fetch_data()
-        
-        # Generate combined profile
-        prompt = f"""
-You are an expert career coach and resume writer. Given the following LinkedIn experiences, resume experiences, and LinkedIn skills, intelligently merge and deduplicate the experiences, summarize the candidate's background, and generate a recruiter-friendly professional summary. Highlight strengths, key skills, and suggest what types of jobs would be a great fit.
-
-LinkedIn Experiences:
-{format_experiences(linkedin_exp)}
-
-Resume Experiences:
-{format_resume_experiences(resume_exp)}
-
-LinkedIn Skills:
-{', '.join(linkedin_skills)}
-
-Please output:
-1. A unified, deduplicated list of experiences (in bullet points)
-2. A summary of top skills
-3. A professional summary paragraph suitable for a recruiter or LinkedIn "About" section
-4. 3-5 suggested job titles that would be a strong fit
-"""
-
-        try:
-            model = genai.GenerativeModel("gemini-1.5-pro")
-            response = model.generate_content(
-                prompt,
-                generation_config={
-                    "max_output_tokens": 1000,
-                    "temperature": 0.5,
-                }
-            )
-            output = response.text
-            
-            # Generate and update target roles
-            roles = generate_target_roles(linkedin_exp, linkedin_skills)
-            update_target_roles(conn, roles)
-            
-            with open("combined_profile.md", "w") as f:
-                f.write(output)
-            logger.info("Combined profile written to combined_profile.md")
-        except Exception as e:
-            logger.error(f"Error generating combined profile: {str(e)}")
-    finally:
-        conn.close()
+        logger.info("Generating target roles from profile data")
+        experiences, skills = fetch_data()
+        roles = generate_target_roles(experiences, skills)
+        logger.info("Updating target roles in database")
+        update_target_roles(roles)
+        logger.info("Successfully updated target roles")
+    except Exception as e:
+        logger.error(f"Error in main process: {str(e)}")
+        raise
 
 if __name__ == "__main__":
     main()
