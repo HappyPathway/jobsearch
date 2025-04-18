@@ -2,7 +2,7 @@ from google.cloud import storage
 from pathlib import Path
 import os
 import json
-from utils import setup_logging
+from logging_utils import setup_logging
 
 logger = setup_logging('gcs_utils')
 
