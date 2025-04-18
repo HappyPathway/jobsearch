@@ -23,9 +23,6 @@ concurrency:
 
 jobs:
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     
     steps:
@@ -41,13 +38,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           
-      - name: Restore database cache
-        uses: actions/cache@v3
-        with:
-          path: career_data.db
-          key: ${{ runner.os }}-career-db-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-career-db-
 
       - name: Generate GitHub Pages
         env:
@@ -65,3 +55,4 @@ jobs:
         uses: actions/deploy-pages@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+

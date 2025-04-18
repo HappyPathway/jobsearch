@@ -9,6 +9,11 @@ on:
       - 'docs/CoverLetter.pdf'
       - 'docs/profile.json'
 
+# Sets permissions to allow PR creation
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   update-profile:
     runs-on: ubuntu-latest
