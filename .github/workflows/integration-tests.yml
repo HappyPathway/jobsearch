@@ -25,6 +25,8 @@ jobs:
           pip install pytest
 
       - name: Run integration tests
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           source venv/bin/activate
           make test-integration
