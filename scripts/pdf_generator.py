@@ -1,11 +1,14 @@
 from weasyprint import HTML, CSS
 from pathlib import Path
-import datetime
+import datetime as dt
 from jinja2 import Environment, FileSystemLoader
 import os
 from sqlalchemy.orm import Session
 from models import JobApplication, JobCache
 from datetime import datetime
+from utils import setup_logging
+
+logger = setup_logging('pdf_generator')
 
 # Set up Jinja2 environment for HTML templates
 template_dir = Path(__file__).parent / 'templates'
@@ -255,7 +258,7 @@ def create_cover_letter_pdf(content, job_info, output_path, application_id=None)
     
     # Prepare template data
     data = {
-        'date': datetime.date.today().strftime("%B %d, %Y"),
+        'date': dt.date.today().strftime("%B %d, %Y"),
         'company': job_info['company'],
         'title': job_info['title'],
         'greeting': content['greeting'],
