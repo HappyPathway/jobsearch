@@ -4,7 +4,7 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 import os
 import json
-from utils import setup_logging
+from logging_utils import setup_logging
 from models import CoverLetterSection, get_session
 
 logger = setup_logging('cover_letter_parser')

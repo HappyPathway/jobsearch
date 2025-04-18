@@ -4,7 +4,7 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 import os
 import json
-from utils import setup_logging
+from logging_utils import setup_logging
 from models import Session, ResumeSection, ResumeExperience, ResumeEducation
 
 logger = setup_logging('resume_parser')

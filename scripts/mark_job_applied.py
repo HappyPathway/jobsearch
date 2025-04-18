@@ -1,7 +1,9 @@
+import os
+import sys
 import argparse
 from datetime import datetime
 from pathlib import Path
-from utils import setup_logging
+from logging_utils import setup_logging
 from models import Session, JobCache, JobApplication
 
 logger = setup_logging('mark_job_applied')

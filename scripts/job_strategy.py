@@ -1,19 +1,18 @@
-import google.generativeai as genai
-from dotenv import load_dotenv
 import os
 import json
+from pathlib import Path
+from datetime import datetime
+import google.generativeai as genai
+from dotenv import load_dotenv
+from models import get_session, Experience, Skill, TargetRole, JobCache
+from logging_utils import setup_logging
+from utils import session_scope
 import re
-from datetime import datetime, timedelta
 import requests
 from bs4 import BeautifulSoup
 import time
 import random
-from utils import setup_logging, session_scope
 import argparse
-from models import (
-    Experience, Skill, JobCache, JobApplication,
-    TargetRole, get_session
-)
 
 logger = setup_logging('job_strategy')
 

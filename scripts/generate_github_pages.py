@@ -3,7 +3,7 @@ from pathlib import Path
 import shutil
 import json
 from jinja2 import Environment, FileSystemLoader
-from utils import setup_logging
+from logging_utils import setup_logging
 from models import Experience, Skill, ResumeSection, TargetRole, get_session
 
 logger = setup_logging('github_pages')

@@ -5,7 +5,7 @@ from pathlib import Path
 import google.generativeai as genai
 from dotenv import load_dotenv
 import os
-from utils import setup_logging
+from logging_utils import setup_logging
 
 logger = setup_logging('profile_parser')
 

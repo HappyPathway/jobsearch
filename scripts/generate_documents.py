@@ -5,7 +5,7 @@ import os
 import json
 import re
 from datetime import datetime
-from utils import setup_logging, session_scope
+from utils import session_scope
 from models import (
     Experience, Skill, ResumeSection, ResumeExperience,
     ResumeEducation, CoverLetterSection, JobApplication,
@@ -13,6 +13,7 @@ from models import (
 )
 from slugify import slugify
 from pdf_generator import create_resume_pdf, create_cover_letter_pdf, setup_pdf_environment
+from logging_utils import setup_logging
 
 logger = setup_logging('generate_documents')
 load_dotenv()

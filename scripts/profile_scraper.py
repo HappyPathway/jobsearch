@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import os
 import json
 import re
-from utils import setup_logging
+from logging_utils import setup_logging
 from models import Experience, Skill, get_session
 
 logger = setup_logging('profile_scraper')
