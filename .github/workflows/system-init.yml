@@ -1,0 +1,76 @@
+name: System Initialization
+
+on:
+  workflow_dispatch:  # Manual trigger only
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  initialize:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Clean existing database and cache
+        run: |
+          rm -f career_data.db*
+          find . -type f -name '*.pyc' -delete
+          find . -type d -name '__pycache__' -delete
+
+      - name: Initialize fresh database
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python scripts/init_db.py
+
+      - name: Process profile data
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python scripts/profile_scraper.py
+          python scripts/resume_parser.py
+          python scripts/cover_letter_parser.py
+          python scripts/combine_and_summarize.py
+
+      - name: Generate initial job strategy
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python scripts/job_strategy.py
+
+      - name: Generate GitHub Pages
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python scripts/generate_github_pages.py
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: 'feat: Initialize system with fresh data'
+          title: 'Initialize System'
+          body: |
+            System initialization completed:
+            
+            - Created fresh database
+            - Processed profile, resume, and cover letter
+            - Generated initial job strategy
+            - Set up GitHub Pages
+            
+            Please review the changes and merge to complete initialization.
+          branch: system-init
+          delete-branch: true
+          base: main
