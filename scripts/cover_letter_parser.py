@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import os
 import json
 from utils import setup_logging
-from models import Session, CoverLetterSection
+from models import CoverLetterSection, get_session
 
 logger = setup_logging('cover_letter_parser')
 
@@ -81,39 +81,34 @@ def save_cover_letter_data(data):
     if not data:
         return
 
-    session = Session()
-    
     try:
-        # Clear existing data
-        session.query(CoverLetterSection).delete()
-        
-        # Save each section
-        sections_to_save = {
-            'greeting': data.get('greeting'),
-            'introduction': data.get('introduction'),
-            'body': '\n\n'.join(data.get('body', [])),
-            'closing': data.get('closing'),
-            'signature': data.get('signature'),
-            'key_points': '\n'.join(data.get('key_points', []))
-        }
-        
-        for section_name, content in sections_to_save.items():
-            if content:
-                section = CoverLetterSection(
-                    section_name=section_name,
-                    content=content
-                )
-                session.add(section)
-        
-        session.commit()
-        logger.info("Successfully saved cover letter data")
-        
+        with get_session() as session:
+            # Clear existing data
+            session.query(CoverLetterSection).delete()
+            
+            # Save each section
+            sections_to_save = {
+                'greeting': data.get('greeting'),
+                'introduction': data.get('introduction'),
+                'body': '\n\n'.join(data.get('body', [])),
+                'closing': data.get('closing'),
+                'signature': data.get('signature'),
+                'key_points': '\n'.join(data.get('key_points', []))
+            }
+            
+            for section_name, content in sections_to_save.items():
+                if content:
+                    section = CoverLetterSection(
+                        section_name=section_name,
+                        content=content
+                    )
+                    session.add(section)
+            
+            logger.info("Successfully saved cover letter data")
+            
     except Exception as e:
         logger.error(f"Error saving cover letter data: {str(e)}")
-        session.rollback()
         raise
-    finally:
-        session.close()
 
 def main():
     pdf_path = Path(__file__).parent.parent / 'docs' / 'CoverLetter.pdf'
