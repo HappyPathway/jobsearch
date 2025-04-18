@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import os
 import json
 import google.generativeai as genai
-from models import Session, Experience, Skill, TargetRole
+from models import Experience, Skill, TargetRole, get_session
 
 load_dotenv()
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
@@ -15,8 +15,7 @@ logging.basicConfig(level=logging.INFO)
 
 def fetch_data():
     """Get experiences and skills from database using SQLAlchemy"""
-    session = Session()
-    try:
+    with get_session() as session:
         linkedin_exp = session.query(Experience).order_by(Experience.start_date.desc()).all()
         linkedin_exp = [
             (exp.company, exp.title, exp.start_date, exp.end_date, exp.description)
@@ -27,8 +26,6 @@ def fetch_data():
         skill_names = [skill.skill_name for skill in skills]
         
         return linkedin_exp, skill_names
-    finally:
-        session.close()
 
 def format_experiences(exps):
     out = []
@@ -105,8 +102,7 @@ def update_target_roles(roles):
     if not roles:
         return
         
-    session = Session()
-    try:
+    with get_session() as session:
         # Clear existing roles
         session.query(TargetRole).delete()
         
@@ -122,14 +118,7 @@ def update_target_roles(roles):
             )
             session.add(target_role)
         
-        session.commit()
         logger.info(f"Successfully updated {len(roles)} target roles")
-    except Exception as e:
-        logger.error(f"Error updating target roles: {str(e)}")
-        session.rollback()
-        raise
-    finally:
-        session.close()
 
 def main():
     try:
