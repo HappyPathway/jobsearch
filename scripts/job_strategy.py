@@ -11,8 +11,8 @@ import random
 from utils import setup_logging
 import argparse
 from models import (
-    Session, Experience, Skill, JobCache, JobApplication,
-    TargetRole
+    Experience, Skill, JobCache, JobApplication,
+    TargetRole, get_session
 )
 
 logger = setup_logging('job_strategy')
@@ -35,45 +35,47 @@ def normalize_linkedin_url(url):
 def get_cached_jobs():
     """Get all cached jobs from the database"""
     logger.info("Retrieving cached jobs")
-    session = Session()
     try:
-        jobs = session.query(JobCache).all()
-        cached_jobs = {
-            job.url: {
-                'title': job.title,
-                'company': job.company,
-                'description': job.description,
-                'first_seen_date': job.first_seen_date,
-                'last_seen_date': job.last_seen_date,
-                'match_score': job.match_score,
-                'application_priority': job.application_priority,
-                'key_requirements': json.loads(job.key_requirements) if job.key_requirements else [],
-                'culture_indicators': json.loads(job.culture_indicators) if job.culture_indicators else [],
-                'career_growth_potential': job.career_growth_potential,
-                'search_query': job.search_query
-            } for job in jobs
-        }
-        logger.info(f"Retrieved {len(cached_jobs)} cached jobs")
-        return cached_jobs
-    finally:
-        session.close()
+        with get_session() as session:
+            jobs = session.query(JobCache).all()
+            cached_jobs = {
+                job.url: {
+                    'title': job.title,
+                    'company': job.company,
+                    'description': job.description,
+                    'first_seen_date': job.first_seen_date,
+                    'last_seen_date': job.last_seen_date,
+                    'match_score': job.match_score,
+                    'application_priority': job.application_priority,
+                    'key_requirements': json.loads(job.key_requirements) if job.key_requirements else [],
+                    'culture_indicators': json.loads(job.culture_indicators) if job.culture_indicators else [],
+                    'career_growth_potential': job.career_growth_potential,
+                    'search_query': job.search_query
+                } for job in jobs
+            }
+            logger.info(f"Retrieved {len(cached_jobs)} cached jobs")
+            return cached_jobs
+    except Exception as e:
+        logger.error(f"Error retrieving cached jobs: {str(e)}")
+        return {}
 
 def get_applied_jobs():
     """Get all jobs that have been applied to"""
     logger.info("Retrieving applied jobs")
-    session = Session()
     try:
-        applications = session.query(JobApplication).join(JobCache).all()
-        applied_jobs = {
-            app.job.url: {
-                'application_date': app.application_date,
-                'status': app.status
-            } for app in applications
-        }
-        logger.info(f"Retrieved {len(applied_jobs)} applied jobs")
-        return applied_jobs
-    finally:
-        session.close()
+        with get_session() as session:
+            applications = session.query(JobApplication).join(JobCache).all()
+            applied_jobs = {
+                app.job.url: {
+                    'application_date': app.application_date,
+                    'status': app.status
+                } for app in applications
+            }
+            logger.info(f"Retrieved {len(applied_jobs)} applied jobs")
+            return applied_jobs
+    except Exception as e:
+        logger.error(f"Error retrieving applied jobs: {str(e)}")
+        return {}
 
 def collect_job_links(query, location="United States", limit=5):
     """Just collect job links and basic info without analysis"""
@@ -138,53 +140,50 @@ def collect_job_links(query, location="United States", limit=5):
 def update_job_cache(jobs, analyzed_jobs):
     """Update the job cache with new or updated job information"""
     logger.info("Updating job cache")
-    session = Session()
     updated_count = 0
     new_count = 0
     
     try:
-        for job in jobs:
-            url = job['url']
-            analysis = analyzed_jobs.get(url, {})
+        with get_session() as session:
+            for job in jobs:
+                url = job['url']
+                analysis = analyzed_jobs.get(url, {})
+                
+                # Check if job exists
+                cached_job = session.query(JobCache).filter_by(url=url).first()
+                
+                if cached_job:
+                    # Update existing job
+                    cached_job.last_seen_date = datetime.now().strftime("%Y-%m-%d")
+                    cached_job.match_score = analysis.get('match_score', 0)
+                    cached_job.application_priority = analysis.get('application_priority', 'low')
+                    cached_job.key_requirements = json.dumps(analysis.get('key_requirements', []))
+                    cached_job.culture_indicators = json.dumps(analysis.get('culture_indicators', []))
+                    cached_job.career_growth_potential = analysis.get('career_growth_potential', 'unknown')
+                    updated_count += 1
+                else:
+                    # Insert new job
+                    new_job = JobCache(
+                        url=url,
+                        title=job['title'],
+                        company=job['company'],
+                        description=job['description'],
+                        first_seen_date=datetime.now().strftime("%Y-%m-%d"),
+                        last_seen_date=datetime.now().strftime("%Y-%m-%d"),
+                        match_score=analysis.get('match_score', 0),
+                        application_priority=analysis.get('application_priority', 'low'),
+                        key_requirements=json.dumps(analysis.get('key_requirements', [])),
+                        culture_indicators=json.dumps(analysis.get('culture_indicators', [])),
+                        career_growth_potential=analysis.get('career_growth_potential', 'unknown'),
+                        search_query=job['search_query']
+                    )
+                    session.add(new_job)
+                    new_count += 1
             
-            # Check if job exists
-            cached_job = session.query(JobCache).filter_by(url=url).first()
-            
-            if cached_job:
-                # Update existing job
-                cached_job.last_seen_date = datetime.now().strftime("%Y-%m-%d")
-                cached_job.match_score = analysis.get('match_score', 0)
-                cached_job.application_priority = analysis.get('application_priority', 'low')
-                cached_job.key_requirements = json.dumps(analysis.get('key_requirements', []))
-                cached_job.culture_indicators = json.dumps(analysis.get('culture_indicators', []))
-                cached_job.career_growth_potential = analysis.get('career_growth_potential', 'unknown')
-                updated_count += 1
-            else:
-                # Insert new job
-                new_job = JobCache(
-                    url=url,
-                    title=job['title'],
-                    company=job['company'],
-                    description=job['description'],
-                    first_seen_date=datetime.now().strftime("%Y-%m-%d"),
-                    last_seen_date=datetime.now().strftime("%Y-%m-%d"),
-                    match_score=analysis.get('match_score', 0),
-                    application_priority=analysis.get('application_priority', 'low'),
-                    key_requirements=json.dumps(analysis.get('key_requirements', [])),
-                    culture_indicators=json.dumps(analysis.get('culture_indicators', [])),
-                    career_growth_potential=analysis.get('career_growth_potential', 'unknown'),
-                    search_query=job['search_query']
-                )
-                session.add(new_job)
-                new_count += 1
-        
-        session.commit()
-        logger.info(f"Updated {updated_count} jobs and added {new_count} new jobs to cache")
+            logger.info(f"Updated {updated_count} jobs and added {new_count} new jobs to cache")
     except Exception as e:
         logger.error(f"Error updating job cache: {str(e)}")
-        session.rollback()
-    finally:
-        session.close()
+        raise
 
 def search_linkedin_jobs(query, location="United States", limit=2):
     """Search LinkedIn jobs, using cache for known jobs"""
@@ -397,73 +396,72 @@ def generate_documents_for_jobs(job_searches):
 def get_profile_data():
     """Retrieve profile data from the database"""
     logger.info("Retrieving profile data from database")
-    session = Session()
     try:
-        # Get experiences
-        experiences = session.query(Experience).order_by(
-            Experience.end_date.desc(),
-            Experience.start_date.desc()
-        ).all()
-        
-        exp_list = [
-            {
-                "company": exp.company,
-                "title": exp.title,
-                "start_date": exp.start_date,
-                "end_date": exp.end_date,
-                "description": exp.description
-            }
-            for exp in experiences
-        ]
-        
-        # Get skills
-        skills = [skill.skill_name for skill in session.query(Skill).all()]
-        
-        logger.info(f"Retrieved {len(exp_list)} experiences and {len(skills)} skills")
-        return exp_list, skills
+        with get_session() as session:
+            # Get experiences
+            experiences = session.query(Experience).order_by(
+                Experience.end_date.desc(),
+                Experience.start_date.desc()
+            ).all()
+            
+            exp_list = [
+                {
+                    "company": exp.company,
+                    "title": exp.title,
+                    "start_date": exp.start_date,
+                    "end_date": exp.end_date,
+                    "description": exp.description
+                }
+                for exp in experiences
+            ]
+            
+            # Get skills
+            skills = [skill.skill_name for skill in session.query(Skill).all()]
+            
+            logger.info(f"Retrieved {len(exp_list)} experiences and {len(skills)} skills")
+            return exp_list, skills
     except Exception as e:
         logger.error(f"Error retrieving profile data: {str(e)}")
         raise
-    finally:
-        session.close()
 
 def get_target_roles():
     """Get target roles from database"""
     logger.info("Retrieving target roles from database")
-    session = Session()
     try:
-        roles = session.query(TargetRole).order_by(TargetRole.priority).all()
-        role_list = [
-            {
-                "name": role.role_name,
-                "priority": role.priority,
-                "match_score": role.match_score,
-                "reasoning": role.reasoning
-            }
-            for role in roles
-        ]
-        
-        if not role_list:
-            logger.warning("No target roles found in database, using defaults")
+        with get_session() as session:
+            roles = session.query(TargetRole).order_by(TargetRole.priority).all()
             role_list = [
                 {
-                    "name": "Cloud Architect",
-                    "priority": 1,
-                    "match_score": 90,
-                    "reasoning": "Default role - matches current experience"
-                },
-                {
-                    "name": "Principal Cloud Engineer",
-                    "priority": 2,
-                    "match_score": 85,
-                    "reasoning": "Default role - natural progression"
+                    "name": role.role_name,
+                    "priority": role.priority,
+                    "match_score": role.match_score,
+                    "reasoning": role.reasoning
                 }
+                for role in roles
             ]
-        
-        logger.info(f"Retrieved {len(role_list)} target roles")
-        return role_list
-    finally:
-        session.close()
+            
+            if not role_list:
+                logger.warning("No target roles found in database, using defaults")
+                role_list = [
+                    {
+                        "name": "Cloud Architect",
+                        "priority": 1,
+                        "match_score": 90,
+                        "reasoning": "Default role - matches current experience"
+                    },
+                    {
+                        "name": "Principal Cloud Engineer",
+                        "priority": 2,
+                        "match_score": 85,
+                        "reasoning": "Default role - natural progression"
+                    }
+                ]
+            
+            logger.info(f"Retrieved {len(role_list)} target roles")
+            return role_list
+    except Exception as e:
+        logger.error(f"Error retrieving target roles: {str(e)}")
+        raise
 
 def generate_daily_strategy(experiences, skills, job_limit=2):
     """Use Gemini to generate a personalized job search strategy"""
