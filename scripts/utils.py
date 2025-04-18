@@ -4,7 +4,6 @@ from contextlib import contextmanager
 from sqlalchemy.orm import Session
 from pathlib import Path
 from models import get_session
-from logging_utils import setup_logging
 
 # Use the GCS-aware session management
 def get_session():

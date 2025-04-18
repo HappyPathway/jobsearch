@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship, sessionmaker, Session
 from pathlib import Path
 from contextlib import contextmanager
 from gcs_utils import gcs
-from utils import setup_logging
+from logging_utils import setup_logging
 
 logger = setup_logging('models')
 

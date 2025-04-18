@@ -2,7 +2,7 @@
 from google.cloud import storage
 from google.cloud.exceptions import Conflict
 import os
-from utils import setup_logging
+from logging_utils import setup_logging
 from pathlib import Path
 import json
 import time
