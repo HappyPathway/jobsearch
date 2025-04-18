@@ -6,7 +6,7 @@ import os
 import json
 import re
 from utils import setup_logging
-from models import Session, Experience, Skill, engine
+from models import Experience, Skill, get_session
 
 logger = setup_logging('profile_scraper')
 
@@ -129,51 +129,47 @@ def save_to_database(parsed_data):
         return
         
     logger.info("Saving parsed data to database")
-    session = Session()
     
     try:
-        # Clear existing data
-        session.query(Experience).delete()
-        session.query(Skill).delete()
-        
-        # Save skills first
-        skill_count = 0
-        skill_objects = {}
-        for skill_name in parsed_data.get('skills', []):
-            skill = Skill(skill_name=skill_name)
-            session.add(skill)
-            skill_objects[skill_name] = skill
-            skill_count += 1
-        
-        # Save experiences and link skills
-        exp_count = 0
-        for exp_data in parsed_data.get('experiences', []):
-            exp = Experience(
-                company=exp_data.get('company', ''),
-                title=exp_data.get('title', ''),
-                start_date=exp_data.get('start_date', ''),
-                end_date=exp_data.get('end_date', 'Present'),
-                description=exp_data.get('description', '')
-            )
+        with get_session() as session:
+            # Clear existing data
+            session.query(Experience).delete()
+            session.query(Skill).delete()
             
-            # Link relevant skills
-            exp_text = exp_data.get('description', '').lower()
-            for skill_name, skill in skill_objects.items():
-                if skill_name.lower() in exp_text:
-                    exp.skills.append(skill)
+            # Save skills first
+            skill_count = 0
+            skill_objects = {}
+            for skill_name in parsed_data.get('skills', []):
+                skill = Skill(skill_name=skill_name)
+                session.add(skill)
+                skill_objects[skill_name] = skill
+                skill_count += 1
             
-            session.add(exp)
-            exp_count += 1
-        
-        session.commit()
-        logger.info(f"Saved {skill_count} skills and {exp_count} experiences to database")
-        
+            # Save experiences and link skills
+            exp_count = 0
+            for exp_data in parsed_data.get('experiences', []):
+                exp = Experience(
+                    company=exp_data.get('company', ''),
+                    title=exp_data.get('title', ''),
+                    start_date=exp_data.get('start_date', ''),
+                    end_date=exp_data.get('end_date', 'Present'),
+                    description=exp_data.get('description', '')
+                )
+                
+                # Link relevant skills
+                exp_text = exp_data.get('description', '').lower()
+                for skill_name, skill in skill_objects.items():
+                    if skill_name.lower() in exp_text:
+                        exp.skills.append(skill)
+                
+                session.add(exp)
+                exp_count += 1
+            
+            logger.info(f"Saved {skill_count} skills and {exp_count} experiences to database")
+            
     except Exception as e:
         logger.error(f"Error saving to database: {str(e)}")
-        session.rollback()
         raise
-    finally:
-        session.close()
 
 def main():
     pdf_path = Path(__file__).parent.parent / 'docs' / 'Profile.pdf'
