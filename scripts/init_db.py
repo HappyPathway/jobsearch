@@ -1,5 +1,5 @@
 from pathlib import Path
-from utils import setup_logging
+from logging_utils import setup_logging
 from models import Base, engine, get_engine
 from gcs_utils import gcs
 
