@@ -1,4 +1,4 @@
-.PHONY: venv install clean init-db scrape-profile combine-summary parse-resume parse-cover-letter run help all generate-github-pages mark-applied test-integration
+.PHONY: venv install clean init-db scrape-profile combine-summary parse-resume parse-cover-letter run help all generate-github-pages mark-applied test-integration gh-strategy-cleanup gh-generate-docs gh-pages gh-test gh-init gh-job-strategy gh-profile-update
 
 VENV_NAME=venv
 PYTHON=$(VENV_NAME)/bin/python
@@ -19,6 +19,15 @@ help:
 	@echo "  make run           - Run full application (scrape data and start UI)"
 	@echo "  make all           - Collect all data (profile, resume, summary)"
 	@echo "  make test-integration - Run integration tests"
+	@echo ""
+	@echo "GitHub Actions workflow commands:"
+	@echo "  make gh-strategy-cleanup  - Run strategy cleanup workflow"
+	@echo "  make gh-generate-docs    - Run document generation workflow"
+	@echo "  make gh-pages           - Run GitHub Pages workflow"
+	@echo "  make gh-test            - Run integration tests workflow"
+	@echo "  make gh-init            - Run system initialization workflow"
+	@echo "  make gh-job-strategy    - Run job strategy workflow"
+	@echo "  make gh-profile-update  - Run profile update workflow"
 
 venv:
 	python3 -m venv $(VENV_NAME)
@@ -65,3 +74,28 @@ test-integration:
 	pytest tests/integration/
 
 all: scrape-profile parse-resume combine-summary
+
+# GitHub Actions workflow targets
+gh-strategy-cleanup:
+	gh workflow run strategy-cleanup.yml
+
+gh-generate-docs:
+	gh workflow run document-generation.yml
+
+gh-pages:
+	gh workflow run github-pages.yml
+
+gh-test:
+	gh workflow run integration-tests.yml
+
+gh-init:
+	gh workflow run system-init.yml
+
+gh-job-strategy:
+	gh workflow run job-strategy.yml
+
+gh-profile-update:
+	gh workflow run profile-update.yml
+
+# Run all GitHub Actions workflows in sequence
+gh-all: gh-init gh-profile-update gh-job-strategy gh-generate-docs gh-pages gh-test gh-strategy-cleanup
