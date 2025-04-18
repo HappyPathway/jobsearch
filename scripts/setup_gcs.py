@@ -101,19 +101,15 @@ def setup_gcs_infrastructure():
                     raise Exception("Failed to create bucket after maximum retries")
         
         # Set bucket lifecycle policy to save costs
-        lifecycle_rules = {
-            "lifecycle": {
-                "rule": [
-                    {
-                        "action": {"type": "Delete"},
-                        "condition": {
-                            "age": 90,  # Delete old versions after 90 days
-                            "isLive": False
-                        }
-                    }
-                ]
+        lifecycle_rules = [
+            {
+                "action": {"type": "Delete"},
+                "condition": {
+                    "age": 90,  # Delete old versions after 90 days
+                    "isLive": False
+                }
             }
-        }
+        ]
         bucket.lifecycle_rules = lifecycle_rules
         
         # Enable versioning for backup/recovery
