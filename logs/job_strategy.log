@@ -109,3 +109,114 @@
 2025-04-18 03:39:43,067 - job_strategy - INFO - Analyzing job with Gemini: AWS Solutions Architect (Remote) at Serverless Guru
 2025-04-18 03:39:43,067 - job_strategy - DEBUG - Using cached analysis for AWS Solutions Architect (Remote)::Serverless Guru
 2025-04-18 03:39:43,067 - job_strategy - INFO - Analyzing job with Gemini: DevOps Architect/Lead- Remote at Largeton Group
+2025-04-18 03:39:46,217 - job_strategy - INFO - Successfully analyzed job: DevOps Architect/Lead- Remote at Largeton Group
+2025-04-18 03:39:46,217 - job_strategy - INFO - Analyzing job with Gemini: AWS Architect at ASCENDING Inc.
+2025-04-18 03:39:46,217 - job_strategy - DEBUG - Using cached analysis for AWS Architect::ASCENDING Inc.
+2025-04-18 03:39:46,217 - job_strategy - INFO - Analyzing job with Gemini: Cloud Architect at PingWind Inc. (SDVOSB)
+2025-04-18 03:39:46,217 - job_strategy - DEBUG - Using cached analysis for Cloud Architect::PingWind Inc. (SDVOSB)
+2025-04-18 03:39:46,217 - job_strategy - INFO - Analyzing job with Gemini: DevOps Architect / Manager at Veracity Software Inc
+2025-04-18 03:39:49,173 - job_strategy - INFO - Successfully analyzed job: DevOps Architect / Manager at Veracity Software Inc
+2025-04-18 03:39:49,173 - job_strategy - INFO - Analyzing job with Gemini: Cloud DevOps Architect at SCA Health
+2025-04-18 03:39:52,795 - job_strategy - INFO - Successfully analyzed job: Cloud DevOps Architect at SCA Health
+2025-04-18 03:39:52,795 - job_strategy - INFO - Updating job cache
+2025-04-18 03:39:52,802 - job_strategy - INFO - Updated 0 jobs and added 10 new jobs to cache
+2025-04-18 03:39:52,802 - job_strategy - INFO - Returning top 5 unique jobs for query: DevOps Architect (from 10 total)
+2025-04-18 03:39:54,182 - job_strategy - INFO - Generating tailored documents for high-priority jobs
+2025-04-18 03:39:54,464 - job_strategy - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 03:40:04,140 - job_strategy - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 03:40:14,813 - job_strategy - INFO - Generating documents for AWS Solutions Architect at Commit
+2025-04-18 03:40:25,977 - job_strategy - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 03:40:35,394 - job_strategy - INFO - Generating documents for Cloud Architect at PingWind Inc. (SDVOSB)
+2025-04-18 03:40:44,278 - job_strategy - INFO - Generating documents for Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 03:40:53,827 - job_strategy - INFO - Generating documents for Java Software Engineer Principal at Vertex Inc.
+2025-04-18 03:41:02,430 - job_strategy - INFO - Generating documents for Cloud Engineer Principal at SAIC
+2025-04-18 03:41:12,156 - job_strategy - INFO - Generating documents for Cloud Engineer Principal at SAIC
+2025-04-18 03:41:22,564 - job_strategy - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 03:41:32,843 - job_strategy - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 03:41:42,009 - job_strategy - INFO - Generating documents for DevOps Architect at Connexions
+2025-04-18 03:41:53,220 - job_strategy - INFO - Generating documents for AWS Solutions Architect at Commit
+2025-04-18 03:42:03,253 - job_strategy - INFO - Generating documents for AWS Solutions Architect (Remote) at Serverless Guru
+2025-04-18 03:42:13,052 - job_strategy - INFO - Generating daily job search strategy
+2025-04-18 03:42:13,052 - job_strategy - INFO - Retrieving target roles from database
+2025-04-18 03:42:13,053 - job_strategy - WARNING - No target roles found in database, using defaults
+2025-04-18 03:42:13,053 - job_strategy - INFO - Retrieved 2 target roles
+2025-04-18 03:42:13,053 - job_strategy - INFO - Searching LinkedIn jobs for query: Cloud Architect, location: United States, limit: 5
+2025-04-18 03:42:13,053 - job_strategy - INFO - Retrieving cached jobs
+2025-04-18 03:42:13,054 - job_strategy - INFO - Retrieved 40 cached jobs
+2025-04-18 03:42:13,054 - job_strategy - INFO - Retrieving applied jobs
+2025-04-18 03:42:13,054 - job_strategy - INFO - Retrieved 0 applied jobs
+2025-04-18 03:42:13,054 - job_strategy - INFO - Collecting job links for query: Cloud Architect
+2025-04-18 03:42:13,941 - job_strategy - INFO - Collected 10 unique job links for query: Cloud Architect
+2025-04-18 03:42:13,942 - job_strategy - DEBUG - Will analyze new job: AWS Architect at ASCENDING Inc.
+2025-04-18 03:42:13,942 - job_strategy - DEBUG - Will analyze new job: AWS Architect at ASCENDING Inc.
+2025-04-18 03:42:13,942 - job_strategy - DEBUG - Will analyze new job: AWS Solutions Architect at Commit
+2025-04-18 03:42:13,942 - job_strategy - DEBUG - Will analyze new job: AWS Architect at ASCENDING Inc.
+2025-04-18 03:42:13,942 - job_strategy - DEBUG - Will analyze new job: Cloud Architect at PingWind Inc. (SDVOSB)
+2025-04-18 03:42:13,942 - job_strategy - DEBUG - Will analyze new job: Solutions Architect, Enterprise at Stripe
+2025-04-18 03:42:13,942 - job_strategy - DEBUG - Will analyze new job: Solutions Architect, Enterprise at Stripe
+2025-04-18 03:42:13,942 - job_strategy - DEBUG - Will analyze new job: AWS Solutions Architect (Remote) at Serverless Guru
+2025-04-18 03:42:13,942 - job_strategy - DEBUG - Will analyze new job: Principal Enterprise Cloud Architect - 100% REMOTE at IT Engagements, Inc.
+2025-04-18 03:42:13,942 - job_strategy - DEBUG - Will analyze new job: Enterprise Cloud Architect - Remote at Akamai Technologies
+2025-04-18 03:42:13,942 - job_strategy - INFO - Analyzing job with Gemini: AWS Architect at ASCENDING Inc.
+2025-04-18 03:42:13,942 - job_strategy - DEBUG - Using cached analysis for AWS Architect::ASCENDING Inc.
+2025-04-18 03:42:13,942 - job_strategy - INFO - Analyzing job with Gemini: AWS Architect at ASCENDING Inc.
+2025-04-18 03:42:13,942 - job_strategy - DEBUG - Using cached analysis for AWS Architect::ASCENDING Inc.
+2025-04-18 03:42:13,943 - job_strategy - INFO - Analyzing job with Gemini: AWS Solutions Architect at Commit
+2025-04-18 03:42:13,943 - job_strategy - DEBUG - Using cached analysis for AWS Solutions Architect::Commit
+2025-04-18 03:42:13,943 - job_strategy - INFO - Analyzing job with Gemini: AWS Architect at ASCENDING Inc.
+2025-04-18 03:42:13,943 - job_strategy - DEBUG - Using cached analysis for AWS Architect::ASCENDING Inc.
+2025-04-18 03:42:13,943 - job_strategy - INFO - Analyzing job with Gemini: Cloud Architect at PingWind Inc. (SDVOSB)
+2025-04-18 03:42:13,943 - job_strategy - DEBUG - Using cached analysis for Cloud Architect::PingWind Inc. (SDVOSB)
+2025-04-18 03:42:13,943 - job_strategy - INFO - Analyzing job with Gemini: Solutions Architect, Enterprise at Stripe
+2025-04-18 03:42:13,943 - job_strategy - DEBUG - Using cached analysis for Solutions Architect, Enterprise::Stripe
+2025-04-18 03:42:13,943 - job_strategy - INFO - Analyzing job with Gemini: Solutions Architect, Enterprise at Stripe
+2025-04-18 03:42:13,943 - job_strategy - DEBUG - Using cached analysis for Solutions Architect, Enterprise::Stripe
+2025-04-18 03:42:13,943 - job_strategy - INFO - Analyzing job with Gemini: AWS Solutions Architect (Remote) at Serverless Guru
+2025-04-18 03:42:13,943 - job_strategy - DEBUG - Using cached analysis for AWS Solutions Architect (Remote)::Serverless Guru
+2025-04-18 03:42:13,943 - job_strategy - INFO - Analyzing job with Gemini: Principal Enterprise Cloud Architect - 100% REMOTE at IT Engagements, Inc.
+2025-04-18 03:42:13,943 - job_strategy - DEBUG - Using cached analysis for Principal Enterprise Cloud Architect - 100% REMOTE::IT Engagements, Inc.
+2025-04-18 03:42:13,943 - job_strategy - INFO - Analyzing job with Gemini: Enterprise Cloud Architect - Remote at Akamai Technologies
+2025-04-18 03:42:13,943 - job_strategy - DEBUG - Using cached analysis for Enterprise Cloud Architect - Remote::Akamai Technologies
+2025-04-18 03:42:13,943 - job_strategy - INFO - Updating job cache
+2025-04-18 03:42:13,949 - job_strategy - INFO - Updated 0 jobs and added 10 new jobs to cache
+2025-04-18 03:42:13,949 - job_strategy - INFO - Returning top 5 unique jobs for query: Cloud Architect (from 10 total)
+2025-04-18 03:42:15,194 - job_strategy - INFO - Searching LinkedIn jobs for query: Principal Cloud Engineer, location: United States, limit: 5
+2025-04-18 03:42:15,194 - job_strategy - INFO - Retrieving cached jobs
+2025-04-18 03:42:15,195 - job_strategy - INFO - Retrieved 50 cached jobs
+2025-04-18 03:42:15,196 - job_strategy - INFO - Retrieving applied jobs
+2025-04-18 03:42:15,196 - job_strategy - INFO - Retrieved 0 applied jobs
+2025-04-18 03:42:15,196 - job_strategy - INFO - Collecting job links for query: Principal Cloud Engineer
+2025-04-18 03:42:16,101 - job_strategy - INFO - Collected 10 unique job links for query: Principal Cloud Engineer
+2025-04-18 03:42:16,102 - job_strategy - DEBUG - Will analyze new job: Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 03:42:16,102 - job_strategy - DEBUG - Will analyze new job: Principal Machine Learning: Generative AI at Autodesk
+2025-04-18 03:42:16,102 - job_strategy - DEBUG - Will analyze new job: Principal Machine Learning: Generative AI at Autodesk
+2025-04-18 03:42:16,102 - job_strategy - DEBUG - Will analyze new job: Java Software Engineer Principal at Vertex Inc.
+2025-04-18 03:42:16,102 - job_strategy - DEBUG - Will analyze new job: Software Engineer (Growth) - Principal at Blueprint
+2025-04-18 03:42:16,102 - job_strategy - DEBUG - Will analyze new job: Cloud Engineer Principal at SAIC
+2025-04-18 03:42:16,102 - job_strategy - DEBUG - Will analyze new job: Software Engineer (Growth) - Principal at Blueprint
+2025-04-18 03:42:16,102 - job_strategy - DEBUG - Will analyze new job: Software Engineer Principal - Remote US (Kafka) at Sagent
+2025-04-18 03:42:16,102 - job_strategy - DEBUG - Will analyze new job: Software Engineer (Growth) - Principal at Blueprint
+2025-04-18 03:42:16,102 - job_strategy - DEBUG - Will analyze new job: Cloud Engineer Principal at SAIC
+2025-04-18 03:42:16,102 - job_strategy - INFO - Analyzing job with Gemini: Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 03:42:16,102 - job_strategy - DEBUG - Using cached analysis for Head of Data, Machine Learning, and Application Platform::Socure
+2025-04-18 03:42:16,102 - job_strategy - INFO - Analyzing job with Gemini: Principal Machine Learning: Generative AI at Autodesk
+2025-04-18 03:42:16,102 - job_strategy - DEBUG - Using cached analysis for Principal Machine Learning: Generative AI::Autodesk
+2025-04-18 03:42:16,102 - job_strategy - INFO - Analyzing job with Gemini: Principal Machine Learning: Generative AI at Autodesk
+2025-04-18 03:42:16,102 - job_strategy - DEBUG - Using cached analysis for Principal Machine Learning: Generative AI::Autodesk
+2025-04-18 03:42:16,102 - job_strategy - INFO - Analyzing job with Gemini: Java Software Engineer Principal at Vertex Inc.
+2025-04-18 03:42:16,102 - job_strategy - DEBUG - Using cached analysis for Java Software Engineer Principal::Vertex Inc.
+2025-04-18 03:42:16,102 - job_strategy - INFO - Analyzing job with Gemini: Software Engineer (Growth) - Principal at Blueprint
+2025-04-18 03:42:16,102 - job_strategy - DEBUG - Using cached analysis for Software Engineer (Growth) - Principal::Blueprint
+2025-04-18 03:42:16,102 - job_strategy - INFO - Analyzing job with Gemini: Cloud Engineer Principal at SAIC
+2025-04-18 03:42:16,102 - job_strategy - DEBUG - Using cached analysis for Cloud Engineer Principal::SAIC
+2025-04-18 03:42:16,102 - job_strategy - INFO - Analyzing job with Gemini: Software Engineer (Growth) - Principal at Blueprint
+2025-04-18 03:42:16,102 - job_strategy - DEBUG - Using cached analysis for Software Engineer (Growth) - Principal::Blueprint
+2025-04-18 03:42:16,103 - job_strategy - INFO - Analyzing job with Gemini: Software Engineer Principal - Remote US (Kafka) at Sagent
+2025-04-18 03:42:16,103 - job_strategy - DEBUG - Using cached analysis for Software Engineer Principal - Remote US (Kafka)::Sagent
+2025-04-18 03:42:16,103 - job_strategy - INFO - Analyzing job with Gemini: Software Engineer (Growth) - Principal at Blueprint
+2025-04-18 03:42:16,103 - job_strategy - DEBUG - Using cached analysis for Software Engineer (Growth) - Principal::Blueprint
+2025-04-18 03:42:16,103 - job_strategy - INFO - Analyzing job with Gemini: Cloud Engineer Principal at SAIC
+2025-04-18 03:42:16,103 - job_strategy - DEBUG - Using cached analysis for Cloud Engineer Principal::SAIC
+2025-04-18 03:42:16,103 - job_strategy - INFO - Updating job cache
+2025-04-18 03:42:16,110 - job_strategy - INFO - Updated 0 jobs and added 10 new jobs to cache
+2025-04-18 03:42:16,110 - job_strategy - INFO - Returning top 5 unique jobs for query: Principal Cloud Engineer (from 10 total)
