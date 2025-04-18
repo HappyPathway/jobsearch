@@ -3,13 +3,18 @@ name: Strategy File Cleanup
 on:
   schedule:
     - cron: '0 0 * * *'  # Run daily at midnight UTC
-  workflow_dispatch:  # Allow manual triggering
+  workflow_dispatch:  # Manual trigger
     inputs:
       retention_days:
         description: 'Number of days of strategy files to keep'
         required: false
         default: '7'
         type: string
+
+# Ensure only one cleanup runs at a time
+concurrency:
+  group: strategy-cleanup
+  cancel-in-progress: true
 
 jobs:
   cleanup:
@@ -30,61 +35,18 @@ jobs:
       
       - name: Clean up old strategy files
         run: |
-          # Set retention period (use input if provided, otherwise default to 30 days)
-          RETENTION_DAYS="${{ github.event.inputs.retention_days || '30' }}"
+          # Set retention period (use input if provided, otherwise default to 7 days)
+          RETENTION_DAYS="${{ github.event.inputs.retention_days || '7' }}"
           
           # Find and remove old strategy files
-          python3 - <<EOF
-          from pathlib import Path
-          from datetime import datetime, timedelta
-          import re
+          find strategies -type f -name "strategy_*.md" -mtime +$RETENTION_DAYS -delete
+          find strategies -type f -name "strategy_*.txt" -mtime +$RETENTION_DAYS -delete
           
-          # Calculate cutoff date
-          retention_days = int("$RETENTION_DAYS")
-          cutoff_date = datetime.now() - timedelta(days=retention_days)
-          
-          # Get all strategy files
-          strategy_dir = Path("strategies")
-          if not strategy_dir.exists():
-              exit(0)
-          
-          removed_files = []
-          kept_files = []
-          
-          for file in strategy_dir.glob("strategy_*.txt"):
-              # Extract date from filename (format: strategy_YYYY-MM-DD.txt)
-              match = re.search(r'strategy_(\d{4}-\d{2}-\d{2})\.txt', file.name)
-              if match:
-                  file_date = datetime.strptime(match.group(1), "%Y-%m-%d")
-                  if file_date < cutoff_date:
-                      file.unlink()
-                      removed_files.append(file.name)
-                  else:
-                      kept_files.append(file.name)
-          
-          # Print summary
-          print(f"Retention policy: {retention_days} days (before {cutoff_date.date()})")
-          if removed_files:
-              print(f"Removed {len(removed_files)} files:")
-              for f in removed_files:
-                  print(f"- {f}")
-          if kept_files:
-              print(f"\nKept {len(kept_files)} files:")
-              for f in kept_files:
-                  print(f"- {f}")
-          EOF
-      
-      - name: Create Pull Request if files were removed
-        if: success()
-        uses: peter-evans/create-pull-request@v6
-        with:
-          commit-message: 'chore: Clean up old strategy files'
-          title: 'Clean up old strategy files'
-          body: |
-            Automated cleanup of old strategy files.
-            
-            - Retention period: ${{ github.event.inputs.retention_days || '30' }} days
-            - Files older than this were removed according to the retention policy
-          branch: strategy-cleanup
-          delete-branch: true
-          base: main
+          # Create commit if files were removed
+          if [[ -n $(git status -s) ]]; then
+            git add strategies/
+            git commit -m "chore: Remove strategy files older than $RETENTION_DAYS days"
+            git push
+          else
+            echo "No files to clean up"
+          fi

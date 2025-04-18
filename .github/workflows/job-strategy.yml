@@ -2,14 +2,19 @@ name: Job Strategy Generator
 
 on:
   schedule:
-    - cron: '0 9,12 * * *'  # Runs at 9am and 12pm UTC daily
-  workflow_dispatch:  # Allows manual triggering
+    - cron: '0 9 * * *'  # Runs at 9am UTC daily
+  workflow_dispatch:  # Manual trigger
     inputs:
       job_limit:
         description: 'Number of job postings to return per search query'
         required: false
-        default: '5'
+        default: '2'
         type: string
+
+# Ensure only one workflow runs at a time
+concurrency:
+  group: job-strategy
+  cancel-in-progress: true
 
 jobs:
   generate-strategy:
@@ -58,7 +63,7 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          python scripts/job_strategy.py --job-limit ${{ github.event.inputs.job_limit || '5' }}
+          python scripts/job_strategy.py --job-limit ${{ github.event.inputs.job_limit || '2' }}
           
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
@@ -66,12 +71,21 @@ jobs:
           commit-message: 'chore: Update job search strategy'
           title: 'Update Job Search Strategy'
           body: |
-            Automated job search strategy update.
+            Automated job search strategy update
             
             - Generated at: $(date)
-            - Jobs per search: ${{ github.event.inputs.job_limit || '5' }}
-            - Includes latest opportunities and market insights
+            - Jobs per search query: ${{ github.event.inputs.job_limit || '2' }}
+            - Includes latest job opportunities and market insights
             - Database: ${{ steps.cache-db.outputs.cache-hit == 'true' && 'Restored from cache' || 'Freshly initialized' }}
+            
+            ## Generated Files
+            - New strategy document in Markdown format
+            - New strategy document in plain text format (for compatibility)
+            
+            ## Next Steps
+            1. Review the strategy
+            2. Consider any high-priority job opportunities
+            3. Execute on daily tasks and goals
           branch: strategy-update
           delete-branch: true
           base: main

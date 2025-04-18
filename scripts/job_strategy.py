@@ -213,7 +213,7 @@ def update_job_cache(jobs, analyzed_jobs):
     finally:
         conn.close()
 
-def search_linkedin_jobs(query, location="United States", limit=5):
+def search_linkedin_jobs(query, location="United States", limit=2):
     """Search LinkedIn jobs, using cache for known jobs"""
     logger.info(f"Searching LinkedIn jobs for query: {query}, location: {location}, limit: {limit}")
     
@@ -222,7 +222,7 @@ def search_linkedin_jobs(query, location="United States", limit=5):
     applied_jobs = get_applied_jobs()
     
     # Collect new job links - request more to account for filtering
-    jobs = collect_job_links(query, location, limit * 3)
+    jobs = collect_job_links(query, location, limit * 2)
     
     # Filter out jobs we've already applied to and normalize URLs
     jobs = [job for job in jobs if normalize_linkedin_url(job['url']) not in 
@@ -508,7 +508,7 @@ def get_target_roles():
     finally:
         conn.close()
 
-def generate_daily_strategy(experiences, skills, job_limit=5):
+def generate_daily_strategy(experiences, skills, job_limit=2):
     """Use Gemini to generate a personalized job search strategy"""
     logger.info("Generating daily job search strategy")
     current_role = experiences[0] if experiences else None
@@ -527,9 +527,10 @@ def generate_daily_strategy(experiences, skills, job_limit=5):
                 "listings": jobs
             })
         time.sleep(random.uniform(1, 2))
-    
-    prompt = f"""As an expert career strategist with deep knowledge of the tech industry, create a detailed daily job search strategy.
+
+    prompt = f"""As an expert career strategist, create a detailed daily job search strategy.
 Use this professional's background to create a highly specific and actionable plan.
+Return ONLY a JSON object with no additional text or formatting.
 
 Current Role:
 Company: {current_role['company'] if current_role else 'N/A'}
@@ -543,74 +544,88 @@ Recent Experience Highlights:
 Available Job Opportunities:
 {json.dumps(job_searches, indent=2)}
 
-Return a JSON object with this structure:
+Required JSON format:
 {{
     "daily_focus": {{
+        "title": "Focus area for today (e.g. 'Review and Plan')",
+        "reasoning": "Why this focus is important for today",
+        "success_metrics": [
+            "Specific measurable goal 1",
+            "Specific measurable goal 2"
+        ],
         "morning": [
             {{
-                "task": "specific task description",
-                "time": "estimated time in minutes",
-                "priority": "High/Medium/Low",
-                "reasoning": "why this task is important"
+                "task": "Review and prioritize job listings",
+                "time": "30",
+                "priority": "High",
+                "reasoning": "Focuses efforts on promising opportunities"
             }}
         ],
         "afternoon": [
             {{
-                "task": "specific task description",
-                "time": "estimated time in minutes",
-                "priority": "High/Medium/Low",
-                "reasoning": "why this task is important"
+                "task": "Submit high-quality application",
+                "time": "60",
+                "priority": "High",
+                "reasoning": "Maintains consistent progress"
             }}
         ]
     }},
     "target_roles": [
         {{
-            "title": "specific job title to target",
-            "reasoning": "why this role matches your profile",
-            "key_skills_to_emphasize": ["skill1", "skill2", "skill3"],
-            "suggested_companies": ["company1", "company2", "company3"],
+            "title": "Principal Cloud Architect",
+            "reasoning": "Aligns with current experience and career goals",
+            "key_skills_to_emphasize": [
+                "Cloud Architecture",
+                "Terraform",
+                "Kubernetes"
+            ],
+            "suggested_companies": [
+                "Example Corp",
+                "Tech Inc"
+            ],
             "current_opportunities": [
                 {{
-                    "title": "job title",
-                    "company": "company name",
-                    "url": "job listing url"
+                    "title": "Exact job title",
+                    "company": "Company name",
+                    "url": "Full URL to job posting",
+                    "notes": "Remote position, matches skill set"
                 }}
             ]
         }}
     ],
     "networking_strategy": {{
-        "platforms": ["platform1", "platform2"],
-        "daily_connections": number,
-        "message_template": "personalized outreach template",
-        "target_individuals": ["role/position type to connect with"]
+        "platforms": ["LinkedIn"],
+        "daily_connections": 3,
+        "message_template": "Hi [Name],\\n\\nI noticed your experience in [area]. I'm currently exploring opportunities in [target role] and would love to connect and learn more about your work at [company].\\n\\nBest regards,\\n[Your name]",
+        "target_individuals": [
+            "Cloud Architects",
+            "Hiring Managers",
+            "Technical Recruiters"
+        ]
     }},
     "skill_development": [
         {{
-            "skill": "skill to develop/highlight",
-            "action": "specific action to improve/showcase this skill",
-            "timeline": "timeframe for this action"
+            "skill": "Advanced Terraform",
+            "action": "Complete HashiCorp Certified: Terraform Associate certification",
+            "timeline": "2 weeks",
+            "status": "In Progress"
         }}
     ],
     "application_strategy": {{
-        "daily_target": number,
-        "quality_checklist": ["item1", "item2"],
-        "customization_points": ["area1", "area2"],
-        "tracking_method": "method to track applications"
+        "daily_target": 1,
+        "quality_checklist": [
+            "Tailored resume and cover letter",
+            "Quantifiable achievements highlighted",
+            "Keywords optimized for ATS"
+        ],
+        "customization_points": [
+            "Company culture alignment",
+            "Specific project requirements",
+            "Career goals alignment"
+        ],
+        "tracking_method": "Using spreadsheet with:\\n- Company name\\n- Role\\n- Application date\\n- Status\\n- Follow-up notes"
     }}
-}}
-
-Rules:
-1. Be extremely specific and actionable
-2. Focus on the candidate's strongest skills
-3. Include realistic time estimates
-4. Prioritize high-impact activities
-5. Consider current market conditions
-6. Leverage the candidate's experience level
-7. Include both active and passive job search strategies
-8. Focus on quality over quantity
-9. Include networking strategies
-10. Consider skill development opportunities
-11. Include direct links to job opportunities found"""
+}}"""
 
     try:
         model = genai.GenerativeModel('gemini-1.5-pro')
@@ -676,89 +691,146 @@ Return only a JSON object with this structure:
         logger.error(f"Error generating weekly focus: {str(e)}")
         return None
 
-def format_strategy_output(strategy, weekly_focus):
-    """Format the strategy and weekly focus into a readable output"""
-    today = datetime.now()
-    day_of_week = today.strftime("%A")
-    
+def format_strategy_output_plain(strategy, weekly_focus):
+    """Format strategy output in plain text format for backwards compatibility"""
     output = []
-    output.append(f"\n=== Job Search Strategy for {today.strftime('%A, %B %d, %Y')} ===\n")
+    output.append(f"Job Search Strategy - {datetime.now().strftime('%Y-%m-%d')}")
+    output.append("\nWeekly Focus Areas:")
+    for area in weekly_focus:
+        output.append(f"- {area}")
     
-    if weekly_focus and day_of_week in weekly_focus:
-        focus = weekly_focus[day_of_week]
-        output.append(f"Today's Focus: {focus['focus']}")
-        output.append(f"Why: {focus['reason']}")
-        output.append("\nSuccess Metrics:")
-        for metric in focus['success_metrics']:
-            output.append(f"- {metric}")
+    output.append("\nTarget Companies:")
+    for company in strategy['target_companies']:
+        output.append(f"- {company}")
+    
+    output.append("\nTarget Positions:")
+    for position in strategy['target_positions']:
+        output.append(f"- {position}")
+    
+    output.append("\nAction Items:")
+    for item in strategy['action_items']:
+        output.append(f"- {item}")
+    
+    return "\n".join(output)
+
+def format_strategy_output(strategy, weekly_focus):
+    """Format strategy output in Markdown format with enhanced formatting"""
+    current_date = datetime.now().strftime('%B %d, %Y')
+    output = []
+    
+    # Header and Focus
+    output.append(f"# Job Search Strategy - {current_date}\n")
+    output.append(f"## Today's Focus: {strategy.get('daily_focus', {}).get('title', 'Daily Planning')}")
+    output.append(f"*Why*: {strategy.get('daily_focus', {}).get('reasoning', '')}\n")
+    
+    # Success Metrics
+    output.append("### Success Metrics")
+    for metric in strategy.get('daily_focus', {}).get('success_metrics', []):
+        output.append(f"- [ ] {metric}")
+    output.append("")
+    
+    # Morning Tasks
+    output.append("## Morning Tasks\n")
+    output.append("### High Priority")
+    for task in strategy.get('daily_focus', {}).get('morning', []):
+        if task.get('priority') == 'High':
+            output.append(f"1. **{task['task']}** ⏱️ {task['time']}min  ")
+            output.append(f"   *Why*: {task['reasoning']}")
+    
+    output.append("\n### Medium Priority")
+    for task in strategy.get('daily_focus', {}).get('morning', []):
+        if task.get('priority') == 'Medium':
+            output.append(f"1. **{task['task']}** ⏱️ {task['time']}min  ")
+            output.append(f"   *Why*: {task['reasoning']}")
+    output.append("")
+    
+    # Afternoon Tasks
+    output.append("## Afternoon Tasks\n")
+    output.append("### High Priority")
+    for task in strategy.get('daily_focus', {}).get('afternoon', []):
+        if task.get('priority') == 'High':
+            output.append(f"1. **{task['task']}** ⏱️ {task['time']}min  ")
+            output.append(f"   *Why*: {task['reasoning']}")
+    
+    output.append("\n### Medium Priority")
+    for task in strategy.get('daily_focus', {}).get('afternoon', []):
+        if task.get('priority') == 'Medium':
+            output.append(f"1. **{task['task']}** ⏱️ {task['time']}min  ")
+            output.append(f"   *Why*: {task['reasoning']}")
+    output.append("")
+    
+    # Target Roles & Opportunities
+    output.append("## Target Roles & Current Opportunities\n")
+    for role in strategy.get('target_roles', []):
+        output.append(f"### {role['title']}")
+        output.append(f"*Why*: {role['reasoning']}\n")
+        
+        output.append("#### Key Skills to Emphasize")
+        for skill in role.get('key_skills_to_emphasize', []):
+            output.append(f"- {skill}")
+        output.append("")
+        
+        output.append("#### Target Companies")
+        for company in role.get('suggested_companies', []):
+            output.append(f"- {company}")
+        output.append("")
+        
+        output.append("#### Active Opportunities")
+        for idx, job in enumerate(role.get('current_opportunities', []), 1):
+            output.append(f"{idx}. [{job['title']}]({job['url']})")
+            output.append(f"   - Company: {job['company']}")
+            output.append(f"   - Status: To Apply")
+            if job.get('notes'):
+                output.append(f"   - Notes: {job['notes']}")
+            output.append("")
+    
+    # Networking Strategy
+    output.append("## Networking Strategy")
+    network = strategy.get('networking_strategy', {})
+    output.append(f"**Daily Connection Target**: {network.get('daily_connections', 3)}\n")
+    
+    output.append("### Platforms")
+    for platform in network.get('platforms', []):
+        output.append(f"- {platform}")
+    output.append("")
+    
+    output.append("### Outreach Template")
+    output.append("```")
+    output.append(network.get('message_template', ''))
+    output.append("```\n")
+    
+    output.append("### Target Connections")
+    for target in network.get('target_individuals', []):
+        output.append(f"- {target}")
+    output.append("")
+    
+    # Skill Development
+    output.append("## Skill Development Plan\n")
+    for skill in strategy.get('skill_development', []):
+        output.append(f"### Current Focus: {skill['skill']}")
+        output.append(f"- **Goal**: {skill['action']}")
+        output.append(f"- **Timeline**: {skill['timeline']}")
+        if skill.get('status'):
+            output.append(f"- **Status**: {skill['status']}")
         output.append("")
     
-    if strategy:
-        output.append("\n=== Morning Tasks ===")
-        for task in strategy['daily_focus']['morning']:
-            output.append(f"\n[{task['priority']}] {task['task']}")
-            output.append(f"Time: {task['time']} minutes")
-            output.append(f"Why: {task['reasoning']}")
-        
-        output.append("\n=== Afternoon Tasks ===")
-        for task in strategy['daily_focus']['afternoon']:
-            output.append(f"\n[{task['priority']}] {task['task']}")
-            output.append(f"Time: {task['time']} minutes")
-            output.append(f"Why: {task['reasoning']}")
-        
-        output.append("\n=== Target Roles & Current Opportunities ===")
-        for role in strategy['target_roles']:
-            output.append(f"\nRole: {role['title']}")
-            output.append(f"Why: {role['reasoning']}")
-            output.append("Key Skills to Emphasize:")
-            for skill in role['key_skills_to_emphasize']:
-                output.append(f"- {skill}")
-            output.append("\nSuggested Companies:")
-            for company in role['suggested_companies']:
-                output.append(f"- {company}")
-            
-            if role.get('current_opportunities'):
-                output.append("\nCurrent Job Openings:")
-                for job in role['current_opportunities']:
-                    output.append(f"- {job['title']} at {job['company']}")
-                    output.append(f"  Apply here: {job['url']}")
-        
-        output.append("\n=== Networking Strategy ===")
-        output.append(f"Daily Connection Target: {strategy['networking_strategy']['daily_connections']}")
-        output.append("\nPlatforms:")
-        for platform in strategy['networking_strategy']['platforms']:
-            output.append(f"- {platform}")
-        output.append("\nOutreach Template:")
-        output.append(strategy['networking_strategy']['message_template'])
-        output.append("\nTarget Roles for Networking:")
-        for role in strategy['networking_strategy']['target_individuals']:
-            output.append(f"- {role}")
-        
-        output.append("\n=== Skill Development Plan ===")
-        for item in strategy['skill_development']:
-            output.append(f"\nSkill: {item['skill']}")
-            output.append(f"Action: {item['action']}")
-            output.append(f"Timeline: {item['timeline']}")
-        
-        output.append("\n=== Application Strategy ===")
-        output.append(f"Daily Application Target: {strategy['application_strategy']['daily_target']}")
-        output.append("\nQuality Checklist:")
-        for item in strategy['application_strategy']['quality_checklist']:
-            output.append(f"- {item}")
-        output.append("\nCustomization Points:")
-        for point in strategy['application_strategy']['customization_points']:
-            output.append(f"- {point}")
-        output.append(f"\nTracking Method: {strategy['application_strategy']['tracking_method']}")
-        
-        output.append("\n=== Generated Application Documents ===")
-        for docs in strategy.get('generated_documents', []):
-            job = docs['job']
-            output.append(f"\nJob: {job['title']} at {job['company']}")
-            output.append(f"Resume: {docs['resume']}")
-            output.append(f"Cover Letter: {docs['cover_letter']}")
-            output.append(f"Match Score: {job.get('match_score', 'N/A')}")
-            output.append(f"Application Priority: {job.get('application_priority', 'N/A')}")
-            output.append("")
+    # Application Strategy
+    app_strategy = strategy.get('application_strategy', {})
+    output.append("## Application Strategy")
+    output.append(f"**Daily Target**: {app_strategy.get('daily_target', 1)} high-quality application\n")
+    
+    output.append("### Quality Checklist")
+    for item in app_strategy.get('quality_checklist', []):
+        output.append(f"- [ ] {item}")
+    output.append("")
+    
+    output.append("### Customization Points")
+    for point in app_strategy.get('customization_points', []):
+        output.append(f"- {point}")
+    output.append("")
+    
+    output.append("### Tracking")
+    output.append(app_strategy.get('tracking_method', ''))
     
     return "\n".join(output)
 
@@ -799,17 +871,29 @@ def main():
             strategy['generated_documents'] = generated_docs
             
         weekly_focus = generate_weekly_focus()
-        output = format_strategy_output(strategy, weekly_focus)
-        print(output)
         
-        today = datetime.now().strftime("%Y-%m-%d")
-        output_dir = Path(__file__).parent.parent / "strategies"
-        output_dir.mkdir(exist_ok=True)
+        # Format the output in both Markdown and plain text
+        markdown_content = format_strategy_output(strategy, weekly_focus)
+        plain_content = format_strategy_output_plain(strategy, weekly_focus)
         
-        with open(output_dir / f"strategy_{today}.txt", "w") as f:
-            f.write(output)
+        # Generate filenames with current date
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        base_filename = f"strategy_{current_date}"
         
-        logger.info(f"Strategy saved to strategies/strategy_{today}.txt")
+        # Save Markdown version
+        STRATEGY_DIR = 'strategies'
+        md_path = os.path.join(STRATEGY_DIR, f"{base_filename}.md")
+        with open(md_path, 'w') as f:
+            f.write(markdown_content)
+        
+        # Save plain text version for backwards compatibility
+        txt_path = os.path.join(STRATEGY_DIR, f"{base_filename}.txt")
+        with open(txt_path, 'w') as f:
+            f.write(plain_content)
+        
+        logger.info(f"Strategy saved to {md_path} and {txt_path}")
+        
+        return strategy
     except Exception as e:
         logger.error(f"Failed to generate job strategy: {str(e)}")
 

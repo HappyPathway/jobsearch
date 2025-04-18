@@ -804,3 +804,589 @@
 2025-04-18 01:26:59,326 - job_strategy - INFO - Updating job cache
 2025-04-18 01:26:59,327 - job_strategy - INFO - Updated 0 jobs and added 3 new jobs to cache
 2025-04-18 01:26:59,327 - job_strategy - INFO - Returning top 1 unique jobs for query: Principal DevOps Engineer (from 3 total)
+2025-04-18 02:47:32,884 - job_strategy - INFO - Starting job strategy generation process
+2025-04-18 02:47:32,884 - job_strategy - INFO - Retrieving profile data from database
+2025-04-18 02:47:32,887 - job_strategy - INFO - Retrieved 6 experiences and 24 skills
+2025-04-18 02:47:32,887 - job_strategy - INFO - Searching LinkedIn jobs for query: Cloud Architect, location: United States, limit: 5
+2025-04-18 02:47:32,887 - job_strategy - INFO - Retrieving cached jobs
+2025-04-18 02:47:32,889 - job_strategy - INFO - Retrieved 84 cached jobs
+2025-04-18 02:47:32,889 - job_strategy - INFO - Retrieving applied jobs
+2025-04-18 02:47:32,890 - job_strategy - INFO - Retrieved 0 applied jobs
+2025-04-18 02:47:32,890 - job_strategy - INFO - Collecting job links for query: Cloud Architect
+2025-04-18 02:47:34,028 - job_strategy - INFO - Collected 15 unique job links for query: Cloud Architect
+2025-04-18 02:47:34,029 - job_strategy - DEBUG - Will analyze new job: AWS Architect at ASCENDING Inc.
+2025-04-18 02:47:34,029 - job_strategy - DEBUG - Will analyze new job: AWS Architect at ASCENDING Inc.
+2025-04-18 02:47:34,029 - job_strategy - DEBUG - Will analyze new job: AWS Solutions Architect at Commit
+2025-04-18 02:47:34,029 - job_strategy - DEBUG - Will analyze new job: AWS Architect at ASCENDING Inc.
+2025-04-18 02:47:34,029 - job_strategy - DEBUG - Will analyze new job: Cloud Architect at PingWind Inc. (SDVOSB)
+2025-04-18 02:47:34,029 - job_strategy - DEBUG - Will analyze new job: Solutions Architect, Enterprise at Stripe
+2025-04-18 02:47:34,029 - job_strategy - DEBUG - Will analyze new job: Solutions Architect, Enterprise at Stripe
+2025-04-18 02:47:34,029 - job_strategy - DEBUG - Will analyze new job: AWS Solutions Architect (Remote) at Serverless Guru
+2025-04-18 02:47:34,029 - job_strategy - DEBUG - Will analyze new job: Principal Enterprise Cloud Architect - 100% REMOTE at IT Engagements, Inc.
+2025-04-18 02:47:34,029 - job_strategy - DEBUG - Will analyze new job: Enterprise Cloud Architect - Remote at Akamai Technologies
+2025-04-18 02:47:34,029 - job_strategy - DEBUG - Will analyze new job: Solutions Architect at Distillery
+2025-04-18 02:47:34,029 - job_strategy - DEBUG - Will analyze new job: Solution Architect at Largeton Group
+2025-04-18 02:47:34,029 - job_strategy - DEBUG - Will analyze new job: Solution Architect at Blaize
+2025-04-18 02:47:34,029 - job_strategy - DEBUG - Will analyze new job: Solutions Architect at Attentive
+2025-04-18 02:47:34,029 - job_strategy - DEBUG - Will analyze new job: Corporate Cloud Architect at Broadcom
+2025-04-18 02:47:34,029 - job_strategy - INFO - Analyzing job with Gemini: AWS Architect at ASCENDING Inc.
+2025-04-18 02:47:37,546 - job_strategy - INFO - Successfully analyzed job: AWS Architect at ASCENDING Inc.
+2025-04-18 02:47:37,547 - job_strategy - INFO - Analyzing job with Gemini: AWS Architect at ASCENDING Inc.
+2025-04-18 02:47:37,547 - job_strategy - DEBUG - Using cached analysis for AWS Architect::ASCENDING Inc.
+2025-04-18 02:47:37,547 - job_strategy - INFO - Analyzing job with Gemini: AWS Solutions Architect at Commit
+2025-04-18 02:47:40,691 - job_strategy - INFO - Successfully analyzed job: AWS Solutions Architect at Commit
+2025-04-18 02:47:40,691 - job_strategy - INFO - Analyzing job with Gemini: AWS Architect at ASCENDING Inc.
+2025-04-18 02:47:40,691 - job_strategy - DEBUG - Using cached analysis for AWS Architect::ASCENDING Inc.
+2025-04-18 02:47:40,691 - job_strategy - INFO - Analyzing job with Gemini: Cloud Architect at PingWind Inc. (SDVOSB)
+2025-04-18 02:47:44,274 - job_strategy - INFO - Successfully analyzed job: Cloud Architect at PingWind Inc. (SDVOSB)
+2025-04-18 02:47:44,274 - job_strategy - INFO - Analyzing job with Gemini: Solutions Architect, Enterprise at Stripe
+2025-04-18 02:47:48,408 - job_strategy - INFO - Successfully analyzed job: Solutions Architect, Enterprise at Stripe
+2025-04-18 02:47:48,408 - job_strategy - INFO - Analyzing job with Gemini: Solutions Architect, Enterprise at Stripe
+2025-04-18 02:47:48,408 - job_strategy - DEBUG - Using cached analysis for Solutions Architect, Enterprise::Stripe
+2025-04-18 02:47:48,408 - job_strategy - INFO - Analyzing job with Gemini: AWS Solutions Architect (Remote) at Serverless Guru
+2025-04-18 02:47:51,750 - job_strategy - INFO - Successfully analyzed job: AWS Solutions Architect (Remote) at Serverless Guru
+2025-04-18 02:47:51,751 - job_strategy - INFO - Analyzing job with Gemini: Principal Enterprise Cloud Architect - 100% REMOTE at IT Engagements, Inc.
+2025-04-18 02:47:54,513 - job_strategy - INFO - Successfully analyzed job: Principal Enterprise Cloud Architect - 100% REMOTE at IT Engagements, Inc.
+2025-04-18 02:47:54,514 - job_strategy - INFO - Analyzing job with Gemini: Enterprise Cloud Architect - Remote at Akamai Technologies
+2025-04-18 02:47:56,969 - job_strategy - INFO - Successfully analyzed job: Enterprise Cloud Architect - Remote at Akamai Technologies
+2025-04-18 02:47:56,969 - job_strategy - INFO - Analyzing job with Gemini: Solutions Architect at Distillery
+2025-04-18 02:47:59,735 - job_strategy - INFO - Successfully analyzed job: Solutions Architect at Distillery
+2025-04-18 02:47:59,735 - job_strategy - INFO - Analyzing job with Gemini: Solution Architect at Largeton Group
+2025-04-18 02:48:01,896 - job_strategy - INFO - Successfully analyzed job: Solution Architect at Largeton Group
+2025-04-18 02:48:01,896 - job_strategy - INFO - Analyzing job with Gemini: Solution Architect at Blaize
+2025-04-18 02:48:04,444 - job_strategy - INFO - Successfully analyzed job: Solution Architect at Blaize
+2025-04-18 02:48:04,445 - job_strategy - INFO - Analyzing job with Gemini: Solutions Architect at Attentive
+2025-04-18 02:48:07,007 - job_strategy - INFO - Successfully analyzed job: Solutions Architect at Attentive
+2025-04-18 02:48:07,007 - job_strategy - INFO - Analyzing job with Gemini: Corporate Cloud Architect at Broadcom
+2025-04-18 02:48:10,378 - job_strategy - INFO - Successfully analyzed job: Corporate Cloud Architect at Broadcom
+2025-04-18 02:48:10,379 - job_strategy - INFO - Updating job cache
+2025-04-18 02:48:10,386 - job_strategy - INFO - Updated 0 jobs and added 15 new jobs to cache
+2025-04-18 02:48:10,386 - job_strategy - INFO - Returning top 5 unique jobs for query: Cloud Architect (from 15 total)
+2025-04-18 02:48:12,050 - job_strategy - INFO - Searching LinkedIn jobs for query: Principal Cloud Engineer, location: United States, limit: 5
+2025-04-18 02:48:12,051 - job_strategy - INFO - Retrieving cached jobs
+2025-04-18 02:48:12,052 - job_strategy - INFO - Retrieved 99 cached jobs
+2025-04-18 02:48:12,052 - job_strategy - INFO - Retrieving applied jobs
+2025-04-18 02:48:12,052 - job_strategy - INFO - Retrieved 0 applied jobs
+2025-04-18 02:48:12,052 - job_strategy - INFO - Collecting job links for query: Principal Cloud Engineer
+2025-04-18 02:48:13,126 - job_strategy - INFO - Collected 15 unique job links for query: Principal Cloud Engineer
+2025-04-18 02:48:13,128 - job_strategy - DEBUG - Will analyze new job: Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 02:48:13,128 - job_strategy - DEBUG - Will analyze new job: Principal Machine Learning: Generative AI at Autodesk
+2025-04-18 02:48:13,128 - job_strategy - DEBUG - Will analyze new job: Principal Machine Learning: Generative AI at Autodesk
+2025-04-18 02:48:13,128 - job_strategy - DEBUG - Will analyze new job: Java Software Engineer Principal at Vertex Inc.
+2025-04-18 02:48:13,128 - job_strategy - DEBUG - Will analyze new job: Software Engineer (Growth) - Principal at Blueprint
+2025-04-18 02:48:13,128 - job_strategy - DEBUG - Will analyze new job: Cloud Engineer Principal at SAIC
+2025-04-18 02:48:13,128 - job_strategy - DEBUG - Will analyze new job: Software Engineer (Growth) - Principal at Blueprint
+2025-04-18 02:48:13,128 - job_strategy - DEBUG - Will analyze new job: Software Engineer Principal - Remote US (Kafka) at Sagent
+2025-04-18 02:48:13,128 - job_strategy - DEBUG - Will analyze new job: Software Engineer (Growth) - Principal at Blueprint
+2025-04-18 02:48:13,128 - job_strategy - DEBUG - Will analyze new job: Cloud Engineer Principal at SAIC
+2025-04-18 02:48:13,128 - job_strategy - DEBUG - Will analyze new job: Software Engineer (Growth) - Principal at Blueprint
+2025-04-18 02:48:13,128 - job_strategy - DEBUG - Will analyze new job: IT Software Engineer Principal at Pathward
+2025-04-18 02:48:13,128 - job_strategy - DEBUG - Will analyze new job: DevSec Ops and Application Security Principal at Drake Software
+2025-04-18 02:48:13,128 - job_strategy - DEBUG - Will analyze new job: Software Engineer (Engineer III to Principal) - Formal Methods at CertiK
+2025-04-18 02:48:13,128 - job_strategy - DEBUG - Will analyze new job: Principal Enterprise Cloud Architect - 100% REMOTE at IT Engagements, Inc.
+2025-04-18 02:48:13,128 - job_strategy - INFO - Analyzing job with Gemini: Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 02:48:16,574 - job_strategy - INFO - Successfully analyzed job: Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 02:48:16,575 - job_strategy - INFO - Analyzing job with Gemini: Principal Machine Learning: Generative AI at Autodesk
+2025-04-18 02:48:19,601 - job_strategy - INFO - Successfully analyzed job: Principal Machine Learning: Generative AI at Autodesk
+2025-04-18 02:48:19,602 - job_strategy - INFO - Analyzing job with Gemini: Principal Machine Learning: Generative AI at Autodesk
+2025-04-18 02:48:19,602 - job_strategy - DEBUG - Using cached analysis for Principal Machine Learning: Generative AI::Autodesk
+2025-04-18 02:48:19,602 - job_strategy - INFO - Analyzing job with Gemini: Java Software Engineer Principal at Vertex Inc.
+2025-04-18 02:48:23,546 - job_strategy - INFO - Successfully analyzed job: Java Software Engineer Principal at Vertex Inc.
+2025-04-18 02:48:23,546 - job_strategy - INFO - Analyzing job with Gemini: Software Engineer (Growth) - Principal at Blueprint
+2025-04-18 02:48:26,360 - job_strategy - INFO - Successfully analyzed job: Software Engineer (Growth) - Principal at Blueprint
+2025-04-18 02:48:26,361 - job_strategy - INFO - Analyzing job with Gemini: Cloud Engineer Principal at SAIC
+2025-04-18 02:48:30,148 - job_strategy - INFO - Successfully analyzed job: Cloud Engineer Principal at SAIC
+2025-04-18 02:48:30,148 - job_strategy - INFO - Analyzing job with Gemini: Software Engineer (Growth) - Principal at Blueprint
+2025-04-18 02:48:30,149 - job_strategy - DEBUG - Using cached analysis for Software Engineer (Growth) - Principal::Blueprint
+2025-04-18 02:48:30,149 - job_strategy - INFO - Analyzing job with Gemini: Software Engineer Principal - Remote US (Kafka) at Sagent
+2025-04-18 02:48:33,118 - job_strategy - INFO - Successfully analyzed job: Software Engineer Principal - Remote US (Kafka) at Sagent
+2025-04-18 02:48:33,118 - job_strategy - INFO - Analyzing job with Gemini: Software Engineer (Growth) - Principal at Blueprint
+2025-04-18 02:48:33,118 - job_strategy - DEBUG - Using cached analysis for Software Engineer (Growth) - Principal::Blueprint
+2025-04-18 02:48:33,118 - job_strategy - INFO - Analyzing job with Gemini: Cloud Engineer Principal at SAIC
+2025-04-18 02:48:33,118 - job_strategy - DEBUG - Using cached analysis for Cloud Engineer Principal::SAIC
+2025-04-18 02:48:33,119 - job_strategy - INFO - Analyzing job with Gemini: Software Engineer (Growth) - Principal at Blueprint
+2025-04-18 02:48:33,119 - job_strategy - DEBUG - Using cached analysis for Software Engineer (Growth) - Principal::Blueprint
+2025-04-18 02:48:33,119 - job_strategy - INFO - Analyzing job with Gemini: IT Software Engineer Principal at Pathward
+2025-04-18 02:48:36,097 - job_strategy - INFO - Successfully analyzed job: IT Software Engineer Principal at Pathward
+2025-04-18 02:48:36,097 - job_strategy - INFO - Analyzing job with Gemini: DevSec Ops and Application Security Principal at Drake Software
+2025-04-18 02:48:38,684 - job_strategy - INFO - Successfully analyzed job: DevSec Ops and Application Security Principal at Drake Software
+2025-04-18 02:48:38,685 - job_strategy - INFO - Analyzing job with Gemini: Software Engineer (Engineer III to Principal) - Formal Methods at CertiK
+2025-04-18 02:48:41,823 - job_strategy - INFO - Successfully analyzed job: Software Engineer (Engineer III to Principal) - Formal Methods at CertiK
+2025-04-18 02:48:41,824 - job_strategy - INFO - Analyzing job with Gemini: Principal Enterprise Cloud Architect - 100% REMOTE at IT Engagements, Inc.
+2025-04-18 02:48:41,824 - job_strategy - DEBUG - Using cached analysis for Principal Enterprise Cloud Architect - 100% REMOTE::IT Engagements, Inc.
+2025-04-18 02:48:41,824 - job_strategy - INFO - Updating job cache
+2025-04-18 02:48:41,827 - job_strategy - INFO - Updated 0 jobs and added 15 new jobs to cache
+2025-04-18 02:48:41,828 - job_strategy - INFO - Returning top 5 unique jobs for query: Principal Cloud Engineer (from 15 total)
+2025-04-18 02:48:43,147 - job_strategy - INFO - Searching LinkedIn jobs for query: DevOps Architect, location: United States, limit: 5
+2025-04-18 02:48:43,147 - job_strategy - INFO - Retrieving cached jobs
+2025-04-18 02:48:43,149 - job_strategy - INFO - Retrieved 114 cached jobs
+2025-04-18 02:48:43,149 - job_strategy - INFO - Retrieving applied jobs
+2025-04-18 02:48:43,149 - job_strategy - INFO - Retrieved 0 applied jobs
+2025-04-18 02:48:43,149 - job_strategy - INFO - Collecting job links for query: DevOps Architect
+2025-04-18 02:48:44,257 - job_strategy - INFO - Collected 15 unique job links for query: DevOps Architect
+2025-04-18 02:48:44,258 - job_strategy - DEBUG - Will analyze new job: AWS Architect at ASCENDING Inc.
+2025-04-18 02:48:44,258 - job_strategy - DEBUG - Will analyze new job: AWS Architect at ASCENDING Inc.
+2025-04-18 02:48:44,258 - job_strategy - DEBUG - Will analyze new job: DevOps Architect at Connexions
+2025-04-18 02:48:44,258 - job_strategy - DEBUG - Will analyze new job: AWS Solutions Architect at Commit
+2025-04-18 02:48:44,258 - job_strategy - DEBUG - Will analyze new job: AWS Solutions Architect (Remote) at Serverless Guru
+2025-04-18 02:48:44,258 - job_strategy - DEBUG - Will analyze new job: DevOps Architect/Lead- Remote at Largeton Group
+2025-04-18 02:48:44,258 - job_strategy - DEBUG - Will analyze new job: AWS Architect at ASCENDING Inc.
+2025-04-18 02:48:44,258 - job_strategy - DEBUG - Will analyze new job: Cloud Architect at PingWind Inc. (SDVOSB)
+2025-04-18 02:48:44,258 - job_strategy - DEBUG - Will analyze new job: DevOps Architect / Manager at Veracity Software Inc
+2025-04-18 02:48:44,258 - job_strategy - DEBUG - Will analyze new job: Cloud DevOps Architect at SCA Health
+2025-04-18 02:48:44,258 - job_strategy - DEBUG - Will analyze new job: Solutions Architect, DevOps at Pivotal Partners
+2025-04-18 02:48:44,258 - job_strategy - DEBUG - Will analyze new job: Cloud Architect AWS at InfoVision Inc.
+2025-04-18 02:48:44,258 - job_strategy - DEBUG - Will analyze new job: AWS Cloud Architect at Dunhill Professional Search & Government Solutions
+2025-04-18 02:48:44,258 - job_strategy - DEBUG - Will analyze new job: AWS Cloud Architect at Stafflabs Inc
+2025-04-18 02:48:44,258 - job_strategy - DEBUG - Will analyze new job: Cloud Architect at Fintech Staffing Partners
+2025-04-18 02:48:44,258 - job_strategy - INFO - Analyzing job with Gemini: AWS Architect at ASCENDING Inc.
+2025-04-18 02:48:44,259 - job_strategy - DEBUG - Using cached analysis for AWS Architect::ASCENDING Inc.
+2025-04-18 02:48:44,259 - job_strategy - INFO - Analyzing job with Gemini: AWS Architect at ASCENDING Inc.
+2025-04-18 02:48:44,259 - job_strategy - DEBUG - Using cached analysis for AWS Architect::ASCENDING Inc.
+2025-04-18 02:48:44,259 - job_strategy - INFO - Analyzing job with Gemini: DevOps Architect at Connexions
+2025-04-18 02:48:47,454 - job_strategy - INFO - Successfully analyzed job: DevOps Architect at Connexions
+2025-04-18 02:48:47,454 - job_strategy - INFO - Analyzing job with Gemini: AWS Solutions Architect at Commit
+2025-04-18 02:48:47,454 - job_strategy - DEBUG - Using cached analysis for AWS Solutions Architect::Commit
+2025-04-18 02:48:47,455 - job_strategy - INFO - Analyzing job with Gemini: AWS Solutions Architect (Remote) at Serverless Guru
+2025-04-18 02:48:47,455 - job_strategy - DEBUG - Using cached analysis for AWS Solutions Architect (Remote)::Serverless Guru
+2025-04-18 02:48:47,455 - job_strategy - INFO - Analyzing job with Gemini: DevOps Architect/Lead- Remote at Largeton Group
+2025-04-18 02:48:50,730 - job_strategy - INFO - Successfully analyzed job: DevOps Architect/Lead- Remote at Largeton Group
+2025-04-18 02:48:50,731 - job_strategy - INFO - Analyzing job with Gemini: AWS Architect at ASCENDING Inc.
+2025-04-18 02:48:50,731 - job_strategy - DEBUG - Using cached analysis for AWS Architect::ASCENDING Inc.
+2025-04-18 02:48:50,731 - job_strategy - INFO - Analyzing job with Gemini: Cloud Architect at PingWind Inc. (SDVOSB)
+2025-04-18 02:48:50,731 - job_strategy - DEBUG - Using cached analysis for Cloud Architect::PingWind Inc. (SDVOSB)
+2025-04-18 02:48:50,731 - job_strategy - INFO - Analyzing job with Gemini: DevOps Architect / Manager at Veracity Software Inc
+2025-04-18 02:48:53,624 - job_strategy - INFO - Successfully analyzed job: DevOps Architect / Manager at Veracity Software Inc
+2025-04-18 02:48:53,625 - job_strategy - INFO - Analyzing job with Gemini: Cloud DevOps Architect at SCA Health
+2025-04-18 02:48:57,079 - job_strategy - INFO - Successfully analyzed job: Cloud DevOps Architect at SCA Health
+2025-04-18 02:48:57,079 - job_strategy - INFO - Analyzing job with Gemini: Solutions Architect, DevOps at Pivotal Partners
+2025-04-18 02:48:59,949 - job_strategy - INFO - Successfully analyzed job: Solutions Architect, DevOps at Pivotal Partners
+2025-04-18 02:48:59,949 - job_strategy - INFO - Analyzing job with Gemini: Cloud Architect AWS at InfoVision Inc.
+2025-04-18 02:49:02,714 - job_strategy - INFO - Successfully analyzed job: Cloud Architect AWS at InfoVision Inc.
+2025-04-18 02:49:02,715 - job_strategy - INFO - Analyzing job with Gemini: AWS Cloud Architect at Dunhill Professional Search & Government Solutions
+2025-04-18 02:49:05,168 - job_strategy - INFO - Successfully analyzed job: AWS Cloud Architect at Dunhill Professional Search & Government Solutions
+2025-04-18 02:49:05,168 - job_strategy - INFO - Analyzing job with Gemini: AWS Cloud Architect at Stafflabs Inc
+2025-04-18 02:49:07,994 - job_strategy - INFO - Successfully analyzed job: AWS Cloud Architect at Stafflabs Inc
+2025-04-18 02:49:07,995 - job_strategy - INFO - Analyzing job with Gemini: Cloud Architect at Fintech Staffing Partners
+2025-04-18 02:49:10,493 - job_strategy - INFO - Successfully analyzed job: Cloud Architect at Fintech Staffing Partners
+2025-04-18 02:49:10,493 - job_strategy - INFO - Updating job cache
+2025-04-18 02:49:10,496 - job_strategy - INFO - Updated 0 jobs and added 15 new jobs to cache
+2025-04-18 02:49:10,496 - job_strategy - INFO - Returning top 5 unique jobs for query: DevOps Architect (from 15 total)
+2025-04-18 02:49:12,143 - job_strategy - INFO - Generating tailored documents for high-priority jobs
+2025-04-18 02:49:12,378 - job_strategy - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 02:49:12,379 - job_strategy - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 02:49:12,379 - job_strategy - INFO - Generating documents for AWS Solutions Architect at Commit
+2025-04-18 02:49:12,379 - job_strategy - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 02:49:12,380 - job_strategy - INFO - Generating documents for Cloud Architect at PingWind Inc. (SDVOSB)
+2025-04-18 02:49:12,380 - job_strategy - INFO - Generating documents for Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 02:49:12,380 - job_strategy - INFO - Generating documents for Java Software Engineer Principal at Vertex Inc.
+2025-04-18 02:49:12,381 - job_strategy - INFO - Generating documents for Cloud Engineer Principal at SAIC
+2025-04-18 02:49:12,381 - job_strategy - INFO - Generating documents for Software Engineer Principal - Remote US (Kafka) at Sagent
+2025-04-18 02:49:12,381 - job_strategy - INFO - Generating documents for Cloud Engineer Principal at SAIC
+2025-04-18 02:49:12,381 - job_strategy - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 02:49:12,382 - job_strategy - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 02:49:12,382 - job_strategy - INFO - Generating documents for DevOps Architect at Connexions
+2025-04-18 02:49:12,382 - job_strategy - INFO - Generating documents for AWS Solutions Architect at Commit
+2025-04-18 02:49:12,382 - job_strategy - INFO - Generating documents for AWS Solutions Architect (Remote) at Serverless Guru
+2025-04-18 02:49:12,382 - job_strategy - INFO - Generating daily job search strategy
+2025-04-18 02:49:12,382 - job_strategy - INFO - Retrieving target roles from database
+2025-04-18 02:49:12,383 - job_strategy - INFO - Retrieved 7 target roles
+2025-04-18 02:49:12,383 - job_strategy - INFO - Searching LinkedIn jobs for query: Principal Cloud Architect, location: United States, limit: 5
+2025-04-18 02:49:12,383 - job_strategy - INFO - Retrieving cached jobs
+2025-04-18 02:49:12,384 - job_strategy - INFO - Retrieved 129 cached jobs
+2025-04-18 02:49:12,384 - job_strategy - INFO - Retrieving applied jobs
+2025-04-18 02:49:12,384 - job_strategy - INFO - Retrieved 0 applied jobs
+2025-04-18 02:49:12,384 - job_strategy - INFO - Collecting job links for query: Principal Cloud Architect
+2025-04-18 02:49:13,338 - job_strategy - INFO - Collected 15 unique job links for query: Principal Cloud Architect
+2025-04-18 02:49:13,340 - job_strategy - DEBUG - Will analyze new job: Solutions Architect, Enterprise at Stripe
+2025-04-18 02:49:13,340 - job_strategy - DEBUG - Will analyze new job: Principal Enterprise Cloud Architect - 100% REMOTE at IT Engagements, Inc.
+2025-04-18 02:49:13,340 - job_strategy - DEBUG - Will analyze new job: Solutions Architect at Attentive
+2025-04-18 02:49:13,340 - job_strategy - DEBUG - Will analyze new job: Solutions Architect, Enterprise at Stripe
+2025-04-18 02:49:13,340 - job_strategy - DEBUG - Will analyze new job: Senior Solutions Architect at Bath & Body Works
+2025-04-18 02:49:13,340 - job_strategy - DEBUG - Will analyze new job: Solutions Architect at Distillery
+2025-04-18 02:49:13,340 - job_strategy - DEBUG - Will analyze new job: Solutions Architect at Iterable
+2025-04-18 02:49:13,340 - job_strategy - DEBUG - Will analyze new job: Principal Cloud Architect (Remote) at First Citizens Bank
+2025-04-18 02:49:13,340 - job_strategy - DEBUG - Will analyze new job: Solutions Architect - Central at Glean
+2025-04-18 02:49:13,340 - job_strategy - DEBUG - Will analyze new job: AWS Solutions Architect at Commit
+2025-04-18 02:49:13,340 - job_strategy - DEBUG - Will analyze new job: Cloud Architect at PingWind Inc. (SDVOSB)
+2025-04-18 02:49:13,340 - job_strategy - DEBUG - Will analyze new job: AWS Architect at ASCENDING Inc.
+2025-04-18 02:49:13,340 - job_strategy - DEBUG - Will analyze new job: Principal AWS Cloud Architect at Sophinea Corporation
+2025-04-18 02:49:13,340 - job_strategy - DEBUG - Will analyze new job: Partner Solutions Architect (Central) at Wiz
+2025-04-18 02:49:13,340 - job_strategy - DEBUG - Will analyze new job: Solution Architect at Largeton Group
+2025-04-18 02:49:13,340 - job_strategy - INFO - Analyzing job with Gemini: Solutions Architect, Enterprise at Stripe
+2025-04-18 02:49:13,340 - job_strategy - DEBUG - Using cached analysis for Solutions Architect, Enterprise::Stripe
+2025-04-18 02:49:13,340 - job_strategy - INFO - Analyzing job with Gemini: Principal Enterprise Cloud Architect - 100% REMOTE at IT Engagements, Inc.
+2025-04-18 02:49:13,340 - job_strategy - DEBUG - Using cached analysis for Principal Enterprise Cloud Architect - 100% REMOTE::IT Engagements, Inc.
+2025-04-18 02:49:13,340 - job_strategy - INFO - Analyzing job with Gemini: Solutions Architect at Attentive
+2025-04-18 02:49:13,340 - job_strategy - DEBUG - Using cached analysis for Solutions Architect::Attentive
+2025-04-18 02:49:13,340 - job_strategy - INFO - Analyzing job with Gemini: Solutions Architect, Enterprise at Stripe
+2025-04-18 02:49:13,340 - job_strategy - DEBUG - Using cached analysis for Solutions Architect, Enterprise::Stripe
+2025-04-18 02:49:13,340 - job_strategy - INFO - Analyzing job with Gemini: Senior Solutions Architect at Bath & Body Works
+2025-04-18 02:49:15,719 - job_strategy - INFO - Successfully analyzed job: Senior Solutions Architect at Bath & Body Works
+2025-04-18 02:49:15,720 - job_strategy - INFO - Analyzing job with Gemini: Solutions Architect at Distillery
+2025-04-18 02:49:15,720 - job_strategy - DEBUG - Using cached analysis for Solutions Architect::Distillery
+2025-04-18 02:49:15,720 - job_strategy - INFO - Analyzing job with Gemini: Solutions Architect at Iterable
+2025-04-18 02:49:18,645 - job_strategy - INFO - Successfully analyzed job: Solutions Architect at Iterable
+2025-04-18 02:49:18,646 - job_strategy - INFO - Analyzing job with Gemini: Principal Cloud Architect (Remote) at First Citizens Bank
+2025-04-18 02:49:21,759 - job_strategy - INFO - Successfully analyzed job: Principal Cloud Architect (Remote) at First Citizens Bank
+2025-04-18 02:49:21,759 - job_strategy - INFO - Analyzing job with Gemini: Solutions Architect - Central at Glean
+2025-04-18 02:49:24,319 - job_strategy - INFO - Successfully analyzed job: Solutions Architect - Central at Glean
+2025-04-18 02:49:24,319 - job_strategy - INFO - Analyzing job with Gemini: AWS Solutions Architect at Commit
+2025-04-18 02:49:24,319 - job_strategy - DEBUG - Using cached analysis for AWS Solutions Architect::Commit
+2025-04-18 02:49:24,320 - job_strategy - INFO - Analyzing job with Gemini: Cloud Architect at PingWind Inc. (SDVOSB)
+2025-04-18 02:49:24,320 - job_strategy - DEBUG - Using cached analysis for Cloud Architect::PingWind Inc. (SDVOSB)
+2025-04-18 02:49:24,320 - job_strategy - INFO - Analyzing job with Gemini: AWS Architect at ASCENDING Inc.
+2025-04-18 02:49:24,320 - job_strategy - DEBUG - Using cached analysis for AWS Architect::ASCENDING Inc.
+2025-04-18 02:49:24,320 - job_strategy - INFO - Analyzing job with Gemini: Principal AWS Cloud Architect at Sophinea Corporation
+2025-04-18 02:49:26,879 - job_strategy - INFO - Successfully analyzed job: Principal AWS Cloud Architect at Sophinea Corporation
+2025-04-18 02:49:26,880 - job_strategy - INFO - Analyzing job with Gemini: Partner Solutions Architect (Central) at Wiz
+2025-04-18 02:49:30,004 - job_strategy - INFO - Successfully analyzed job: Partner Solutions Architect (Central) at Wiz
+2025-04-18 02:49:30,004 - job_strategy - INFO - Analyzing job with Gemini: Solution Architect at Largeton Group
+2025-04-18 02:49:30,004 - job_strategy - DEBUG - Using cached analysis for Solution Architect::Largeton Group
+2025-04-18 02:49:30,005 - job_strategy - INFO - Updating job cache
+2025-04-18 02:49:30,009 - job_strategy - INFO - Updated 0 jobs and added 15 new jobs to cache
+2025-04-18 02:49:30,010 - job_strategy - INFO - Returning top 5 unique jobs for query: Principal Cloud Architect (from 15 total)
+2025-04-18 02:49:31,053 - job_strategy - INFO - Searching LinkedIn jobs for query: Head of Cloud Infrastructure, location: United States, limit: 5
+2025-04-18 02:49:31,054 - job_strategy - INFO - Retrieving cached jobs
+2025-04-18 02:49:31,057 - job_strategy - INFO - Retrieved 144 cached jobs
+2025-04-18 02:49:31,058 - job_strategy - INFO - Retrieving applied jobs
+2025-04-18 02:49:31,058 - job_strategy - INFO - Retrieved 0 applied jobs
+2025-04-18 02:49:31,059 - job_strategy - INFO - Collecting job links for query: Head of Cloud Infrastructure
+2025-04-18 02:49:32,104 - job_strategy - INFO - Collected 15 unique job links for query: Head of Cloud Infrastructure
+2025-04-18 02:49:32,105 - job_strategy - DEBUG - Will analyze new job: IT Director - (Remote - US) at Jobgether
+2025-04-18 02:49:32,105 - job_strategy - DEBUG - Will analyze new job: Director of Information Technology at Scenthound
+2025-04-18 02:49:32,105 - job_strategy - DEBUG - Will analyze new job: VP/Head of Professional Services at DataVisor
+2025-04-18 02:49:32,106 - job_strategy - DEBUG - Will analyze new job: Director, Technical Support at Samsara
+2025-04-18 02:49:32,106 - job_strategy - DEBUG - Will analyze new job: Director, IT at Engine
+2025-04-18 02:49:32,106 - job_strategy - DEBUG - Will analyze new job: Director, IT at Panorama Education
+2025-04-18 02:49:32,106 - job_strategy - DEBUG - Will analyze new job: Director, IT at OLIPOP PBC
+2025-04-18 02:49:32,106 - job_strategy - DEBUG - Will analyze new job: Director of Infrastructure at Piper Companies
+2025-04-18 02:49:32,106 - job_strategy - DEBUG - Will analyze new job: Director of Information Technology at Operation BBQ Relief
+2025-04-18 02:49:32,106 - job_strategy - DEBUG - Will analyze new job: Global Head of Enterprise Architecture at Madison-Davis, LLC
+2025-04-18 02:49:32,106 - job_strategy - DEBUG - Will analyze new job: Director of IT and Database Operations at A3 - Association for Advancing Automation
+2025-04-18 02:49:32,106 - job_strategy - DEBUG - Will analyze new job: Head of Information Security at Limble CMMS
+2025-04-18 02:49:32,106 - job_strategy - DEBUG - Will analyze new job: IT Director at Xsolla
+2025-04-18 02:49:32,106 - job_strategy - DEBUG - Will analyze new job: IT Director at DB E.C.O. North America
+2025-04-18 02:49:32,106 - job_strategy - DEBUG - Will analyze new job: Director, Cybersecurity (Remote - US) at TixTrack
+2025-04-18 02:49:32,106 - job_strategy - INFO - Analyzing job with Gemini: IT Director - (Remote - US) at Jobgether
+2025-04-18 02:49:34,369 - job_strategy - INFO - Successfully analyzed job: IT Director - (Remote - US) at Jobgether
+2025-04-18 02:49:34,370 - job_strategy - INFO - Analyzing job with Gemini: Director of Information Technology at Scenthound
+2025-04-18 02:49:37,118 - job_strategy - INFO - Successfully analyzed job: Director of Information Technology at Scenthound
+2025-04-18 02:49:37,118 - job_strategy - INFO - Analyzing job with Gemini: VP/Head of Professional Services at DataVisor
+2025-04-18 02:49:40,703 - job_strategy - INFO - Successfully analyzed job: VP/Head of Professional Services at DataVisor
+2025-04-18 02:49:40,704 - job_strategy - INFO - Analyzing job with Gemini: Director, Technical Support at Samsara
+2025-04-18 02:49:43,673 - job_strategy - INFO - Successfully analyzed job: Director, Technical Support at Samsara
+2025-04-18 02:49:43,674 - job_strategy - INFO - Analyzing job with Gemini: Director, IT at Engine
+2025-04-18 02:49:46,159 - job_strategy - INFO - Successfully analyzed job: Director, IT at Engine
+2025-04-18 02:49:46,160 - job_strategy - INFO - Analyzing job with Gemini: Director, IT at Panorama Education
+2025-04-18 02:49:49,232 - job_strategy - INFO - Successfully analyzed job: Director, IT at Panorama Education
+2025-04-18 02:49:49,232 - job_strategy - INFO - Analyzing job with Gemini: Director, IT at OLIPOP PBC
+2025-04-18 02:49:52,615 - job_strategy - INFO - Successfully analyzed job: Director, IT at OLIPOP PBC
+2025-04-18 02:49:52,616 - job_strategy - INFO - Analyzing job with Gemini: Director of Infrastructure at Piper Companies
+2025-04-18 02:49:55,420 - job_strategy - INFO - Successfully analyzed job: Director of Infrastructure at Piper Companies
+2025-04-18 02:49:55,421 - job_strategy - INFO - Analyzing job with Gemini: Director of Information Technology at Operation BBQ Relief
+2025-04-18 02:49:58,920 - job_strategy - INFO - Successfully analyzed job: Director of Information Technology at Operation BBQ Relief
+2025-04-18 02:49:58,920 - job_strategy - INFO - Analyzing job with Gemini: Global Head of Enterprise Architecture at Madison-Davis, LLC
+2025-04-18 02:50:01,964 - job_strategy - INFO - Successfully analyzed job: Global Head of Enterprise Architecture at Madison-Davis, LLC
+2025-04-18 02:50:01,964 - job_strategy - INFO - Analyzing job with Gemini: Director of IT and Database Operations at A3 - Association for Advancing Automation
+2025-04-18 02:50:04,601 - job_strategy - INFO - Successfully analyzed job: Director of IT and Database Operations at A3 - Association for Advancing Automation
+2025-04-18 02:50:04,602 - job_strategy - INFO - Analyzing job with Gemini: Head of Information Security at Limble CMMS
+2025-04-18 02:50:07,747 - job_strategy - INFO - Successfully analyzed job: Head of Information Security at Limble CMMS
+2025-04-18 02:50:07,747 - job_strategy - INFO - Analyzing job with Gemini: IT Director at Xsolla
+2025-04-18 02:50:10,398 - job_strategy - INFO - Successfully analyzed job: IT Director at Xsolla
+2025-04-18 02:50:10,398 - job_strategy - INFO - Analyzing job with Gemini: IT Director at DB E.C.O. North America
+2025-04-18 02:50:13,063 - job_strategy - INFO - Successfully analyzed job: IT Director at DB E.C.O. North America
+2025-04-18 02:50:13,063 - job_strategy - INFO - Analyzing job with Gemini: Director, Cybersecurity (Remote - US) at TixTrack
+2025-04-18 02:50:16,311 - job_strategy - INFO - Successfully analyzed job: Director, Cybersecurity (Remote - US) at TixTrack
+2025-04-18 02:50:16,311 - job_strategy - INFO - Updating job cache
+2025-04-18 02:50:16,313 - job_strategy - INFO - Updated 0 jobs and added 15 new jobs to cache
+2025-04-18 02:50:16,313 - job_strategy - INFO - Returning top 5 unique jobs for query: Head of Cloud Infrastructure (from 15 total)
+2025-04-18 02:50:18,230 - job_strategy - INFO - Searching LinkedIn jobs for query: Director of Cloud Security, location: United States, limit: 5
+2025-04-18 02:50:18,230 - job_strategy - INFO - Retrieving cached jobs
+2025-04-18 02:50:18,234 - job_strategy - INFO - Retrieved 159 cached jobs
+2025-04-18 02:50:18,234 - job_strategy - INFO - Retrieving applied jobs
+2025-04-18 02:50:18,235 - job_strategy - INFO - Retrieved 0 applied jobs
+2025-04-18 02:50:18,236 - job_strategy - INFO - Collecting job links for query: Director of Cloud Security
+2025-04-18 02:50:19,373 - job_strategy - INFO - Collected 15 unique job links for query: Director of Cloud Security
+2025-04-18 02:50:19,375 - job_strategy - DEBUG - Will analyze new job: Sr. Director Security Operations at Oracle
+2025-04-18 02:50:19,375 - job_strategy - DEBUG - Will analyze new job: Director of Security Operations at Function Health
+2025-04-18 02:50:19,375 - job_strategy - DEBUG - Will analyze new job: Director, Cybersecurity (Remote - US) at TixTrack
+2025-04-18 02:50:19,375 - job_strategy - DEBUG - Will analyze new job: Director, Cybersecurity at Crosslake Technologies
+2025-04-18 02:50:19,375 - job_strategy - DEBUG - Will analyze new job: Director of Security & Compliance at Trust & Will
+2025-04-18 02:50:19,375 - job_strategy - DEBUG - Will analyze new job: Director of Cybersecurity Operations at ASM Global
+2025-04-18 02:50:19,375 - job_strategy - DEBUG - Will analyze new job: Director, Information Security at Baylor Genetics
+2025-04-18 02:50:19,375 - job_strategy - DEBUG - Will analyze new job: Director of Security Architecture at Yum! Brands
+2025-04-18 02:50:19,375 - job_strategy - DEBUG - Will analyze new job: Director of Information Security at Truepic
+2025-04-18 02:50:19,375 - job_strategy - DEBUG - Will analyze new job: Head of Application Security at Granicus
+2025-04-18 02:50:19,375 - job_strategy - DEBUG - Will analyze new job: Director, Data Security at Live Nation Entertainment
+2025-04-18 02:50:19,375 - job_strategy - DEBUG - Will analyze new job: Director of Corporate Security Sales at Kaseware
+2025-04-18 02:50:19,375 - job_strategy - DEBUG - Will analyze new job: Director of GRC/IAM 100% Remote at Irvine Technology Corporation
+2025-04-18 02:50:19,375 - job_strategy - DEBUG - Will analyze new job: Sr. Director of Information Security and Compliance at SambaSafety
+2025-04-18 02:50:19,375 - job_strategy - DEBUG - Will analyze new job: Head of Infosec & GRC at Benepass
+2025-04-18 02:50:19,375 - job_strategy - INFO - Analyzing job with Gemini: Sr. Director Security Operations at Oracle
+2025-04-18 02:50:22,474 - job_strategy - INFO - Successfully analyzed job: Sr. Director Security Operations at Oracle
+2025-04-18 02:50:22,475 - job_strategy - INFO - Analyzing job with Gemini: Director of Security Operations at Function Health
+2025-04-18 02:50:24,735 - job_strategy - INFO - Successfully analyzed job: Director of Security Operations at Function Health
+2025-04-18 02:50:24,736 - job_strategy - INFO - Analyzing job with Gemini: Director, Cybersecurity (Remote - US) at TixTrack
+2025-04-18 02:50:24,736 - job_strategy - DEBUG - Using cached analysis for Director, Cybersecurity (Remote - US)::TixTrack
+2025-04-18 02:50:24,736 - job_strategy - INFO - Analyzing job with Gemini: Director, Cybersecurity at Crosslake Technologies
+2025-04-18 02:50:27,602 - job_strategy - INFO - Successfully analyzed job: Director, Cybersecurity at Crosslake Technologies
+2025-04-18 02:50:27,602 - job_strategy - INFO - Analyzing job with Gemini: Director of Security & Compliance at Trust & Will
+2025-04-18 02:50:30,718 - job_strategy - INFO - Successfully analyzed job: Director of Security & Compliance at Trust & Will
+2025-04-18 02:50:30,719 - job_strategy - INFO - Analyzing job with Gemini: Director of Cybersecurity Operations at ASM Global
+2025-04-18 02:50:33,421 - job_strategy - INFO - Successfully analyzed job: Director of Cybersecurity Operations at ASM Global
+2025-04-18 02:50:33,422 - job_strategy - INFO - Analyzing job with Gemini: Director, Information Security at Baylor Genetics
+2025-04-18 02:50:37,228 - job_strategy - INFO - Successfully analyzed job: Director, Information Security at Baylor Genetics
+2025-04-18 02:50:37,229 - job_strategy - INFO - Analyzing job with Gemini: Director of Security Architecture at Yum! Brands
+2025-04-18 02:50:40,060 - job_strategy - INFO - Successfully analyzed job: Director of Security Architecture at Yum! Brands
+2025-04-18 02:50:40,061 - job_strategy - INFO - Analyzing job with Gemini: Director of Information Security at Truepic
+2025-04-18 02:50:43,377 - job_strategy - INFO - Successfully analyzed job: Director of Information Security at Truepic
+2025-04-18 02:50:43,377 - job_strategy - INFO - Analyzing job with Gemini: Head of Application Security at Granicus
+2025-04-18 02:50:46,273 - job_strategy - INFO - Successfully analyzed job: Head of Application Security at Granicus
+2025-04-18 02:50:46,274 - job_strategy - INFO - Analyzing job with Gemini: Director, Data Security at Live Nation Entertainment
+2025-04-18 02:50:49,285 - job_strategy - INFO - Successfully analyzed job: Director, Data Security at Live Nation Entertainment
+2025-04-18 02:50:49,285 - job_strategy - INFO - Analyzing job with Gemini: Director of Corporate Security Sales at Kaseware
+2025-04-18 02:50:51,665 - job_strategy - INFO - Successfully analyzed job: Director of Corporate Security Sales at Kaseware
+2025-04-18 02:50:51,667 - job_strategy - INFO - Analyzing job with Gemini: Director of GRC/IAM 100% Remote at Irvine Technology Corporation
+2025-04-18 02:50:54,225 - job_strategy - INFO - Successfully analyzed job: Director of GRC/IAM 100% Remote at Irvine Technology Corporation
+2025-04-18 02:50:54,226 - job_strategy - INFO - Analyzing job with Gemini: Sr. Director of Information Security and Compliance at SambaSafety
+2025-04-18 02:50:56,199 - job_strategy - INFO - Successfully analyzed job: Sr. Director of Information Security and Compliance at SambaSafety
+2025-04-18 02:50:56,200 - job_strategy - INFO - Analyzing job with Gemini: Head of Infosec & GRC at Benepass
+2025-04-18 02:51:00,268 - job_strategy - INFO - Successfully analyzed job: Head of Infosec & GRC at Benepass
+2025-04-18 02:51:00,268 - job_strategy - INFO - Updating job cache
+2025-04-18 02:51:00,272 - job_strategy - INFO - Updated 0 jobs and added 15 new jobs to cache
+2025-04-18 02:51:00,274 - job_strategy - INFO - Returning top 5 unique jobs for query: Director of Cloud Security (from 15 total)
+2025-04-18 02:51:01,442 - job_strategy - INFO - Searching LinkedIn jobs for query: Principal DevOps Engineer, location: United States, limit: 5
+2025-04-18 02:51:01,443 - job_strategy - INFO - Retrieving cached jobs
+2025-04-18 02:51:01,445 - job_strategy - INFO - Retrieved 174 cached jobs
+2025-04-18 02:51:01,445 - job_strategy - INFO - Retrieving applied jobs
+2025-04-18 02:51:01,445 - job_strategy - INFO - Retrieved 0 applied jobs
+2025-04-18 02:51:01,445 - job_strategy - INFO - Collecting job links for query: Principal DevOps Engineer
+2025-04-18 02:51:02,243 - job_strategy - INFO - Collected 15 unique job links for query: Principal DevOps Engineer
+2025-04-18 02:51:02,244 - job_strategy - DEBUG - Will analyze new job: Cloud Engineer Principal at SAIC
+2025-04-18 02:51:02,244 - job_strategy - DEBUG - Will analyze new job: Cloud Engineer Principal at SAIC
+2025-04-18 02:51:02,244 - job_strategy - DEBUG - Will analyze new job: Principal Cloud Architect (Remote) at First Citizens Bank
+2025-04-18 02:51:02,244 - job_strategy - DEBUG - Will analyze new job: Principal Cloud Architect (Remote) at First Citizens Bank
+2025-04-18 02:51:02,244 - job_strategy - DEBUG - Will analyze new job: Principal AWS Cloud Architect at Sophinea Corporation
+2025-04-18 02:51:02,244 - job_strategy - DEBUG - Will analyze new job: GCP Principal Architect at VRK IT Vision Inc.
+2025-04-18 02:51:02,245 - job_strategy - DEBUG - Will analyze new job: Manager - Mobility and Mac DevOps Engineer at Johnson & Johnson
+2025-04-18 02:51:02,245 - job_strategy - DEBUG - Will analyze new job: Manager - Mobility and Mac DevOps Engineer at Johnson & Johnson
+2025-04-18 02:51:02,245 - job_strategy - DEBUG - Will analyze new job: Manager - Mobility and Mac DevOps Engineer at Johnson & Johnson
+2025-04-18 02:51:02,245 - job_strategy - DEBUG - Will analyze new job: Manager - Mobility and Mac DevOps Engineer at Johnson & Johnson
+2025-04-18 02:51:02,245 - job_strategy - DEBUG - Will analyze new job: Principal Cloud Network Engineer at Yahoo
+2025-04-18 02:51:02,245 - job_strategy - DEBUG - Will analyze new job: Principal Azure Databricks Consultant - Digital Velocity at CDW
+2025-04-18 02:51:02,245 - job_strategy - DEBUG - Will analyze new job: Principal Site Reliability Engineer at Veza
+2025-04-18 02:51:02,245 - job_strategy - DEBUG - Will analyze new job: Principal DevOps Engineer at Medical Home Network
+2025-04-18 02:51:02,245 - job_strategy - DEBUG - Will analyze new job: Principal DevOps Engineer at TrackVia
+2025-04-18 02:51:02,245 - job_strategy - INFO - Analyzing job with Gemini: Cloud Engineer Principal at SAIC
+2025-04-18 02:51:02,245 - job_strategy - DEBUG - Using cached analysis for Cloud Engineer Principal::SAIC
+2025-04-18 02:51:02,245 - job_strategy - INFO - Analyzing job with Gemini: Cloud Engineer Principal at SAIC
+2025-04-18 02:51:02,245 - job_strategy - DEBUG - Using cached analysis for Cloud Engineer Principal::SAIC
+2025-04-18 02:51:02,245 - job_strategy - INFO - Analyzing job with Gemini: Principal Cloud Architect (Remote) at First Citizens Bank
+2025-04-18 02:51:02,245 - job_strategy - DEBUG - Using cached analysis for Principal Cloud Architect (Remote)::First Citizens Bank
+2025-04-18 02:51:02,245 - job_strategy - INFO - Analyzing job with Gemini: Principal Cloud Architect (Remote) at First Citizens Bank
+2025-04-18 02:51:02,245 - job_strategy - DEBUG - Using cached analysis for Principal Cloud Architect (Remote)::First Citizens Bank
+2025-04-18 02:51:02,245 - job_strategy - INFO - Analyzing job with Gemini: Principal AWS Cloud Architect at Sophinea Corporation
+2025-04-18 02:51:02,245 - job_strategy - DEBUG - Using cached analysis for Principal AWS Cloud Architect::Sophinea Corporation
+2025-04-18 02:51:02,245 - job_strategy - INFO - Analyzing job with Gemini: GCP Principal Architect at VRK IT Vision Inc.
+2025-04-18 02:51:05,504 - job_strategy - INFO - Successfully analyzed job: GCP Principal Architect at VRK IT Vision Inc.
+2025-04-18 02:51:05,504 - job_strategy - INFO - Analyzing job with Gemini: Manager - Mobility and Mac DevOps Engineer at Johnson & Johnson
+2025-04-18 02:51:08,935 - job_strategy - INFO - Successfully analyzed job: Manager - Mobility and Mac DevOps Engineer at Johnson & Johnson
+2025-04-18 02:51:08,935 - job_strategy - INFO - Analyzing job with Gemini: Manager - Mobility and Mac DevOps Engineer at Johnson & Johnson
+2025-04-18 02:51:08,936 - job_strategy - DEBUG - Using cached analysis for Manager - Mobility and Mac DevOps Engineer::Johnson & Johnson
+2025-04-18 02:51:08,936 - job_strategy - INFO - Analyzing job with Gemini: Manager - Mobility and Mac DevOps Engineer at Johnson & Johnson
+2025-04-18 02:51:08,936 - job_strategy - DEBUG - Using cached analysis for Manager - Mobility and Mac DevOps Engineer::Johnson & Johnson
+2025-04-18 02:51:08,936 - job_strategy - INFO - Analyzing job with Gemini: Manager - Mobility and Mac DevOps Engineer at Johnson & Johnson
+2025-04-18 02:51:08,936 - job_strategy - DEBUG - Using cached analysis for Manager - Mobility and Mac DevOps Engineer::Johnson & Johnson
+2025-04-18 02:51:08,936 - job_strategy - INFO - Analyzing job with Gemini: Principal Cloud Network Engineer at Yahoo
+2025-04-18 02:51:12,146 - job_strategy - INFO - Successfully analyzed job: Principal Cloud Network Engineer at Yahoo
+2025-04-18 02:51:12,147 - job_strategy - INFO - Analyzing job with Gemini: Principal Azure Databricks Consultant - Digital Velocity at CDW
+2025-04-18 02:51:14,913 - job_strategy - INFO - Successfully analyzed job: Principal Azure Databricks Consultant - Digital Velocity at CDW
+2025-04-18 02:51:14,913 - job_strategy - INFO - Analyzing job with Gemini: Principal Site Reliability Engineer at Veza
+2025-04-18 02:51:19,086 - job_strategy - INFO - Successfully analyzed job: Principal Site Reliability Engineer at Veza
+2025-04-18 02:51:19,086 - job_strategy - INFO - Analyzing job with Gemini: Principal DevOps Engineer at Medical Home Network
+2025-04-18 02:51:22,489 - job_strategy - INFO - Successfully analyzed job: Principal DevOps Engineer at Medical Home Network
+2025-04-18 02:51:22,489 - job_strategy - INFO - Analyzing job with Gemini: Principal DevOps Engineer at TrackVia
+2025-04-18 02:51:25,460 - job_strategy - INFO - Successfully analyzed job: Principal DevOps Engineer at TrackVia
+2025-04-18 02:51:25,461 - job_strategy - INFO - Updating job cache
+2025-04-18 02:51:25,464 - job_strategy - INFO - Updated 0 jobs and added 15 new jobs to cache
+2025-04-18 02:51:25,464 - job_strategy - INFO - Returning top 5 unique jobs for query: Principal DevOps Engineer (from 15 total)
+2025-04-18 02:51:27,142 - job_strategy - INFO - Searching LinkedIn jobs for query: Staff Cloud Platform Engineer, location: United States, limit: 5
+2025-04-18 02:51:27,142 - job_strategy - INFO - Retrieving cached jobs
+2025-04-18 02:51:27,149 - job_strategy - INFO - Retrieved 189 cached jobs
+2025-04-18 02:51:27,149 - job_strategy - INFO - Retrieving applied jobs
+2025-04-18 02:51:27,150 - job_strategy - INFO - Retrieved 0 applied jobs
+2025-04-18 02:51:27,150 - job_strategy - INFO - Collecting job links for query: Staff Cloud Platform Engineer
+2025-04-18 02:51:28,161 - job_strategy - INFO - Collected 15 unique job links for query: Staff Cloud Platform Engineer
+2025-04-18 02:51:28,163 - job_strategy - DEBUG - Will analyze new job: Cloud Operations Engineer at CyberSheath
+2025-04-18 02:51:28,163 - job_strategy - DEBUG - Will analyze new job: Staff Software Engineer, Platform & Infrastructure at Qualified
+2025-04-18 02:51:28,163 - job_strategy - DEBUG - Will analyze new job: Sr. Cloud Engineer at Cutover
+2025-04-18 02:51:28,163 - job_strategy - DEBUG - Will analyze new job: Senior Platform Engineer at FiscalNote
+2025-04-18 02:51:28,163 - job_strategy - DEBUG - Will analyze new job: Software Development Engineer, Open Data Analytics - Engines at Amazon Web Services (AWS)
+2025-04-18 02:51:28,163 - job_strategy - DEBUG - Will analyze new job: DevOps Engineer at MNJ SOFTWARE
+2025-04-18 02:51:28,163 - job_strategy - DEBUG - Will analyze new job: Senior Staff Engineer - Payments Platform (Remote) at GEICO
+2025-04-18 02:51:28,163 - job_strategy - DEBUG - Will analyze new job: Staff Engineer - Customer IAM Platform at Fastly
+2025-04-18 02:51:28,163 - job_strategy - DEBUG - Will analyze new job: Platform Engineer Lead (Senior/Staff) at Flagler Health
+2025-04-18 02:51:28,163 - job_strategy - DEBUG - Will analyze new job: AI Platform Engineer (GCP) - Remote at The Hartford
+2025-04-18 02:51:28,163 - job_strategy - DEBUG - Will analyze new job: Staff Software Engineer, Cloud Infrastructure at Temporal Technologies
+2025-04-18 02:51:28,163 - job_strategy - DEBUG - Will analyze new job: Senior Software Engineer- Observability and Reliability Platform Engineering (REMOTE) at GEICO
+2025-04-18 02:51:28,163 - job_strategy - DEBUG - Will analyze new job: DevOps Security Engineer at Cast & Crew
+2025-04-18 02:51:28,163 - job_strategy - DEBUG - Will analyze new job: Staff DevOps Engineer / SRE at Hyphen Connect
+2025-04-18 02:51:28,163 - job_strategy - DEBUG - Will analyze new job: Sr. Cloud Engineer at Advantive
+2025-04-18 02:51:28,163 - job_strategy - INFO - Analyzing job with Gemini: Cloud Operations Engineer at CyberSheath
+2025-04-18 02:51:31,436 - job_strategy - INFO - Successfully analyzed job: Cloud Operations Engineer at CyberSheath
+2025-04-18 02:51:31,436 - job_strategy - INFO - Analyzing job with Gemini: Staff Software Engineer, Platform & Infrastructure at Qualified
+2025-04-18 02:51:34,520 - job_strategy - INFO - Successfully analyzed job: Staff Software Engineer, Platform & Infrastructure at Qualified
+2025-04-18 02:51:34,520 - job_strategy - INFO - Analyzing job with Gemini: Sr. Cloud Engineer at Cutover
+2025-04-18 02:51:37,029 - job_strategy - INFO - Successfully analyzed job: Sr. Cloud Engineer at Cutover
+2025-04-18 02:51:37,031 - job_strategy - INFO - Analyzing job with Gemini: Senior Platform Engineer at FiscalNote
+2025-04-18 02:51:40,234 - job_strategy - INFO - Successfully analyzed job: Senior Platform Engineer at FiscalNote
+2025-04-18 02:51:40,235 - job_strategy - INFO - Analyzing job with Gemini: Software Development Engineer, Open Data Analytics - Engines at Amazon Web Services (AWS)
+2025-04-18 02:51:43,788 - job_strategy - INFO - Successfully analyzed job: Software Development Engineer, Open Data Analytics - Engines at Amazon Web Services (AWS)
+2025-04-18 02:51:43,788 - job_strategy - INFO - Analyzing job with Gemini: DevOps Engineer at MNJ SOFTWARE
+2025-04-18 02:51:47,065 - job_strategy - INFO - Successfully analyzed job: DevOps Engineer at MNJ SOFTWARE
+2025-04-18 02:51:47,066 - job_strategy - INFO - Analyzing job with Gemini: Senior Staff Engineer - Payments Platform (Remote) at GEICO
+2025-04-18 02:51:49,931 - job_strategy - INFO - Successfully analyzed job: Senior Staff Engineer - Payments Platform (Remote) at GEICO
+2025-04-18 02:51:49,932 - job_strategy - INFO - Analyzing job with Gemini: Staff Engineer - Customer IAM Platform at Fastly
+2025-04-18 02:51:53,724 - job_strategy - INFO - Successfully analyzed job: Staff Engineer - Customer IAM Platform at Fastly
+2025-04-18 02:51:53,724 - job_strategy - INFO - Analyzing job with Gemini: Platform Engineer Lead (Senior/Staff) at Flagler Health
+2025-04-18 02:51:56,668 - job_strategy - INFO - Successfully analyzed job: Platform Engineer Lead (Senior/Staff) at Flagler Health
+2025-04-18 02:51:56,668 - job_strategy - INFO - Analyzing job with Gemini: AI Platform Engineer (GCP) - Remote at The Hartford
+2025-04-18 02:52:00,460 - job_strategy - INFO - Successfully analyzed job: AI Platform Engineer (GCP) - Remote at The Hartford
+2025-04-18 02:52:00,460 - job_strategy - INFO - Analyzing job with Gemini: Staff Software Engineer, Cloud Infrastructure at Temporal Technologies
+2025-04-18 02:52:03,772 - job_strategy - INFO - Successfully analyzed job: Staff Software Engineer, Cloud Infrastructure at Temporal Technologies
+2025-04-18 02:52:03,772 - job_strategy - INFO - Analyzing job with Gemini: Senior Software Engineer- Observability and Reliability Platform Engineering (REMOTE) at GEICO
+2025-04-18 02:52:07,550 - job_strategy - INFO - Successfully analyzed job: Senior Software Engineer- Observability and Reliability Platform Engineering (REMOTE) at GEICO
+2025-04-18 02:52:07,551 - job_strategy - INFO - Analyzing job with Gemini: DevOps Security Engineer at Cast & Crew
+2025-04-18 02:52:10,022 - job_strategy - INFO - Successfully analyzed job: DevOps Security Engineer at Cast & Crew
+2025-04-18 02:52:10,023 - job_strategy - INFO - Analyzing job with Gemini: Staff DevOps Engineer / SRE at Hyphen Connect
+2025-04-18 02:52:13,158 - job_strategy - INFO - Successfully analyzed job: Staff DevOps Engineer / SRE at Hyphen Connect
+2025-04-18 02:52:13,159 - job_strategy - INFO - Analyzing job with Gemini: Sr. Cloud Engineer at Advantive
+2025-04-18 02:52:15,949 - job_strategy - INFO - Successfully analyzed job: Sr. Cloud Engineer at Advantive
+2025-04-18 02:52:15,950 - job_strategy - INFO - Updating job cache
+2025-04-18 02:52:15,956 - job_strategy - INFO - Updated 0 jobs and added 15 new jobs to cache
+2025-04-18 02:52:15,957 - job_strategy - INFO - Returning top 5 unique jobs for query: Staff Cloud Platform Engineer (from 15 total)
+2025-04-18 02:52:16,966 - job_strategy - INFO - Searching LinkedIn jobs for query: Senior Cloud Automation Engineer, location: United States, limit: 5
+2025-04-18 02:52:16,966 - job_strategy - INFO - Retrieving cached jobs
+2025-04-18 02:52:16,972 - job_strategy - INFO - Retrieved 204 cached jobs
+2025-04-18 02:52:16,972 - job_strategy - INFO - Retrieving applied jobs
+2025-04-18 02:52:16,973 - job_strategy - INFO - Retrieved 0 applied jobs
+2025-04-18 02:52:16,973 - job_strategy - INFO - Collecting job links for query: Senior Cloud Automation Engineer
+2025-04-18 02:52:17,751 - job_strategy - INFO - Collected 15 unique job links for query: Senior Cloud Automation Engineer
+2025-04-18 02:52:17,753 - job_strategy - DEBUG - Will analyze new job: Senior System Administrator at Bristlecone
+2025-04-18 02:52:17,753 - job_strategy - DEBUG - Will analyze new job: Senior Network Automation Engineer at NetBrain Technologies Inc.
+2025-04-18 02:52:17,753 - job_strategy - DEBUG - Will analyze new job: Senior Cloud Solutions Architect (part-time) at Arch Staffing & Consulting
+2025-04-18 02:52:17,753 - job_strategy - DEBUG - Will analyze new job: Senior Advisor, Cloud Services - Core Consulting at Coalfire
+2025-04-18 02:52:17,753 - job_strategy - DEBUG - Will analyze new job: Director of DevOps at EVONA
+2025-04-18 02:52:17,753 - job_strategy - DEBUG - Will analyze new job: Director of DevOps at PortPro
+2025-04-18 02:52:17,753 - job_strategy - DEBUG - Will analyze new job: Senior Automation Engineer at DMI (Digital Management, LLC)
+2025-04-18 02:52:17,753 - job_strategy - DEBUG - Will analyze new job: Automation Engineer at DMI (Digital Management, LLC)
+2025-04-18 02:52:17,753 - job_strategy - DEBUG - Will analyze new job: Senior Automation Quality Engineer (SDET) at Ironclad
+2025-04-18 02:52:17,753 - job_strategy - DEBUG - Will analyze new job: Senior Infrastructure Engineer at The Phoenix Group
+2025-04-18 02:52:17,753 - job_strategy - DEBUG - Will analyze new job: Senior Software Engineer at Talent Bull Inc.
+2025-04-18 02:52:17,753 - job_strategy - DEBUG - Will analyze new job: Lead DevOps Platform Engineer at Lexipol
+2025-04-18 02:52:17,753 - job_strategy - DEBUG - Will analyze new job: Senior DevOps Engineer at CareMessage
+2025-04-18 02:52:17,753 - job_strategy - DEBUG - Will analyze new job: Senior Software Engineer - Back End at Cranium
+2025-04-18 02:52:17,753 - job_strategy - DEBUG - Will analyze new job: Senior DevOps Engineer/ Consultant at Liatrio
+2025-04-18 02:52:17,753 - job_strategy - INFO - Analyzing job with Gemini: Senior System Administrator at Bristlecone
+2025-04-18 02:52:20,040 - job_strategy - INFO - Successfully analyzed job: Senior System Administrator at Bristlecone
+2025-04-18 02:52:20,041 - job_strategy - INFO - Analyzing job with Gemini: Senior Network Automation Engineer at NetBrain Technologies Inc.
+2025-04-18 02:52:23,109 - job_strategy - INFO - Successfully analyzed job: Senior Network Automation Engineer at NetBrain Technologies Inc.
+2025-04-18 02:52:23,110 - job_strategy - INFO - Analyzing job with Gemini: Senior Cloud Solutions Architect (part-time) at Arch Staffing & Consulting
+2025-04-18 02:52:25,738 - job_strategy - INFO - Successfully analyzed job: Senior Cloud Solutions Architect (part-time) at Arch Staffing & Consulting
+2025-04-18 02:52:25,738 - job_strategy - INFO - Analyzing job with Gemini: Senior Advisor, Cloud Services - Core Consulting at Coalfire
+2025-04-18 02:52:28,705 - job_strategy - INFO - Successfully analyzed job: Senior Advisor, Cloud Services - Core Consulting at Coalfire
+2025-04-18 02:52:28,705 - job_strategy - INFO - Analyzing job with Gemini: Director of DevOps at EVONA
+2025-04-18 02:52:31,507 - job_strategy - INFO - Successfully analyzed job: Director of DevOps at EVONA
+2025-04-18 02:52:31,507 - job_strategy - INFO - Analyzing job with Gemini: Director of DevOps at PortPro
+2025-04-18 02:52:34,362 - job_strategy - INFO - Successfully analyzed job: Director of DevOps at PortPro
+2025-04-18 02:52:34,362 - job_strategy - INFO - Analyzing job with Gemini: Senior Automation Engineer at DMI (Digital Management, LLC)
+2025-04-18 02:52:38,481 - job_strategy - INFO - Successfully analyzed job: Senior Automation Engineer at DMI (Digital Management, LLC)
+2025-04-18 02:52:38,481 - job_strategy - INFO - Analyzing job with Gemini: Automation Engineer at DMI (Digital Management, LLC)
+2025-04-18 02:52:41,822 - job_strategy - INFO - Successfully analyzed job: Automation Engineer at DMI (Digital Management, LLC)
+2025-04-18 02:52:41,822 - job_strategy - INFO - Analyzing job with Gemini: Senior Automation Quality Engineer (SDET) at Ironclad
+2025-04-18 02:52:45,432 - job_strategy - INFO - Successfully analyzed job: Senior Automation Quality Engineer (SDET) at Ironclad
+2025-04-18 02:52:45,432 - job_strategy - INFO - Analyzing job with Gemini: Senior Infrastructure Engineer at The Phoenix Group
+2025-04-18 02:52:47,591 - job_strategy - INFO - Successfully analyzed job: Senior Infrastructure Engineer at The Phoenix Group
+2025-04-18 02:52:47,591 - job_strategy - INFO - Analyzing job with Gemini: Senior Software Engineer at Talent Bull Inc.
+2025-04-18 02:52:50,657 - job_strategy - INFO - Successfully analyzed job: Senior Software Engineer at Talent Bull Inc.
+2025-04-18 02:52:50,657 - job_strategy - INFO - Analyzing job with Gemini: Lead DevOps Platform Engineer at Lexipol
+2025-04-18 02:52:53,828 - job_strategy - INFO - Successfully analyzed job: Lead DevOps Platform Engineer at Lexipol
+2025-04-18 02:52:53,828 - job_strategy - INFO - Analyzing job with Gemini: Senior DevOps Engineer at CareMessage
+2025-04-18 02:52:57,208 - job_strategy - INFO - Successfully analyzed job: Senior DevOps Engineer at CareMessage
+2025-04-18 02:52:57,209 - job_strategy - INFO - Analyzing job with Gemini: Senior Software Engineer - Back End at Cranium
+2025-04-18 02:53:00,075 - job_strategy - INFO - Successfully analyzed job: Senior Software Engineer - Back End at Cranium
+2025-04-18 02:53:00,075 - job_strategy - INFO - Analyzing job with Gemini: Senior DevOps Engineer/ Consultant at Liatrio
+2025-04-18 02:53:03,330 - job_strategy - INFO - Successfully analyzed job: Senior DevOps Engineer/ Consultant at Liatrio
+2025-04-18 02:53:03,331 - job_strategy - INFO - Updating job cache
+2025-04-18 02:53:03,335 - job_strategy - INFO - Updated 0 jobs and added 15 new jobs to cache
+2025-04-18 02:53:03,335 - job_strategy - INFO - Returning top 5 unique jobs for query: Senior Cloud Automation Engineer (from 15 total)
+2025-04-18 02:53:04,794 - job_strategy - INFO - Searching LinkedIn jobs for query: Cloud Governance Architect, location: United States, limit: 5
+2025-04-18 02:53:04,794 - job_strategy - INFO - Retrieving cached jobs
+2025-04-18 02:53:04,796 - job_strategy - INFO - Retrieved 219 cached jobs
+2025-04-18 02:53:04,796 - job_strategy - INFO - Retrieving applied jobs
+2025-04-18 02:53:04,796 - job_strategy - INFO - Retrieved 0 applied jobs
+2025-04-18 02:53:04,796 - job_strategy - INFO - Collecting job links for query: Cloud Governance Architect
+2025-04-18 02:53:05,730 - job_strategy - INFO - Collected 15 unique job links for query: Cloud Governance Architect
+2025-04-18 02:53:05,733 - job_strategy - DEBUG - Will analyze new job: Chief Architect - Remote at Center for Internet Security
+2025-04-18 02:53:05,733 - job_strategy - DEBUG - Will analyze new job: Identity Management Consultant at DigiTran Technologies Inc.
+2025-04-18 02:53:05,733 - job_strategy - DEBUG - Will analyze new job: Sr. Director Architecture, Enterprise Infrastructure (GRC & PCI) at Lucas James Talent Partners
+2025-04-18 02:53:05,733 - job_strategy - DEBUG - Will analyze new job: Identity and Access Management Architect
+    
+    
+
+        
+            Bangalore,
+            India at Energy Acuity
+2025-04-18 02:53:05,733 - job_strategy - DEBUG - Will analyze new job: Data Governance Architect (Purview) at Millennium Software and Staffing
+2025-04-18 02:53:05,733 - job_strategy - DEBUG - Will analyze new job: Data Governance Architect at Millennium Software and Staffing
+2025-04-18 02:53:05,733 - job_strategy - DEBUG - Will analyze new job: IAM Solutions Architect at Goodman Masson
+2025-04-18 02:53:05,733 - job_strategy - DEBUG - Will analyze new job: Senior Data Governance Solutions Architect at People Tech Group Inc
+2025-04-18 02:53:05,733 - job_strategy - DEBUG - Will analyze new job: Data Strategy and Governance Architect at 3Cloud
+2025-04-18 02:53:05,733 - job_strategy - DEBUG - Will analyze new job: Servicenow Functional Architect at TTC Group
+2025-04-18 02:53:05,733 - job_strategy - DEBUG - Will analyze new job: Solution Architect - Service Cloud at Thunder
+2025-04-18 02:53:05,733 - job_strategy - DEBUG - Will analyze new job: Sr. Consultant, Professional Services at Saviynt
+2025-04-18 02:53:05,733 - job_strategy - DEBUG - Will analyze new job: Sr Manager, Data Architecture (remote) at HarperCollins Publishers
+2025-04-18 02:53:05,733 - job_strategy - DEBUG - Will analyze new job: AI Architect at Searchability®
+2025-04-18 02:53:05,733 - job_strategy - DEBUG - Will analyze new job: Solutions Architect at Fusion Life Sciences Technologies LLC
+2025-04-18 02:53:05,733 - job_strategy - INFO - Analyzing job with Gemini: Chief Architect - Remote at Center for Internet Security
+2025-04-18 02:53:08,409 - job_strategy - INFO - Successfully analyzed job: Chief Architect - Remote at Center for Internet Security
+2025-04-18 02:53:08,409 - job_strategy - INFO - Analyzing job with Gemini: Identity Management Consultant at DigiTran Technologies Inc.
+2025-04-18 02:53:10,395 - job_strategy - INFO - Successfully analyzed job: Identity Management Consultant at DigiTran Technologies Inc.
+2025-04-18 02:53:10,395 - job_strategy - INFO - Analyzing job with Gemini: Sr. Director Architecture, Enterprise Infrastructure (GRC & PCI) at Lucas James Talent Partners
+2025-04-18 02:53:13,696 - job_strategy - INFO - Successfully analyzed job: Sr. Director Architecture, Enterprise Infrastructure (GRC & PCI) at Lucas James Talent Partners
+2025-04-18 02:53:13,696 - job_strategy - INFO - Analyzing job with Gemini: Identity and Access Management Architect
+    
+    
+
+        
+            Bangalore,
+            India at Energy Acuity
+2025-04-18 02:53:18,303 - job_strategy - INFO - Successfully analyzed job: Identity and Access Management Architect
+    
+    
+
+        
+            Bangalore,
+            India at Energy Acuity
+2025-04-18 02:53:18,303 - job_strategy - INFO - Analyzing job with Gemini: Data Governance Architect (Purview) at Millennium Software and Staffing
+2025-04-18 02:53:20,658 - job_strategy - INFO - Successfully analyzed job: Data Governance Architect (Purview) at Millennium Software and Staffing
+2025-04-18 02:53:20,659 - job_strategy - INFO - Analyzing job with Gemini: Data Governance Architect at Millennium Software and Staffing
+2025-04-18 02:53:23,625 - job_strategy - INFO - Successfully analyzed job: Data Governance Architect at Millennium Software and Staffing
+2025-04-18 02:53:23,625 - job_strategy - INFO - Analyzing job with Gemini: IAM Solutions Architect at Goodman Masson
+2025-04-18 02:53:26,956 - job_strategy - INFO - Successfully analyzed job: IAM Solutions Architect at Goodman Masson
+2025-04-18 02:53:26,956 - job_strategy - INFO - Analyzing job with Gemini: Senior Data Governance Solutions Architect at People Tech Group Inc
+2025-04-18 02:53:30,201 - job_strategy - INFO - Successfully analyzed job: Senior Data Governance Solutions Architect at People Tech Group Inc
+2025-04-18 02:53:30,202 - job_strategy - INFO - Analyzing job with Gemini: Data Strategy and Governance Architect at 3Cloud
+2025-04-18 02:53:33,757 - job_strategy - INFO - Successfully analyzed job: Data Strategy and Governance Architect at 3Cloud
+2025-04-18 02:53:33,757 - job_strategy - INFO - Analyzing job with Gemini: Servicenow Functional Architect at TTC Group
+2025-04-18 02:53:36,831 - job_strategy - INFO - Successfully analyzed job: Servicenow Functional Architect at TTC Group
+2025-04-18 02:53:36,831 - job_strategy - INFO - Analyzing job with Gemini: Solution Architect - Service Cloud at Thunder
+2025-04-18 02:53:39,193 - job_strategy - INFO - Successfully analyzed job: Solution Architect - Service Cloud at Thunder
+2025-04-18 02:53:39,194 - job_strategy - INFO - Analyzing job with Gemini: Sr. Consultant, Professional Services at Saviynt
+2025-04-18 02:53:42,058 - job_strategy - INFO - Successfully analyzed job: Sr. Consultant, Professional Services at Saviynt
+2025-04-18 02:53:42,058 - job_strategy - INFO - Analyzing job with Gemini: Sr Manager, Data Architecture (remote) at HarperCollins Publishers
+2025-04-18 02:53:44,988 - job_strategy - INFO - Successfully analyzed job: Sr Manager, Data Architecture (remote) at HarperCollins Publishers
+2025-04-18 02:53:44,988 - job_strategy - INFO - Analyzing job with Gemini: AI Architect at Searchability®
+2025-04-18 02:53:47,644 - job_strategy - INFO - Successfully analyzed job: AI Architect at Searchability®
+2025-04-18 02:53:47,645 - job_strategy - INFO - Analyzing job with Gemini: Solutions Architect at Fusion Life Sciences Technologies LLC

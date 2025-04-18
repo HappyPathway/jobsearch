@@ -1,0 +1,82 @@
+name: Document Generation
+
+on:
+  workflow_dispatch:
+    inputs:
+      job_url:
+        description: 'URL of the job posting to generate documents for'
+        required: true
+        type: string
+      company:
+        description: 'Company name'
+        required: true
+        type: string
+      title:
+        description: 'Job title'
+        required: true
+        type: string
+      description:
+        description: 'Job description'
+        required: true
+        type: string
+
+jobs:
+  generate-documents:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: Restore database cache
+        id: cache-db
+        uses: actions/cache@v3
+        with:
+          path: career_data.db
+          key: ${{ runner.os }}-career-db-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-career-db-
+
+      - name: Generate application documents
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          # Create temporary job info file
+          echo '{
+            "url": "${{ github.event.inputs.job_url }}",
+            "company": "${{ github.event.inputs.company }}",
+            "title": "${{ github.event.inputs.title }}",
+            "description": "${{ github.event.inputs.description }}"
+          }' > job_info.json
+          
+          # Generate documents
+          python scripts/generate_documents.py job_info.json
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: 'feat: Add application documents for ${{ github.event.inputs.company }}'
+          title: 'Add application documents for ${{ github.event.inputs.company }}'
+          body: |
+            Generated application documents for job posting:
+            
+            - Company: ${{ github.event.inputs.company }}
+            - Title: ${{ github.event.inputs.title }}
+            - URL: ${{ github.event.inputs.job_url }}
+            
+            Documents generated:
+            - Tailored resume
+            - Cover letter
+            - Job details
+          branch: documents-${{ github.event.inputs.company }}
+          delete-branch: true
+          base: main

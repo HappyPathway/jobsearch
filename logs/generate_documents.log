@@ -233,3 +233,33 @@
   "signature": "Sincerely,\nYour Name"
 }
 2025-04-18 01:56:26,580 - generate_documents - ERROR - Failed to generate cover letter content
+2025-04-18 02:49:12,378 - generate_documents - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 02:49:12,379 - generate_documents - ERROR - Error generating job documents: too many values to unpack (expected 3)
+2025-04-18 02:49:12,379 - generate_documents - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 02:49:12,379 - generate_documents - ERROR - Error generating job documents: too many values to unpack (expected 3)
+2025-04-18 02:49:12,379 - generate_documents - INFO - Generating documents for AWS Solutions Architect at Commit
+2025-04-18 02:49:12,379 - generate_documents - ERROR - Error generating job documents: too many values to unpack (expected 3)
+2025-04-18 02:49:12,379 - generate_documents - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 02:49:12,379 - generate_documents - ERROR - Error generating job documents: too many values to unpack (expected 3)
+2025-04-18 02:49:12,380 - generate_documents - INFO - Generating documents for Cloud Architect at PingWind Inc. (SDVOSB)
+2025-04-18 02:49:12,380 - generate_documents - ERROR - Error generating job documents: too many values to unpack (expected 3)
+2025-04-18 02:49:12,380 - generate_documents - INFO - Generating documents for Head of Data, Machine Learning, and Application Platform at Socure
+2025-04-18 02:49:12,380 - generate_documents - ERROR - Error generating job documents: too many values to unpack (expected 3)
+2025-04-18 02:49:12,380 - generate_documents - INFO - Generating documents for Java Software Engineer Principal at Vertex Inc.
+2025-04-18 02:49:12,381 - generate_documents - ERROR - Error generating job documents: too many values to unpack (expected 3)
+2025-04-18 02:49:12,381 - generate_documents - INFO - Generating documents for Cloud Engineer Principal at SAIC
+2025-04-18 02:49:12,381 - generate_documents - ERROR - Error generating job documents: too many values to unpack (expected 3)
+2025-04-18 02:49:12,381 - generate_documents - INFO - Generating documents for Software Engineer Principal - Remote US (Kafka) at Sagent
+2025-04-18 02:49:12,381 - generate_documents - ERROR - Error generating job documents: too many values to unpack (expected 3)
+2025-04-18 02:49:12,381 - generate_documents - INFO - Generating documents for Cloud Engineer Principal at SAIC
+2025-04-18 02:49:12,381 - generate_documents - ERROR - Error generating job documents: too many values to unpack (expected 3)
+2025-04-18 02:49:12,381 - generate_documents - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 02:49:12,382 - generate_documents - ERROR - Error generating job documents: too many values to unpack (expected 3)
+2025-04-18 02:49:12,382 - generate_documents - INFO - Generating documents for AWS Architect at ASCENDING Inc.
+2025-04-18 02:49:12,382 - generate_documents - ERROR - Error generating job documents: too many values to unpack (expected 3)
+2025-04-18 02:49:12,382 - generate_documents - INFO - Generating documents for DevOps Architect at Connexions
+2025-04-18 02:49:12,382 - generate_documents - ERROR - Error generating job documents: too many values to unpack (expected 3)
+2025-04-18 02:49:12,382 - generate_documents - INFO - Generating documents for AWS Solutions Architect at Commit
+2025-04-18 02:49:12,382 - generate_documents - ERROR - Error generating job documents: too many values to unpack (expected 3)
+2025-04-18 02:49:12,382 - generate_documents - INFO - Generating documents for AWS Solutions Architect (Remote) at Serverless Guru
+2025-04-18 02:49:12,382 - generate_documents - ERROR - Error generating job documents: too many values to unpack (expected 3)
