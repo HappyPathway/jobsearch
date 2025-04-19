@@ -54,3 +54,8 @@ Integrate Slack Notifications for Resume Generation and Job Links:
    - Store API tokens securely
    - Ensure no sensitive personal information is shared in public channels
    - Implement rate limiting to avoid API throttling
+
+
+# analyze_job_with_gemini
+Gemini doesn't have enough information in its prompt to be able really analyze the job. 
+We haven't told it which criteri to judge by.
