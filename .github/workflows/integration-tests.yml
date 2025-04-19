@@ -17,6 +17,10 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install WeasyPrint Dependencies
+        run: |
+          brew install pango cairo fontconfig
+
       - name: Install dependencies
         run: |
           python -m venv venv
