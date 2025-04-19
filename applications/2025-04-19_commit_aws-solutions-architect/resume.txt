@@ -1,44 +1,37 @@
 Summary
 
-Highly accomplished and results-oriented Cloud Solutions Architect with 10+ years of experience designing, implementing, and managing robust, scalable, and secure cloud infrastructure on AWS and other cloud platforms. Proven ability to leverage Infrastructure-as-Code (IaC) tools like Terraform and CloudFormation to automate infrastructure provisioning, governance, and security. Expertise in Kubernetes, CI/CD pipelines, and cloud cost optimization. Passionate about innovation and collaboration, seeking to contribute to Commit's growth by delivering cutting-edge AWS solutions.
+Highly accomplished and results-oriented Cloud Solutions Architect with 8+ years of experience designing, implementing, and managing robust, scalable, and secure cloud infrastructure across AWS and other cloud platforms. Proven ability to leverage AWS services such as EC2, S3, Lambda, and RDS to deliver innovative solutions. Expertise in infrastructure automation, DevOps principles, and security best practices. Passionate about collaborating with cross-functional teams to achieve business objectives in fast-paced, dynamic environments.
 
 
 Experience
 
 FedSoft, Inc.
 Sr. Cloud SME, Dec 2023 - Present
-* Lead cloud modernization initiatives focused on AWS infrastructure automation, governance, and security.
+* Lead cloud modernization initiatives focused on AWS infrastructure automation and governance.
 * Design and implement scalable, multi-cloud architectures using Terraform and Kubernetes.
-* Develop reusable Terraform modules to enforce best practices and compliance.
-* Integrate CI/CD pipelines using GitHub Actions and implement automated security controls with HashiCorp Vault and AWS IAM.
-* Significantly optimize cloud cost management.
+* Implement automated security controls using HashiCorp Vault and AWS IAM.
+* Optimize cloud cost management and collaborate with teams to establish cloud governance policies.
 
 Clover
 Infra Architect, Dec 2020 - Dec 2023
-* Led the design and implementation of scalable and secure AWS cloud infrastructure using Terraform.
-* Architected Kubernetes-based container platforms and integrated cost optimization strategies.
-* Established a self-service infrastructure model and led a successful cloud migration initiative.
-* Implemented DevSecOps practices and ensured compliance with SOC 2, PCI DSS, and ISO 27001.
+* Led the design and deployment of scalable and secure AWS cloud infrastructure using Terraform.
+* Implemented a standardized Infrastructure-as-Code framework, architected Kubernetes-based container platforms, and integrated cost optimization strategies.
+* Drove compliance efforts for SOC 2, PCI DSS, and ISO 27001.
 
 HappyPathway
 Chief Solutions Architect, Oct 2016 - Present
-* Architected self-service infrastructure using Terraform, focusing on AWS deployments.
+* Architected self-service infrastructure using Terraform and Ansible.
 * Designed and deployed cloud-agnostic Kubernetes solutions.
-* Implemented DevSecOps practices, improving compliance with SOC 2 and ISO 27001.
-* Led successful cloud migrations to AWS, reducing operational costs.
-
-HashiCorp
-Sr. Solutions Engineer, Jun 2018 - Dec 2018
-* Delivered Terraform and Vault workshops, showcasing expertise in infrastructure automation and security best practices.
-* Built scalable demo environments and served as a Terraform Enterprise subject matter expert.
+* Led migrations to AWS, reducing cloud costs and improving compliance with SOC 2 and ISO 27001.
+* Implemented DevSecOps practices.
 
 RetailNext
 DevOps Engineer, Jun 2014 - Mar 2015
-* Architected and automated AWS infrastructure using Infrastructure-as-Code (IaC).
+* Architected and automated AWS infrastructure using Infrastructure-as-Code (Terraform).
 * Developed a scalable continuous deployment pipeline and implemented a real-time monitoring framework.
 * Integrated cloud security best practices.
 
 
 Skills
 
-AWS, Terraform, Kubernetes, CI/CD, Cloud Security, Cost Optimization, GitHub Actions, HashiCorp Vault, Cloud Governance
+AWS, Terraform, Kubernetes, Ansible, CI/CD, CI/CD Pipelines, Cloud Security & Compliance, Cost Optimization, HashiCorp Vault, Cloud Governance
