@@ -1,4 +1,4 @@
-.PHONY: venv install clean init-db scrape-profile combine-summary parse-resume parse-cover-letter run help all generate-github-pages mark-applied test-integration gh-strategy-cleanup gh-generate-docs gh-pages gh-test gh-init gh-job-strategy gh-profile-update
+.PHONY: venv install clean init-db scrape-profile combine-summary parse-resume parse-cover-letter run help all generate-github-pages mark-applied test-integration gh-strategy-cleanup gh-generate-docs gh-pages gh-test gh-init gh-job-strategy gh-profile-update slack-list-channels
 
 VENV_NAME=venv
 PYTHON=$(VENV_NAME)/bin/python
@@ -32,9 +32,9 @@ help:
 venv:
 	python3 -m venv $(VENV_NAME)
 
-install:
-	pip install -r requirements.txt
-	pip install -e .
+install: venv
+	$(PIP) install --upgrade pip
+	$(PIP) install -r requirements.txt
 
 clean:
 	rm -rf $(VENV_NAME)
@@ -69,6 +69,9 @@ mark-applied:
 		exit 1; \
 	fi
 	$(PYTHON) scripts/mark_job_applied.py "$(URL)" $(if $(STATUS),--status $(STATUS)) $(if $(NOTES),--notes "$(NOTES)")
+
+slack-list-channels: install
+	$(PYTHON) scripts/slack_notifier.py list-channels
 
 test-integration:
 	pytest tests/integration/

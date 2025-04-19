@@ -48,6 +48,9 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GCS_BUCKET_NAME: ${{ secrets.GCS_BUCKET_NAME }}
+          SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ vars.SLACK_CHANNEL_ID }}
+          ENABLE_SLACK_NOTIFICATIONS: "true"
         run: |
           python scripts/generate_github_pages.py
 
@@ -61,4 +64,54 @@ jobs:
         uses: actions/deploy-pages@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Send Slack Notification for Deployment
+        if: success()
+        env:
+          SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ vars.SLACK_CHANNEL_ID }}
+        run: |
+          pip install slack-sdk
+          python -c '
+          from slack_sdk import WebClient
+          from slack_sdk.errors import SlackApiError
+          import os
+          
+          token = os.environ["SLACK_API_TOKEN"]
+          channel = os.environ["SLACK_CHANNEL_ID"]
+          
+          try:
+              client = WebClient(token=token)
+              response = client.chat_postMessage(
+                  channel=channel,
+                  text="✅ Job Search Portal has been successfully deployed to GitHub Pages",
+                  blocks=[
+                      {
+                          "type": "header",
+                          "text": {
+                              "type": "plain_text",
+                              "text": "✅ Job Search Portal Deployed",
+                              "emoji": True
+                          }
+                      },
+                      {
+                          "type": "section",
+                          "text": {
+                              "type": "mrkdwn",
+                              "text": "The job search portal has been successfully updated and deployed to GitHub Pages."
+                          }
+                      },
+                      {
+                          "type": "section",
+                          "text": {
+                              "type": "mrkdwn",
+                              "text": "<http://blog.happypathway.com/jobsearch/|🔗 View the Job Search Portal>"
+                          }
+                      }
+                  ]
+              )
+              print("Slack notification sent successfully!")
+          except SlackApiError as e:
+              print(f"Error sending Slack notification: {e.response[\"error\"]}")
+          '
 
