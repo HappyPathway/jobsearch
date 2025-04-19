@@ -1,0 +1,15 @@
+Dear Mr. Arnold,
+
+I am writing to express my enthusiastic interest in the AWS Solutions Architect (Remote) position at Serverless Guru, as advertised on LinkedIn.  My passion for serverless architectures and extensive experience designing, implementing, and managing cloud infrastructure on AWS, coupled with my deep understanding of cloud-native principles, align perfectly with the requirements outlined in the job description.  I am particularly drawn to Serverless Guru's focus on cutting-edge serverless technologies and the opportunity to contribute to a company at the forefront of this rapidly evolving field.
+
+Throughout my 10+ years of experience, I have consistently delivered robust, scalable, and secure cloud solutions.  In my current role as Sr. Cloud SME at FedSoft, Inc., I lead cloud modernization initiatives, leveraging Terraform and AWS to automate infrastructure provisioning and governance. I design and implement scalable, multi-cloud architectures using Kubernetes and ensure security through tools like HashiCorp Vault and AWS IAM. This experience directly addresses your need for proficiency in AWS services like Lambda, API Gateway, DynamoDB, S3, and Step Functions, as well as experience with IaC tools like Terraform.
+
+Prior to FedSoft, as Infra Architect at Clover, I spearheaded the design and deployment of secure cloud infrastructure on AWS, utilizing Terraform to create a standardized IaC framework.  I also architected Kubernetes-based container platforms and integrated cost optimization strategies.  My experience implementing DevSecOps practices and ensuring compliance with industry standards like SOC 2, PCI DSS, and ISO 27001 further underscores my commitment to building secure and compliant systems.  My background as Chief Solutions Architect at HappyPathway, leading cloud migrations to AWS, GCP, and Azure, demonstrates my adaptability and expertise in managing diverse cloud environments.
+
+My passion for serverless extends beyond my professional experience. I actively engage with the serverless community and continuously explore new technologies in this space. I am confident that my skills and enthusiasm, combined with my experience in remote work environments, make me an ideal candidate to contribute to Serverless Guru's innovative work.
+
+I am eager to learn more about this opportunity and discuss how my skills and experience can benefit Serverless Guru. Thank you for your time and consideration. I look forward to hearing from you soon.
+
+Sincerely,
+
+[Your Name]

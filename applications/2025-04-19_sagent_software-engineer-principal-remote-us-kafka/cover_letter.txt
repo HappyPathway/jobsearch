@@ -1,0 +1,17 @@
+Dear Mr. Arnold,
+
+I am writing to express my keen interest in the Principal Software Engineer - Kafka position at Sagent, as advertised on LinkedIn.  My resume details my extensive experience architecting, implementing, and managing scalable and secure cloud infrastructure. While my background showcases a strong cloud focus, I possess a deep understanding of distributed systems and am eager to apply my expertise to the challenges of a Kafka-centric role. I'm particularly drawn to Sagent's focus on innovation and the fast-paced environment mentioned in the job description – two aspects that resonate strongly with my work style.
+
+Throughout my career, I've consistently delivered robust and complex systems. As Chief Solutions Architect at HappyPathway, I spearheaded the development and implementation of cloud-agnostic infrastructure and Kubernetes solutions using tools like Terraform, Packer, and Ansible. This experience solidified my foundation in distributed systems principles, including high availability, fault tolerance, and performance optimization – all crucial for managing a thriving Kafka ecosystem.  Furthermore, leading cloud migrations across AWS, GCP, and Azure has instilled in me a deep understanding of scalability and resource management, skills I'm eager to leverage to enhance Sagent's Kafka infrastructure.
+
+At Clover, as Infra Architect, I led the design and deployment of secure and scalable cloud infrastructure using Terraform and AWS, including architecting Kubernetes-based container platforms. This role demanded a deep understanding of inter-service communication, data streaming, and event-driven architectures – concepts central to Kafka.  My experience implementing DevSecOps practices and ensuring compliance with industry standards like SOC 2, PCI DSS, and ISO 27001 will allow me to contribute to a secure and compliant Kafka environment at Sagent from day one.
+
+While my resume primarily highlights my cloud experience, I am a quick learner with a passion for expanding my skillset. I'm confident in my ability to rapidly acquire and apply advanced Kafka knowledge. I'm particularly excited by the prospect of contributing to Sagent's Kafka infrastructure by leveraging my existing expertise in distributed systems, automation, and security to ensure high availability, performance, and security.
+
+I am confident that my skills and experience align perfectly with this role and I am eager to discuss how I can contribute to Sagent's success. Thank you for your time and consideration. I look forward to hearing from you soon.
+
+Sincerely,
+
+Dave J. Arnold
+(707) 480-6346
+dave@roknsound.com

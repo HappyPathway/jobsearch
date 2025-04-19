@@ -1,0 +1,15 @@
+Dear Mr. Arnold,
+
+I am writing to express my enthusiastic interest in the DevOps Architect position at Connexions, as advertised on LinkedIn. My extensive experience in architecting, implementing, and managing cloud infrastructure across AWS, Azure, and GCP, coupled with my passion for automation and continuous improvement, aligns perfectly with the requirements outlined in the job description. I am particularly drawn to Connexions' focus on a collaborative environment and commitment to innovation, which resonates strongly with my own professional values.
+
+In my current role as Sr. Cloud SME at FedSoft, Inc., I spearheaded cloud modernization initiatives, leveraging Terraform and Kubernetes to automate infrastructure provisioning and governance across AWS. I developed reusable Terraform modules, ensuring adherence to best practices and compliance requirements, and implemented robust CI/CD pipelines using GitHub Actions.  Furthermore, my experience automating security controls with tools like HashiCorp Vault and AWS IAM has resulted in significant cloud cost optimization.
+
+Prior to FedSoft, I served as Chief Solutions Architect at HappyPathway, where I architected self-service infrastructure solutions using Terraform Enterprise, Packer, and Ansible. My ability to deploy cloud-agnostic Kubernetes solutions across AWS, GCP, and Azure, coupled with my implementation of DevSecOps practices, ensured compliance with SOC 2 and ISO 27001 standards while simultaneously driving significant cost reductions through strategic cloud migrations.
+
+My experience at HashiCorp as a Sr. Solutions Engineer provided me with invaluable expertise in Terraform and Vault, further solidifying my understanding of infrastructure automation and security best practices. This experience, combined with my earlier roles at companies like Clover and AppDynamics, where I led the design and implementation of highly scalable and secure cloud infrastructure, has equipped me with the comprehensive skillset necessary to excel as a DevOps Architect at Connexions.
+
+I am confident that my technical expertise, leadership experience, and passion for driving continuous improvement through DevSecOps practices make me an ideal candidate for this position. I am eager to discuss how my skills and experience can contribute to Connexions' success.  Thank you for your time and consideration. I look forward to hearing from you soon.
+
+Sincerely,
+
+[Your Name]

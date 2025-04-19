@@ -1,0 +1,15 @@
+Dear Hiring Manager,
+
+I am writing to express my keen interest in the Head of Data, Machine Learning, and Application Platform position at Socure, as advertised on LinkedIn.  My resume, which I've attached, details my extensive experience in architecting and leading cloud modernization efforts, designing scalable data platforms, and implementing robust security controls. Socure's focus on innovative identity verification solutions and its data-driven culture deeply resonate with my professional goals and expertise, making this an exceptionally compelling opportunity.
+
+In my current role as Chief Solutions Architect at HappyPathway, I've spearheaded the development of a self-service infrastructure using Terraform Enterprise, Packer, and Ansible, enabling rapid deployment of scalable, cloud-agnostic Kubernetes solutions across AWS, GCP, and Azure. This experience directly aligns with Socure's need for a leader capable of building and deploying scalable data platforms and applications.  Furthermore, my success in reducing cloud costs and ensuring compliance with SOC 2 and ISO 27001 demonstrates my commitment to fiscal responsibility and rigorous security standards.
+
+Prior to HappyPathway, I served as Infra Architect at Clover, where I led the design and deployment of secure, high-performance cloud infrastructure using Terraform and AWS. I established a standardized IaC framework and Kubernetes-based container platforms, implemented cost optimization strategies, and spearheaded a successful cloud migration. This experience, coupled with my deep understanding of security best practices demonstrated through achieving SOC 2, PCI DSS, and ISO 27001 compliance, positions me well to manage the complexities of Socure's data and application platform.
+
+My experience leading cloud modernization efforts at FedSoft, Inc., further strengthens my candidacy. By automating infrastructure provisioning and governance using Terraform, AWS, and Kubernetes, I've demonstrated my ability to translate business requirements into technical solutions.  The development of a scalable, multi-cloud architecture, reusable Terraform modules, and integrated CI/CD pipelines, along with the implementation of automated security controls using HashiCorp Vault and AWS IAM, showcases my proficiency in building and securing robust and efficient cloud environments.  While my background emphasizes cloud infrastructure, I'm a firm believer in cross-functional collaboration and eager to leverage my expertise to support and empower data science and machine learning initiatives.
+
+I am confident that my leadership experience, technical expertise, and passion for innovation align perfectly with Socure's requirements. I am eager to discuss how my skills and experience can contribute to your team's success.  Please feel free to contact me directly at (707) 480-6346 or dave@roknsound.com to schedule a conversation.
+
+Sincerely,
+
+Dave J. Arnold
