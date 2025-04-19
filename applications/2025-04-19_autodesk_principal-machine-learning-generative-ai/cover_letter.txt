@@ -1,0 +1,17 @@
+Dear Hiring Manager,
+
+I am writing to express my keen interest in the Principal Machine Learning: Generative AI position at Autodesk, as advertised on LinkedIn. While my background is deeply rooted in cloud infrastructure and automation, I am eager to pivot my expertise towards the exciting challenges and opportunities presented by Generative AI. My passion for cutting-edge technology, coupled with my proven ability to architect and implement complex systems at scale, makes me confident I can contribute significantly to Autodesk's innovation in this field.
+
+Throughout my career, I have consistently demonstrated the ability to design, build, and manage highly scalable and secure cloud infrastructure. As Chief Solutions Architect at HappyPathway and Sr. Cloud SME at FedSoft, Inc., I led cloud modernization initiatives, leveraging tools like Terraform, Kubernetes, and AWS to create robust and efficient systems.  My experience in automation, infrastructure-as-code, and cloud-native technologies translates directly to the needs of building and deploying sophisticated AI models. Furthermore, my deep understanding of cloud security and compliance, honed through implementing DevSecOps practices and achieving SOC 2 and ISO 27001 compliance, will be invaluable in ensuring the responsible development and deployment of Generative AI solutions.
+
+My experience at HashiCorp as a Sr. Solutions Engineer provided me with in-depth knowledge of Terraform and Vault, tools crucial for managing the complex infrastructure required for AI/ML workloads. This experience, combined with my leadership roles at HappyPathway and FedSoft, where I mentored teams and drove cloud transformation strategies, has prepared me to lead and contribute to a high-performing team focused on Generative AI. I am a quick learner and highly adaptable, and I am enthusiastic about immersing myself in deep learning frameworks like TensorFlow and PyTorch.
+
+I am particularly drawn to Autodesk's commitment to innovation and its position at the forefront of the design and make software industry. The opportunity to contribute to the advancement of Generative AI within such a forward-thinking organization is incredibly appealing. I am confident that my skills and experience, combined with my passion for learning and pushing technological boundaries, will allow me to make a significant impact at Autodesk.
+
+Thank you for your time and consideration. I am eager to learn more about this opportunity and discuss how my skills and experience can benefit Autodesk. I have attached my resume for your review and welcome the opportunity to speak with you further.
+
+Sincerely,
+
+Dave J. Arnold
+(707) 480-6346
+dave@roknsound.com
