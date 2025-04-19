@@ -1,0 +1,170 @@
+name: Medium Article Generator
+
+on:
+  workflow_dispatch:  # Manual trigger
+    inputs:
+      skill:
+        description: 'Skill to write about (optional)'
+        required: false
+        type: string
+      preview_only:
+        description: 'Generate without publishing to Medium'
+        required: false
+        default: false
+        type: boolean
+  schedule:
+    # Run once a week on Monday at 11:00 UTC
+    - cron: '0 11 * * 1'
+
+jobs:
+  generate-article:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
+
+      - name: Generate Medium article
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          MEDIUM_API_TOKEN: ${{ secrets.MEDIUM_API_TOKEN }}
+          GCS_BUCKET_NAME: ${{ secrets.GCS_BUCKET_NAME }}
+          SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ vars.SLACK_CHANNEL_ID }}
+        run: |
+          # Define preview flag based on input
+          PREVIEW_FLAG=""
+          if [[ "${{ github.event.inputs.preview_only }}" == "true" ]]; then
+            PREVIEW_FLAG="--preview"
+          fi
+          
+          # Define skill parameter if provided
+          SKILL_PARAM=""
+          if [[ -n "${{ github.event.inputs.skill }}" ]]; then
+            SKILL_PARAM="--skill '${{ github.event.inputs.skill }}'"
+          fi
+          
+          # Run the Medium publisher with params
+          COMMAND="python scripts/medium_publisher.py ${PREVIEW_FLAG} ${SKILL_PARAM}"
+          echo "Running: $COMMAND"
+          eval $COMMAND
+          
+          # Store article path or URL
+          ARTICLE_RESULT=$?
+          if [ $ARTICLE_RESULT -ne 0 ]; then
+            echo "::error::Failed to generate Medium article"
+            exit 1
+          fi
+          
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: 'feat: Add new Medium article'
+          title: 'Add new Medium article'
+          body: |
+            This PR adds a new Medium article generated from job search skills.
+            
+            The article has been:
+            - Generated using AI based on targeted job skills
+            - Saved in the articles directory
+            - Published as a draft to Medium (unless preview mode was selected)
+            
+            Please review the article content before merging.
+          branch: medium-article-${{ github.run_id }}
+          delete-branch: true
+          base: main
+
+      - name: Send Slack Notification
+        if: success() && env.SLACK_API_TOKEN != ''
+        env:
+          SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ vars.SLACK_CHANNEL_ID }}
+        run: |
+          pip install slack-sdk
+          python -c '
+          from slack_sdk import WebClient
+          from slack_sdk.errors import SlackApiError
+          import os
+          import glob
+          
+          token = os.environ["SLACK_API_TOKEN"]
+          channel = os.environ["SLACK_CHANNEL_ID"]
+          
+          # Find the most recent article file
+          article_files = glob.glob("articles/*.md")
+          if not article_files:
+              print("No article files found")
+              exit(0)
+              
+          latest_article = max(article_files, key=os.path.getmtime)
+          
+          # Get the article title from the first line of the file
+          with open(latest_article, "r") as f:
+              first_line = f.readline().strip()
+              title = first_line.replace("# ", "")
+          
+          preview_mode = "${{ github.event.inputs.preview_only }}" == "true"
+          article_mode = "Preview Mode" if preview_mode else "Published as Draft to Medium"
+          
+          try:
+              client = WebClient(token=token)
+              blocks = [
+                  {
+                      "type": "header",
+                      "text": {
+                          "type": "plain_text",
+                          "text": "✍️ New Medium Article Generated",
+                          "emoji": True
+                      }
+                  },
+                  {
+                      "type": "section",
+                      "text": {
+                          "type": "mrkdwn",
+                          "text": f"*Title:* {title}"
+                      }
+                  },
+                  {
+                      "type": "section",
+                      "fields": [
+                          {
+                              "type": "mrkdwn",
+                              "text": f"*File:* {latest_article}"
+                          },
+                          {
+                              "type": "mrkdwn",
+                              "text": f"*Status:* {article_mode}"
+                          }
+                      ]
+                  }
+              ]
+              
+              response = client.chat_postMessage(
+                  channel=channel,
+                  text=f"New Medium article generated: {title}",
+                  blocks=blocks
+              )
+              print("Slack notification sent successfully")
+          except SlackApiError as e:
+              print(f"Error sending Slack notification: {e.response[\"error\"]}")
+          '

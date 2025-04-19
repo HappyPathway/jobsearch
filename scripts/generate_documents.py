@@ -120,13 +120,15 @@ Format the output as a plain text document with sections clearly marked."""
 
 def write_cover_letter_with_gemini(cover_letter_content, job_info):
     """Use Gemini with a specialized writing prompt to create an engaging cover letter"""
-    prompt = f"""You are an expert cover letter writer. Take this structured content and write it as a compelling letter.
+    prompt = f"""You are an expert cover letter writer. Take this structured content and write it as a compelling letter FROM the job applicant TO the hiring manager.
 Follow these rules:
-1. Maintain professional but engaging tone
-2. Show enthusiasm and personality
-3. Connect experience to job requirements
-4. Keep paragraphs focused and concise
-5. End with a clear call to action
+1. Write FROM the applicant perspective (never address the letter to the applicant)
+2. Maintain professional but engaging tone
+3. Show enthusiasm and personality
+4. Connect experience to job requirements
+5. Keep paragraphs focused and concise
+6. End with a clear call to action
+7. Include a proper signature line that says "Sincerely," followed by the applicant's name if provided
 
 Job Details:
 {json.dumps(job_info, indent=2)}
@@ -261,12 +263,12 @@ Return a JSON object with:
         logger.error(f"Error generating tailored resume: {str(e)}")
         return None
 
-def generate_cover_letter(job_info, resume_content, skills):
+def generate_cover_letter(job_info, resume_content, skills, full_name=""):
     """Generate cover letter content matching the resume"""
     try:
         model = genai.GenerativeModel('gemini-1.5-pro')
         
-        prompt = f"""You are an expert cover letter writer. Create a compelling cover letter that complements this resume and targets the specific job.
+        prompt = f"""You are an expert cover letter writer. Create a compelling cover letter FROM the job applicant TO the hiring manager for this specific job.
 
 Job Information:
 {json.dumps(job_info, indent=2)}
@@ -277,19 +279,23 @@ Resume Content:
 Skills:
 {json.dumps(skills, indent=2)}
 
+Applicant's Full Name:
+{full_name}
+
 Instructions:
-1. Create a professional greeting
-2. Write an engaging opening paragraph
-3. Develop 2-3 body paragraphs highlighting relevant experience
-4. Include a strong closing paragraph
-5. Add a professional signature block
+1. Write a letter FROM the applicant perspective (not addressed to the applicant)
+2. Use professional greeting like "Dear Hiring Manager," (never address the letter to the applicant)
+3. Write an engaging opening paragraph in the applicant's voice
+4. Develop 2-3 body paragraphs highlighting the applicant's relevant experience
+5. Include a strong closing paragraph
+6. Add a professional signature block that says "Sincerely," followed by the applicant's name (use "{full_name}" if provided, otherwise use "Sincerely," only)
 
 Return a JSON object with:
-- greeting: Professional salutation
+- greeting: Professional salutation (e.g., "Dear Hiring Manager,")
 - opening: Introduction paragraph
 - body_paragraphs: Array of body paragraphs
 - closing: Closing paragraph
-- signature: Signature block"""
+- signature: Signature block with the applicant's name"""
 
         response = model.generate_content(
             prompt,
@@ -415,7 +421,7 @@ def generate_job_documents(job_info, use_writing_pass=True, use_visual_resume=Tr
             resume_text = format_resume(resume_content)
         
         # Generate matching cover letter content
-        cover_letter_content = generate_cover_letter(job_info, resume_content, skills)
+        cover_letter_content = generate_cover_letter(job_info, resume_content, skills, full_name)
         if not cover_letter_content:
             logger.error("Failed to generate cover letter content")
             return None, None
@@ -470,7 +476,7 @@ def generate_job_documents(job_info, use_writing_pass=True, use_visual_resume=Tr
                     shutil.copy(ats_resume_pdf_path, default_resume_pdf_path)
                 
                 # Create cover letter
-                create_cover_letter_pdf(cover_letter_content, job_info, str(cover_letter_pdf_path.with_suffix('')))
+                create_cover_letter_pdf(cover_letter_content, job_info, str(cover_letter_pdf_path.with_suffix('')), full_name)
                 logger.info("Successfully generated PDF documents")
             except Exception as e:
                 logger.error(f"Error generating PDF documents: {str(e)}")

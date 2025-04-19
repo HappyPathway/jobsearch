@@ -14,6 +14,7 @@ import time
 import random
 import argparse
 import generate_documents
+from recruiter_finder import get_recruiter_finder  # Add this import
 
 # Import Slack notifier
 try:
@@ -497,149 +498,93 @@ def get_target_roles():
         logger.error(f"Error retrieving target roles: {str(e)}")
         raise
 
-def generate_daily_strategy(experiences, skills, job_limit=2):
-    """Use Gemini to generate a personalized job search strategy"""
+def generate_daily_strategy(jobs, applied_jobs, roles, skills):
+    """Generate a daily job search strategy based on available jobs and target roles"""
     logger.info("Generating daily job search strategy")
-    current_role = experiences[0] if experiences else None
     
-    job_searches = []
-    target_roles = get_target_roles()
+    # Get a recruiter finder instance
+    recruiter_finder = get_recruiter_finder()
     
-    for role in target_roles:
-        jobs = search_linkedin_jobs(role['name'], limit=job_limit)
-        if jobs:
-            job_searches.append({
-                "role": role['name'],
-                "priority": role['priority'],
-                "match_score": role['match_score'],
-                "reasoning": role['reasoning'],
-                "listings": jobs
-            })
-        time.sleep(random.uniform(1, 2))
-
-    prompt = f"""As an expert career strategist, create a detailed daily job search strategy.
-Use this professional's background to create a highly specific and actionable plan.
-Return ONLY a JSON object with no additional text or formatting.
-
-Current Role:
-Company: {current_role['company'] if current_role else 'N/A'}
-Title: {current_role['title'] if current_role else 'N/A'}
-
-Key Skills: {', '.join(skills[:10])} (and {len(skills) - 10} more)
-
-Recent Experience Highlights:
-{experiences[0]['description'] if experiences else 'N/A'}
-
-Available Job Opportunities:
-{json.dumps(job_searches, indent=2)}
-
-Required JSON format:
-{{
-    "daily_focus": {{
-        "title": "Focus area for today (e.g. 'Review and Plan')",
-        "reasoning": "Why this focus is important for today",
-        "success_metrics": [
-            "Specific measurable goal 1",
-            "Specific measurable goal 2"
-        ],
-        "morning": [
-            {{
-                "task": "Review and prioritize job listings",
-                "time": "30",
-                "priority": "High",
-                "reasoning": "Focuses efforts on promising opportunities"
-            }}
-        ],
-        "afternoon": [
-            {{
-                "task": "Submit high-quality application",
-                "time": "60",
-                "priority": "High",
-                "reasoning": "Maintains consistent progress"
-            }}
-        ]
-    }},
-    "target_roles": [
-        {{
-            "title": "Principal Cloud Architect",
-            "reasoning": "Aligns with current experience and career goals",
-            "key_skills_to_emphasize": [
-                "Cloud Architecture",
-                "Terraform",
-                "Kubernetes"
+    # Sort jobs by match score
+    sorted_jobs = sorted(jobs, key=lambda job: job.get('match_score', 0), reverse=True)
+    
+    # Get top skills across all jobs
+    all_requirements = []
+    for job in jobs:
+        all_requirements.extend(job.get('key_requirements', []))
+    
+    skill_counts = {}
+    for req in all_requirements:
+        if req.lower() in skill_counts:
+            skill_counts[req.lower()] += 1
+        else:
+            skill_counts[req.lower()] = 1
+    
+    top_skills = sorted(skill_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+    
+    # Get top companies with jobs
+    companies = {}
+    for job in jobs:
+        company = job.get('company', '')
+        if company:
+            if company in companies:
+                companies[company] += 1
+            else:
+                companies[company] = 1
+    
+    top_companies = sorted(companies.items(), key=lambda x: x[1], reverse=True)[:10]
+    
+    # Find recruiters for top companies
+    company_recruiters = {}
+    for company, _ in top_companies:
+        # Use cache_only=True to avoid LinkedIn scraping during strategy generation
+        recruiters = recruiter_finder.search_company_recruiters(company, limit=2, cache_only=True)
+        if recruiters:
+            company_recruiters[company] = recruiters
+    
+    # Extract high-priority jobs for application
+    high_priority_jobs = [job for job in jobs if job.get('application_priority') == 'high'][:5]
+    
+    # Create strategy content
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    
+    # Generate title and introduction
+    strategy = {
+        "title": f"Job Search Strategy for {current_date}",
+        "introduction": f"This is your personalized job search strategy for {current_date}. " +
+                        f"There are {len(jobs)} matching job opportunities and {len(high_priority_jobs)} high-priority applications to focus on.",
+        "daily_focus": {
+            "focus_areas": [
+                "Apply to high-priority job opportunities",
+                "Research companies for upcoming interviews",
+                "Network with industry professionals",
+                "Update skills on profile based on top job requirements"
             ],
-            "suggested_companies": [
-                "Example Corp",
-                "Tech Inc"
-            ],
-            "current_opportunities": [
-                {{
-                    "title": "Exact job title",
-                    "company": "Company name",
-                    "url": "Full URL to job posting",
-                    "notes": "Remote position, matches skill set"
-                }}
+            "success_metrics": [
+                f"Submit {min(len(high_priority_jobs), 3)} high-priority applications",
+                "Connect with 2-3 recruiters at target companies",
+                "Spend 1 hour on skill development in a high-demand area"
             ]
-        }}
-    ],
-    "networking_strategy": {{
-        "platforms": ["LinkedIn"],
-        "daily_connections": 3,
-        "message_template": "Hi [Name],\\n\\nI noticed your experience in [area]. I'm currently exploring opportunities in [target role] and would love to connect and learn more about your work at [company].\\n\\nBest regards,\\n[Your name]",
-        "target_individuals": [
-            "Cloud Architects",
-            "Hiring Managers",
-            "Technical Recruiters"
-        ]
-    }},
-    "skill_development": [
-        {{
-            "skill": "Advanced Terraform",
-            "action": "Complete HashiCorp Certified: Terraform Associate certification",
-            "timeline": "2 weeks",
-            "status": "In Progress"
-        }}
-    ],
-    "application_strategy": {{
-        "daily_target": 1,
-        "quality_checklist": [
-            "Tailored resume and cover letter",
-            "Quantifiable achievements highlighted",
-            "Keywords optimized for ATS"
-        ],
-        "customization_points": [
-            "Company culture alignment",
-            "Specific project requirements",
-            "Career goals alignment"
-        ],
-        "tracking_method": "Using spreadsheet with:\\n- Company name\\n- Role\\n- Application date\\n- Status\\n- Follow-up notes"
-    }}
-}}"""
-
-    try:
-        model = genai.GenerativeModel('gemini-1.5-pro')
-        response = model.generate_content(
-            prompt,
-            generation_config={
-                "max_output_tokens": 2000,
-                "temperature": 0.2,
+        },
+        "market_insights": {
+            "in_demand_skills": [{"skill": skill, "count": count} for skill, count in top_skills],
+            "top_companies": [{"company": company, "openings": count} for company, count in top_companies]
+        },
+        "target_recruiters": company_recruiters,
+        "job_opportunities": [
+            {
+                "title": job.get('title', 'Unknown'),
+                "company": job.get('company', 'Unknown'),
+                "url": job.get('url', '#'),
+                "match_score": job.get('match_score', 0),
+                "priority": job.get('application_priority', 'medium'),
+                "key_requirements": job.get('key_requirements', [])
             }
-        )
-        
-        json_str = response.text.strip()
-        json_str = re.sub(r'^```.*\n', '', json_str)
-        json_str = re.sub(r'\n```$', '', json_str)
-        
-        match = re.search(r'({.*})', json_str, re.DOTALL)
-        if match:
-            json_str = match.group(1)
-        
-        strategy = json.loads(json_str)
-        logger.info("Successfully generated daily strategy")
-        return strategy
-    except Exception as e:
-        logger.error(f"Error generating strategy: {str(e)}")
-        return None
+            for job in sorted_jobs[:10]  # Include top 10 jobs in the strategy
+        ]
+    }
+    
+    return strategy
 
 def generate_weekly_focus():
     """Generate a weekly focus area based on the day of the week"""
@@ -879,6 +824,10 @@ def main():
                       help='Number of job postings to return per search query (default: 5)')
     parser.add_argument('--no-slack', action='store_false', dest='send_slack',
                       help='Disable Slack notifications')
+    parser.add_argument('--generate-article', action='store_true',
+                      help='Generate a Medium article based on skills in the strategy')
+    parser.add_argument('--preview-article', action='store_true',
+                      help='Generate a Medium article in preview mode (no publishing)')
     parser.set_defaults(send_slack=DEFAULT_SLACK_NOTIFICATIONS)
     args = parser.parse_args()
     
@@ -1001,6 +950,34 @@ def main():
                 logger.info("Slack notification sent successfully")
             except Exception as e:
                 logger.error(f"Error sending Slack notification: {str(e)}")
+        
+        # Generate a Medium article if requested
+        if args.generate_article or args.preview_article:
+            try:
+                logger.info("Generating Medium article based on job strategy skills")
+                
+                # Import the Medium publisher
+                from medium_publisher import MediumPublisher
+                
+                # Initialize Medium publisher
+                publisher = MediumPublisher()
+                
+                # Generate article in appropriate mode
+                if args.preview_article:
+                    logger.info("Running Medium article generation in preview mode")
+                    selected_skill = publisher.select_skill_for_article()
+                    if selected_skill:
+                        article_data = publisher.generate_article(selected_skill)
+                        if article_data:
+                            article_path = publisher.save_article_locally(article_data)
+                            logger.info(f"Generated article preview: {article_path}")
+                else:
+                    logger.info("Running Medium article generation and publication")
+                    result = publisher.generate_and_publish_article()
+                    logger.info(f"Article generation complete: {result}")
+            except Exception as e:
+                logger.error(f"Error generating Medium article: {str(e)}")
+                # Don't fail the overall job if article generation fails
         
         return strategy
     except Exception as e:
