@@ -1,31 +1,35 @@
 Summary
 
-Highly accomplished and results-oriented Chief Solutions Architect and Cloud SME with 10+ years of experience leading and implementing complex cloud infrastructure, data platforms, and application solutions. Proven ability to design, build, and scale high-performance systems, optimize cloud costs, and drive cloud governance initiatives. Expertise in machine learning infrastructure, automation, and security, coupled with a strong understanding of data engineering principles. Passionate about leveraging data and technology to achieve business objectives and foster innovation. Seeking to lead the Data, Machine Learning, and Application Platform team at Socure to drive growth and innovation through data-driven strategies.
+Highly accomplished and results-oriented Chief Solutions Architect and Cloud SME with 10+ years of experience leading and managing cloud infrastructure, automation, and security initiatives. Proven ability to design, build, and scale high-performance, secure, and cost-effective cloud platforms using cutting-edge technologies such as Terraform, Kubernetes, and AWS. Expertise in implementing DevSecOps practices, driving cloud governance, and collaborating with cross-functional teams to achieve business objectives. Passionate about data-driven decision making and eager to leverage my expertise to lead the Data, Machine Learning, and Application Platform team at Socure.
 
 
 Experience
 
-Chief Solutions Architect, HappyPathway (October 2016 – Present)
-* Architected and deployed cloud-agnostic, self-service infrastructure using Terraform Enterprise, Packer, and Ansible, supporting diverse data and machine learning workloads.
-* Led cloud migrations across AWS, GCP, and Azure, significantly reducing cloud costs while ensuring high availability and security.
-* Implemented DevSecOps practices, achieving SOC 2 and ISO 27001 compliance for sensitive data handling.
+HappyPathway
+Chief Solutions Architect
+October 2016 - Present
 
-Infra Architect, Clover (December 2020 – December 2023)
-* Led the design and deployment of scalable and secure cloud infrastructure using Terraform and AWS, supporting high-performance data platforms and applications.
-* Implemented a standardized Infrastructure-as-Code framework, architected Kubernetes-based container platforms, and integrated cost optimization strategies.
-* Drove compliance efforts for SOC 2, PCI DSS, and ISO 27001, demonstrating a commitment to data security and governance.
+Architected and implemented a self-service infrastructure platform using Terraform Enterprise, Packer, and Ansible, enabling rapid and efficient resource provisioning. Led cloud migrations across AWS, GCP, and Azure, reducing infrastructure costs and improving operational efficiency. Implemented DevSecOps practices, ensuring compliance with SOC 2 and ISO 27001 standards and enhancing overall security posture.
 
-Sr. Cloud SME, FedSoft, Inc (December 2023 – Present)
-* Leading cloud modernization efforts, automating infrastructure provisioning and governance for enhanced scalability and efficiency.
-* Designed and implemented a multi-cloud architecture using Terraform, AWS, and Kubernetes, optimized for data-intensive applications.
-* Implemented automated security controls using HashiCorp Vault, AWS IAM, and Sentinel, ensuring data integrity and confidentiality.
+FedSoft, Inc
+Sr. Cloud SME
+December 2023 - Present
 
-Sr. Site Reliability Engineer, AppDynamics (March 2015 – October 2016)
-* Led production support and monitoring, ensuring high availability for critical applications.
-* Designed and automated deployment pipelines, migrating configuration management to Chef and establishing a Jenkins-driven CI/CD process.
-* Integrated Consul for centralized configuration management, enhancing infrastructure automation and reliability.
+Led cloud modernization initiatives, automating infrastructure provisioning and governance using Terraform and AWS. Designed and implemented a scalable, multi-cloud architecture leveraging Kubernetes. Developed reusable Terraform modules, enforcing best practices and compliance. Implemented automated security controls using HashiCorp Vault, AWS IAM, and Sentinel, strengthening organizational security posture. Optimized cloud cost management, achieving significant cost reductions.
+
+Clover
+Infra Architect
+December 2020 - December 2023
+
+Led the design and deployment of highly scalable and secure cloud infrastructure using Terraform and AWS. Architected and implemented Kubernetes-based container platforms, enabling efficient application deployment and management. Integrated cost optimization strategies, resulting in significant cost savings. Drove compliance efforts for SOC 2, PCI DSS, and ISO 27001.
+
+AppDynamics
+Sr. Site Reliability Engineer
+March 2015 - October 2016
+
+Led production support and monitoring efforts, ensuring high availability and performance. Designed and automated deployment pipelines using Jenkins and other CI/CD tools. Migrated configuration management, improving efficiency and consistency. Spearheaded the development of an automated AWS AMI pipeline, streamlining infrastructure deployment.
 
 
 Skills
 
-AWS, Kubernetes, Terraform, Cloud Security & Compliance, Cloud Governance, CI/CD Pipelines, Cost Optimization, Ansible, GCP, Azure, HashiCorp Vault
+AWS, Kubernetes, Terraform, Cloud Security & Compliance, Cloud Governance, CI/CD Pipelines, Cost Optimization, Ansible, HashiCorp Vault, GCP, Azure
