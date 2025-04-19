@@ -15,9 +15,19 @@ from slugify import slugify
 from pdf_generator import create_resume_pdf, create_cover_letter_pdf, setup_pdf_environment
 from logging_utils import setup_logging
 
+# Import Slack notifier
+try:
+    from slack_notifier import get_notifier
+    SLACK_AVAILABLE = True
+except ImportError:
+    SLACK_AVAILABLE = False
+
 logger = setup_logging('generate_documents')
 load_dotenv()
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+# Check if Slack notifications are enabled by default
+DEFAULT_SLACK_NOTIFICATIONS = os.getenv("ENABLE_SLACK_NOTIFICATIONS", "false").lower() in ["true", "1", "yes"]
 
 def get_profile_data():
     """Get all profile data from database using SQLAlchemy"""
@@ -381,7 +391,7 @@ def generate_readme_markdown(job_info):
 - **Generated Date**: {datetime.now().isoformat()}
 """
 
-def generate_job_documents(job_info, use_writing_pass=True, use_visual_resume=True):
+def generate_job_documents(job_info, use_writing_pass=True, use_visual_resume=True, send_slack=DEFAULT_SLACK_NOTIFICATIONS):
     """Generate both resume and cover letter for a specific job"""
     logger.info(f"Generating documents for {job_info['title']} at {job_info['company']}")
     
@@ -477,9 +487,22 @@ def generate_job_documents(job_info, use_writing_pass=True, use_visual_resume=Tr
             f.write(markdown_content)
             
         # Track job application in the database - use default resume as the main resume
-        track_job_application(job_info, str(default_resume_pdf_path), str(cover_letter_pdf_path))
+        job_id, application_id = track_job_application(job_info, str(default_resume_pdf_path), str(cover_letter_pdf_path))
         
         logger.info(f"Successfully generated documents in {job_dir}")
+        
+        # Send Slack notification if enabled
+        if send_slack and SLACK_AVAILABLE:
+            try:
+                logger.info("Sending Slack notification about generated documents")
+                notifier = get_notifier()
+                notifier.send_job_application_notification(
+                    job_info, 
+                    str(default_resume_pdf_path), 
+                    str(cover_letter_pdf_path)
+                )
+            except Exception as e:
+                logger.error(f"Error sending Slack notification: {str(e)}")
         
         # Return paths to the main resume and cover letter
         return str(default_resume_pdf_path), str(cover_letter_pdf_path)
@@ -499,7 +522,9 @@ def main():
                       help='Skip generating the visual resume (only generate ATS-friendly version)')
     parser.add_argument('--ats-only', action='store_false', dest='use_visual_resume',
                       help='Only generate the ATS-friendly resume (synonym for --no-visual-resume)')
-    parser.set_defaults(use_visual_resume=True)
+    parser.add_argument('--no-slack', action='store_false', dest='send_slack',
+                      help='Disable Slack notifications')
+    parser.set_defaults(use_visual_resume=True, send_slack=DEFAULT_SLACK_NOTIFICATIONS)
     args = parser.parse_args()
 
     try:
@@ -511,7 +536,8 @@ def main():
         resume_path, cover_letter_path = generate_job_documents(
             job_info, 
             use_writing_pass=not args.no_writing_pass,
-            use_visual_resume=args.use_visual_resume
+            use_visual_resume=args.use_visual_resume,
+            send_slack=args.send_slack
         )
         
         if resume_path and cover_letter_path:

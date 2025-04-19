@@ -15,6 +15,13 @@ import random
 import argparse
 import generate_documents
 
+# Import Slack notifier
+try:
+    from slack_notifier import get_notifier
+    SLACK_AVAILABLE = True
+except ImportError:
+    SLACK_AVAILABLE = False
+
 logger = setup_logging('job_strategy')
 
 # Configure Google Generative AI
@@ -23,6 +30,9 @@ GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 if not GEMINI_API_KEY:
     raise ValueError("Please set GEMINI_API_KEY environment variable")
 genai.configure(api_key=GEMINI_API_KEY)
+
+# Check if Slack notifications are enabled by default
+DEFAULT_SLACK_NOTIFICATIONS = os.getenv("ENABLE_SLACK_NOTIFICATIONS", "false").lower() in ["true", "1", "yes"]
 
 def normalize_linkedin_url(url):
     """Normalize LinkedIn job URLs to ensure consistent matching"""
@@ -867,6 +877,9 @@ def main():
     parser = argparse.ArgumentParser(description='Generate job search strategy')
     parser.add_argument('--job-limit', type=int, default=5,
                       help='Number of job postings to return per search query (default: 5)')
+    parser.add_argument('--no-slack', action='store_false', dest='send_slack',
+                      help='Disable Slack notifications')
+    parser.set_defaults(send_slack=DEFAULT_SLACK_NOTIFICATIONS)
     args = parser.parse_args()
     
     try:
@@ -916,6 +929,78 @@ def main():
             f.write(plain_content)
         
         logger.info(f"Strategy saved to {md_path} and {txt_path}")
+        
+        # Send Slack notification if enabled
+        if args.send_slack and SLACK_AVAILABLE:
+            try:
+                logger.info("Sending Slack notification about generated job strategy")
+                
+                # Create a summary of the strategy for the notification
+                daily_focus = strategy.get('daily_focus', {})
+                job_count = sum(len(role.get('current_opportunities', [])) for role in strategy.get('target_roles', []))
+                doc_count = len(strategy.get('generated_documents', []))
+                
+                # Create a rich formatted message with Slack Block Kit
+                blocks = [
+                    {
+                        "type": "header",
+                        "text": {
+                            "type": "plain_text",
+                            "text": f"🎯 Job Search Strategy for {current_date}",
+                            "emoji": True
+                        }
+                    },
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": f"*Today's Focus:* {daily_focus.get('title', 'Daily Planning')}"
+                        }
+                    },
+                    {
+                        "type": "section",
+                        "fields": [
+                            {
+                                "type": "mrkdwn",
+                                "text": f"*New Job Opportunities:* {job_count}"
+                            },
+                            {
+                                "type": "mrkdwn", 
+                                "text": f"*High-Priority Applications:* {doc_count}"
+                            }
+                        ]
+                    }
+                ]
+                
+                # Add success metrics if available
+                if daily_focus.get('success_metrics'):
+                    metrics_text = "\n".join([f"• {metric}" for metric in daily_focus.get('success_metrics', [])])
+                    blocks.append({
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": f"*Success Metrics:*\n{metrics_text}"
+                        }
+                    })
+                
+                # Add a link to the strategy file
+                blocks.append({
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"<file://{md_path}|View full strategy>"
+                    }
+                })
+                
+                # Send the notification
+                notifier = get_notifier()
+                notifier.send_notification(
+                    f"Job Search Strategy for {current_date} has been generated",
+                    blocks=blocks
+                )
+                logger.info("Slack notification sent successfully")
+            except Exception as e:
+                logger.error(f"Error sending Slack notification: {str(e)}")
         
         return strategy
     except Exception as e:

@@ -62,6 +62,8 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GCS_BUCKET_NAME: ${{ steps.gcs-setup.outputs.bucket_name }}
+          SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ vars.SLACK_CHANNEL_ID }}
         run: |
           python scripts/init_db.py
           
@@ -69,6 +71,8 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GCS_BUCKET_NAME: ${{ steps.gcs-setup.outputs.bucket_name }}
+          SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ vars.SLACK_CHANNEL_ID }}
         run: |
           python scripts/profile_scraper.py
           
@@ -76,6 +80,8 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GCS_BUCKET_NAME: ${{ steps.gcs-setup.outputs.bucket_name }}
+          SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ vars.SLACK_CHANNEL_ID }}
         run: |
           python scripts/resume_parser.py
           
@@ -83,6 +89,8 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GCS_BUCKET_NAME: ${{ steps.gcs-setup.outputs.bucket_name }}
+          SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ vars.SLACK_CHANNEL_ID }}
         run: |
           python scripts/cover_letter_parser.py
           
@@ -90,6 +98,8 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GCS_BUCKET_NAME: ${{ steps.gcs-setup.outputs.bucket_name }}
+          SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ vars.SLACK_CHANNEL_ID }}
         run: |
           python scripts/combine_and_summarize.py
           
@@ -97,6 +107,9 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GCS_BUCKET_NAME: ${{ steps.gcs-setup.outputs.bucket_name }}
+          SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ vars.SLACK_CHANNEL_ID }}
+          ENABLE_SLACK_NOTIFICATIONS: "true"
         run: |
           python scripts/job_strategy.py
 
@@ -104,10 +117,14 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GCS_BUCKET_NAME: ${{ steps.gcs-setup.outputs.bucket_name }}
+          SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ vars.SLACK_CHANNEL_ID }}
+          ENABLE_SLACK_NOTIFICATIONS: "true"
         run: |
           python scripts/generate_github_pages.py
 
       - name: Create Pull Request
+        id: cpr
         uses: peter-evans/create-pull-request@v6
         with:
           commit-message: 'feat: Initialize system with fresh data'
@@ -125,3 +142,84 @@ jobs:
           branch: system-init
           delete-branch: true
           base: main
+          
+      - name: Send Slack Initialization Notification
+        if: success()
+        env:
+          SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ vars.SLACK_CHANNEL_ID }}
+          PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
+          PR_URL: ${{ steps.cpr.outputs.pull-request-url }}
+        run: |
+          pip install slack-sdk
+          python -c '
+          from slack_sdk import WebClient
+          from slack_sdk.errors import SlackApiError
+          import os, sys
+          
+          token = os.environ["SLACK_API_TOKEN"]
+          channel = os.environ["SLACK_CHANNEL_ID"]
+          pr_number = os.environ.get("PR_NUMBER")
+          pr_url = os.environ.get("PR_URL")
+          
+          try:
+              client = WebClient(token=token)
+              blocks = [
+                  {
+                      "type": "header",
+                      "text": {
+                          "type": "plain_text",
+                          "text": "🚀 Job Search System Initialized",
+                          "emoji": True
+                      }
+                  },
+                  {
+                      "type": "section",
+                      "text": {
+                          "type": "mrkdwn",
+                          "text": "The job search automation system has been successfully initialized with fresh data."
+                      }
+                  },
+                  {
+                      "type": "section",
+                      "fields": [
+                          {
+                              "type": "mrkdwn",
+                              "text": "*Database:* ✅ Created"
+                          },
+                          {
+                              "type": "mrkdwn",
+                              "text": "*Profile Data:* ✅ Processed"
+                          },
+                          {
+                              "type": "mrkdwn",
+                              "text": "*Job Strategy:* ✅ Generated"
+                          },
+                          {
+                              "type": "mrkdwn",
+                              "text": "*GitHub Pages:* ✅ Generated"
+                          }
+                      ]
+                  }
+              ]
+              
+              # Add PR info if available
+              if pr_url and pr_number:
+                  blocks.append({
+                      "type": "section",
+                      "text": {
+                          "type": "mrkdwn",
+                          "text": f"<{pr_url}|👉 Review Pull Request #{pr_number}>"
+                      }
+                  })
+              
+              client.chat_postMessage(
+                  channel=channel,
+                  text="Job Search System successfully initialized",
+                  blocks=blocks
+              )
+              print("Slack notification sent successfully!")
+          except SlackApiError as e:
+              print(f"Error sending Slack notification: {e.response[\"error\"]}")
+              sys.exit(1)
+          '
