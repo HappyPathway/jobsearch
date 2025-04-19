@@ -1,0 +1,40 @@
+Summary
+
+Highly accomplished and results-oriented Principal Cloud Engineer with 10+ years of experience architecting, implementing, and managing scalable and secure cloud infrastructure. Proven ability to lead cloud modernization efforts, implement DevSecOps practices, and optimize cloud costs. Expertise in infrastructure automation, container orchestration, and configuration management using Terraform, Kubernetes, Ansible, and AWS. Seeking a challenging Principal Software Engineer role focused on Kafka within a fast-paced, innovative environment.
+
+
+Experience
+
+FedSoft, Inc.
+Sr. Cloud SME, Dec 2023 - Present
+* Lead cloud modernization initiatives focused on automation, scalability, and security.
+* Design and implement multi-cloud architectures using Terraform, AWS, and Kubernetes.
+* Implement automated security controls and optimize cloud cost management.
+
+HappyPathway
+Chief Solutions Architect, Oct 2016 - Present
+* Architect and deploy cloud-agnostic infrastructure and Kubernetes solutions using Terraform, Packer, and Ansible.
+* Implement DevSecOps practices and lead cloud migrations to AWS, GCP, and Azure, resulting in significant cost reductions.
+
+Clover
+Infra Architect, Dec 2020 - Dec 2023
+* Led the design and deployment of scalable and secure cloud infrastructure using Terraform and AWS.
+* Architected Kubernetes-based container platforms and integrated cost optimization strategies.
+* Implemented DevSecOps practices and drove compliance efforts for SOC 2, PCI DSS, and ISO 27001.
+
+AppDynamics
+Sr. Site Reliability Engineer, Mar 2015 - Oct 2016
+* Led production support, monitoring, and automation of deployment pipelines.
+* Migrated configuration management and spearheaded the development of an automated AWS AMI pipeline.
+* Integrated Consul for centralized configuration management and established a Jenkins-driven CI/CD process.
+
+RetailNext
+DevOps Engineer, Jun 2014 - Mar 2015
+* Architected and automated AWS infrastructure using Infrastructure as Code (IaC).
+* Developed a scalable continuous deployment pipeline and implemented a real-time monitoring framework.
+* Integrated cloud security best practices.
+
+
+Skills
+
+AWS, Kubernetes, Terraform, Ansible, CI/CD, Cloud Security, Cost Optimization, DevOps, Distributed Systems

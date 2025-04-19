@@ -1,0 +1,75 @@
+Job Search Strategy - 2025-04-19
+
+Today's Focus: Application and Networking
+Reasoning: Prioritize applying for high-match roles and building connections within target companies.
+
+Success Metrics:
+- Submit 1 high-quality application for Principal Cloud Architect role
+- Connect with 3 professionals on LinkedIn
+
+Target Roles:
+
+Principal Cloud Architect
+Reasoning: Directly aligns with current experience and expertise in cloud architecture, IaC, and cloud security.
+
+Key Skills:
+- Cloud Architecture
+- Terraform
+- Kubernetes
+- Cloud Security
+- IaC
+- CI/CD
+- GitHub Actions
+
+Target Companies:
+- Postman
+- Attentive
+- IT Engagements, Inc.
+- Distillery
+- Glean
+
+Current Opportunities:
+- Senior Solutions Architect at Postman
+  URL: https://www.linkedin.com/jobs/view/senior-solutions-architect-at-postman-4195533115?position=1&pageNum=0&refId=qSkalijbOH%2BQK%2B2e8un6PA%3D%3D&trackingId=ZyCDJwA0wHPrcEEjgSSB5A%3D%3D
+
+Principal Platform Engineer
+Reasoning: Leverages experience in IaC, automation, and Kubernetes for a leadership role in platform engineering.
+
+Key Skills:
+- Terraform
+- Kubernetes
+- Ansible
+- CI/CD
+- GitHub Actions
+- IaC
+
+Target Companies:
+- Netflix
+- dbt Labs
+- Microsoft
+- Coinbase
+- Whatnot
+
+Networking Strategy:
+Daily Connections Target: 3
+
+Target Individuals:
+- Cloud Architects
+- Hiring Managers at target companies
+- Technical Recruiters specializing in Cloud/DevOps
+
+Skill Development:
+
+- Advanced Terraform
+  Goal: Complete HashiCorp Certified: Terraform Associate certification
+  Timeline: 2 weeks
+  Status: In Progress
+
+Application Strategy:
+Daily Target: 1 application(s)
+
+Quality Checklist:
+- Tailored resume and cover letter
+- Quantifiable achievements highlighted
+- Keywords optimized for ATS
+- Company culture alignment demonstrated

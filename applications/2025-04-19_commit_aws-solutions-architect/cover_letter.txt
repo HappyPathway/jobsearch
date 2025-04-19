@@ -1,0 +1,15 @@
+Dear Dave J. Arnold,
+
+I am writing to express my enthusiastic interest in the AWS Solutions Architect position at Commit, as advertised on LinkedIn. My extensive experience in designing, implementing, and managing robust cloud infrastructure on AWS, coupled with my passion for innovation and collaborative work environments, aligns perfectly with the requirements and culture described in the job posting. I am particularly drawn to Commit's focus on cutting-edge projects and the opportunity to contribute to the growth of such a dynamic company.
+
+Throughout my 10+ year career, I have consistently delivered successful cloud solutions, leveraging Infrastructure-as-Code (IaC) tools like Terraform and CloudFormation to automate infrastructure provisioning, governance, and security. In my current role as Sr. Cloud SME at FedSoft, Inc., I lead cloud modernization initiatives, focusing on AWS infrastructure automation and multi-cloud architectures using Terraform and Kubernetes. I have also developed reusable Terraform modules to enforce best practices and compliance, integrated CI/CD pipelines using GitHub Actions, and implemented automated security controls with HashiCorp Vault and AWS IAM. Furthermore, I have significantly optimized cloud cost management, a skill I believe would be highly valuable to Commit.
+
+Prior to FedSoft, I served as Infra Architect at Clover, where I led the design and implementation of scalable and secure AWS cloud infrastructure using Terraform. I architected Kubernetes-based container platforms, integrated cost optimization strategies, and established a self-service infrastructure model. My experience leading a successful cloud migration initiative and ensuring compliance with SOC 2, PCI DSS, and ISO 27001 demonstrates my ability to navigate complex projects and deliver secure, compliant solutions.  My background also includes experience at HashiCorp as a Sr. Solutions Engineer, where I honed my expertise in Terraform and Vault, delivering workshops and building scalable demo environments.
+
+I am confident that my deep understanding of AWS services, including EC2, S3, Lambda, and RDS, combined with my proven ability to solve complex problems and collaborate effectively within fast-paced environments, makes me an ideal candidate for this role. My experience with HappyPathway, where I served as Chief Solutions Architect, further solidified my expertise in architecting self-service infrastructure using Terraform for AWS deployments and designing cloud-agnostic Kubernetes solutions.
+
+I am eager to learn more about this opportunity and discuss how my skills and experience can contribute to Commit's success. Thank you for your time and consideration. I look forward to hearing from you soon.
+
+Sincerely,
+
+[Your Name]
