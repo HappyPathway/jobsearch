@@ -70,12 +70,48 @@ Rules:
         json_str = re.sub(r',\s*}', '}', json_str)  # Remove trailing commas
         json_str = re.sub(r',\s*]', ']', json_str)  # Remove trailing commas in arrays
         
+        # Advanced cleaning for other common JSON syntax errors
+        json_str = re.sub(r'([{,])\s*"([^"]+)"\s*:\s*([^"{}\[\],]+)([},])', r'\1"\2":"\3"\4', json_str)  # Add quotes around unquoted string values
+        json_str = re.sub(r'\n', ' ', json_str)  # Remove newlines in JSON string
+        json_str = re.sub(r'"\s*\n\s*"', '" "', json_str)  # Join multiline strings
+        json_str = re.sub(r'"{2,}', '"', json_str)  # Fix doubled quotes
+        
+        # Additional safety check for badly formed JSON with extra trailing text
+        if not json_str.endswith("}"):
+            end_brace_pos = json_str.rfind("}")
+            if end_brace_pos > 0:
+                json_str = json_str[:end_brace_pos+1]
+        
         try:
             return json.loads(json_str)
         except json.JSONDecodeError as je:
             logger.error(f"JSON parsing error after cleaning: {str(je)}")
             logger.debug(f"Cleaned but invalid JSON: {json_str}")
-            return None
+            
+            # Try one more approach - use a second call to Gemini specifically for fixing the JSON
+            retry_prompt = f"""Fix this invalid JSON. ONLY return the fixed JSON with no explanation or other text:
+
+{json_str}"""
+            
+            try:
+                retry_response = model.generate_content(
+                    retry_prompt,
+                    generation_config={
+                        "temperature": 0.1,
+                        "max_output_tokens": 1000,
+                    }
+                )
+                
+                retry_json = retry_response.text.strip()
+                # Remove markdown formatting
+                retry_json = re.sub(r'^```.*?\n', '', retry_json)
+                retry_json = re.sub(r'\n```$', '', retry_json)
+                
+                # Attempt to parse the fixed JSON
+                return json.loads(retry_json)
+            except Exception:
+                logger.error("Failed to fix JSON even with second Gemini attempt")
+                return None
             
     except Exception as e:
         logger.error(f"Error cleaning JSON with Gemini: {str(e)}")

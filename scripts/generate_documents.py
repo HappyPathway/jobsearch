@@ -364,6 +364,23 @@ def track_job_application(job_info, resume_path, cover_letter_path):
         
         return job.id, application.id
 
+def generate_readme_markdown(job_info):
+    """Generate markdown content for README.md"""
+    return f"""# Job Application: {job_info['title']} at {job_info['company']}
+
+## Job Details
+- **Title**: {job_info['title']}
+- **Company**: {job_info['company']}
+- **URL**: {job_info.get('url', 'N/A')}
+- **Description**: {job_info.get('description', 'N/A')}
+- **Match Score**: {job_info.get('match_score', 0)}
+- **Application Priority**: {job_info.get('application_priority', 'low')}
+- **Key Requirements**: {', '.join(job_info.get('key_requirements', []))}
+- **Culture Indicators**: {', '.join(job_info.get('culture_indicators', []))}
+- **Career Growth Potential**: {job_info.get('career_growth_potential', 'N/A')}
+- **Generated Date**: {datetime.now().isoformat()}
+"""
+
 def generate_job_documents(job_info, use_writing_pass=True, use_visual_resume=True):
     """Generate both resume and cover letter for a specific job"""
     logger.info(f"Generating documents for {job_info['title']} at {job_info['company']}")
@@ -408,7 +425,9 @@ def generate_job_documents(job_info, use_writing_pass=True, use_visual_resume=Tr
         # Save text versions
         resume_txt_path = job_dir / "resume.txt"
         cover_letter_txt_path = job_dir / "cover_letter.txt"
-        job_info_path = job_dir / "job_details.json"
+        
+        # Create README.md instead of job_details.json
+        readme_path = job_dir / "README.md"
         
         with open(resume_txt_path, 'w') as f:
             f.write(resume_text)
@@ -451,22 +470,12 @@ def generate_job_documents(job_info, use_writing_pass=True, use_visual_resume=Tr
             logger.warning("PDF environment not available, using text versions only")
             default_resume_pdf_path = resume_txt_path
             cover_letter_pdf_path = cover_letter_txt_path
-            
-        # Save job details for reference
-        with open(job_info_path, 'w') as f:
-            json.dump({
-                'title': job_info['title'],
-                'company': job_info['company'],
-                'url': job_info.get('url', ''),
-                'description': job_info.get('description', ''),
-                'match_score': job_info.get('match_score', 0),
-                'application_priority': job_info.get('application_priority', 'low'),
-                'key_requirements': job_info.get('key_requirements', []),
-                'culture_indicators': job_info.get('culture_indicators', []),
-                'career_growth_potential': job_info.get('career_growth_potential', ''),
-                'generated_date': datetime.now().isoformat()
-            }, f, indent=2)
         
+        # Generate README.md with markdown content instead of job_details.json
+        markdown_content = generate_readme_markdown(job_info)
+        with open(readme_path, 'w') as f:
+            f.write(markdown_content)
+            
         # Track job application in the database - use default resume as the main resume
         track_job_application(job_info, str(default_resume_pdf_path), str(cover_letter_pdf_path))
         
