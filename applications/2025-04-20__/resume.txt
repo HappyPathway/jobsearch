@@ -1,0 +1,13 @@
+Summary
+
+Highly motivated and results-oriented Cloud & DevOps Architect with extensive experience designing, implementing, and managing robust and scalable infrastructure across AWS, Azure, and GCP. Proven ability to automate deployments, optimize cloud costs, and ensure security and compliance using tools like Terraform, Ansible, Kubernetes, and CI/CD pipelines. Expertise in GitHub automation and Infrastructure as Code (IaC) best practices. Seeking a challenging role to leverage my skills and contribute to organizational success.
+
+
+Skills
+
+AWS, Azure, GCP, Terraform, Ansible, Kubernetes, CI/CD Pipelines, Cloud Security & Compliance, Cost Optimization, GitHub Actions, Helm, ArgoCD, Consul, HashiCorp Vault, Packer, Jenkins
+
+
+Experience
+
+(No experience provided)
