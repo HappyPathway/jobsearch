@@ -200,7 +200,7 @@ def generate_and_save_strategy(job_searches, output_dir, send_slack=DEFAULT_SLAC
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"<file://{md_path}|View full strategy>"
+                    "text": f"<https://github.com/darnold/jobsearch/blob/main/strategies/{os.path.basename(md_path)}|View full strategy>"
                 }
             })
             
