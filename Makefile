@@ -1,4 +1,5 @@
-.PHONY: venv install clean init-db scrape-profile combine-summary parse-resume parse-cover-letter run help all generate-github-pages mark-applied test-integration gh-strategy-cleanup gh-generate-docs gh-pages gh-test gh-init gh-job-strategy gh-profile-update slack-list-channels
+.PHONY: venv install clean init-db scrape-profile combine-summary parse-resume parse-cover-letter run help all generate-github-pages mark-applied test-integration gh-strategy-cleanup gh-generate-docs gh-pages gh-test gh-init gh-job-strategy gh-profile-update slack-list-channels search-jobs generate-strategy generate-docs-for-jobs generate-strategy-from-file job-workflow daily-workflow full-workflow job-search-and-docs sync-and-publish
+
 
 VENV_NAME=venv
 PYTHON=$(VENV_NAME)/bin/python
@@ -20,6 +21,12 @@ help:
 	@echo "  make all           - Collect all data (profile, resume, summary)"
 	@echo "  make test-integration - Run integration tests"
 	@echo ""
+	@echo "Job Strategy commands:"
+	@echo "  make search-jobs    - Only search for jobs (no strategy generation)"
+	@echo "  make generate-strategy - Generate job search strategy"
+	@echo "  make generate-strategy-from-file - Generate strategy from existing job data"
+	@echo "  make generate-docs-for-jobs - Generate documents for high-priority jobs"
+	@echo ""
 	@echo "GitHub Actions workflow commands:"
 	@echo "  make gh-strategy-cleanup  - Run strategy cleanup workflow"
 	@echo "  make gh-generate-docs    - Run document generation workflow"
@@ -28,6 +35,13 @@ help:
 	@echo "  make gh-init            - Run system initialization workflow"
 	@echo "  make gh-job-strategy    - Run job strategy workflow"
 	@echo "  make gh-profile-update  - Run profile update workflow"
+	@echo ""
+	@echo "Orchestration commands:"
+	@echo "  make job-workflow       - Run combined job strategy and document generation workflow"
+	@echo "  make daily-workflow     - Run daily workflow (strategy, documents, GitHub Pages)"
+	@echo "  make full-workflow      - Run full workflow (strategy, documents, applied status, GitHub Pages)"
+	@echo "  make job-search-and-docs - Run job search and document generation"
+	@echo "  make sync-and-publish   - Sync database with GCS and publish GitHub Pages"
 
 venv:
 	python3 -m venv $(VENV_NAME)
@@ -102,3 +116,34 @@ gh-profile-update:
 
 # Run all GitHub Actions workflows in sequence
 gh-all: gh-init gh-profile-update gh-job-strategy gh-generate-docs gh-pages gh-test gh-strategy-cleanup
+
+# Job Strategy targets
+search-jobs: install
+	$(PYTHON) scripts/job_strategy.py --search-only $(if $(JOB_LIMIT),--job-limit $(JOB_LIMIT))
+
+generate-strategy: install
+	$(PYTHON) scripts/job_strategy.py $(if $(JOB_LIMIT),--job-limit $(JOB_LIMIT)) $(if $(NO_SLACK),--no-slack)
+
+generate-strategy-from-file: install
+	$(PYTHON) scripts/job_strategy.py --strategy-only $(if $(JOB_FILE),--job-file $(JOB_FILE)) $(if $(NO_SLACK),--no-slack)
+
+generate-docs-for-jobs: install
+	$(PYTHON) scripts/job_strategy.py --strategy-only --generate-documents $(if $(JOB_FILE),--job-file $(JOB_FILE))
+
+# Orchestration targets (combined workflows)
+job-workflow: generate-strategy generate-docs-for-jobs
+	@echo "✅ Completed job workflow: Generated strategy and documents for high-priority jobs"
+
+daily-workflow: job-workflow generate-github-pages
+	@echo "✅ Completed daily workflow: Generated strategy, documents, and updated GitHub Pages"
+
+full-workflow: job-workflow mark-applied generate-github-pages
+	@echo "✅ Completed full workflow: Generated strategy, documents, updated applied status, and GitHub Pages"
+	@echo "Note: Applied jobs must be specified via URL parameter"
+
+job-search-and-docs: search-jobs generate-docs-for-jobs
+	@echo "✅ Completed job search and document generation"
+
+sync-and-publish: generate-github-pages
+	$(PYTHON) scripts/gcs_utils.py sync-db
+	@echo "✅ Synced database with GCS and published GitHub Pages"

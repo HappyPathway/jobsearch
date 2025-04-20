@@ -137,3 +137,17 @@ class JobApplication(Base):
     notes = Column(Text)
     
     job = relationship('JobCache', back_populates='applications')
+
+class RecruiterContact(Base):
+    __tablename__ = 'recruiter_contacts'
+    
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    title = Column(String)
+    company = Column(String, index=True)
+    url = Column(String, unique=True)
+    source = Column(String)
+    found_date = Column(String)
+    contacted_date = Column(String, nullable=True)
+    status = Column(String, default='identified')  # identified, contacted, responded, scheduled, closed
+    notes = Column(Text, nullable=True)

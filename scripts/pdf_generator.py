@@ -264,7 +264,7 @@ def create_resume_pdf(content, output_path, application_id=None):
         logger.error(f"Error creating resume PDF: {str(e)}")
         raise
 
-def create_cover_letter_pdf(content, job_info, output_path, application_id=None):
+def create_cover_letter_pdf(content, job_info, output_path, full_name="", application_id=None):
     """Generate a professional PDF cover letter using HTML/CSS"""
     setup_templates()
     env = Environment(loader=FileSystemLoader(template_dir))
@@ -275,6 +275,13 @@ def create_cover_letter_pdf(content, job_info, output_path, application_id=None)
     if not output_path.endswith('.pdf'):
         output_path += '.pdf'
     
+    # If signature doesn't include a name and full_name is provided, append it
+    signature = content['signature']
+    if full_name and "[Your Name]" in signature:
+        signature = signature.replace("[Your Name]", full_name)
+    elif full_name and not any(name in signature for name in [full_name, "Sincerely,"]):
+        signature = f"Sincerely,\n{full_name}"
+    
     # Prepare template data
     data = {
         'date': dt.datetime.now().strftime("%B %d, %Y"),
@@ -284,7 +291,7 @@ def create_cover_letter_pdf(content, job_info, output_path, application_id=None)
         'opening': content['opening'],
         'body_paragraphs': content['body_paragraphs'],
         'closing': content['closing'],
-        'signature': content['signature'].replace('\\n', '\n'),
+        'signature': signature.replace('\\n', '\n'),
         'contact_info': content.get('contact_info', {})  # Add contact info from profile
     }
     
