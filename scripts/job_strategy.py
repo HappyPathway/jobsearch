@@ -5,11 +5,13 @@ import sys
 import random
 import time
 import argparse
+
 from pathlib import Path
 from datetime import datetime
 
 from dotenv import load_dotenv
 import google.generativeai as genai
+
 
 # Local module imports
 from logging_utils import setup_logging
@@ -262,6 +264,7 @@ def main():
     parser = argparse.ArgumentParser(description='Generate job search strategy')
     parser.add_argument('--job-limit', type=int, default=5,
                       help='Number of job postings to return per search query (default: 5)')
+
     parser.add_argument('--search-only', action='store_true',
                       help='Only search for jobs, do not generate strategy')
     parser.add_argument('--strategy-only', action='store_true',
@@ -280,6 +283,7 @@ def main():
                       help='Include recruiter search in strategy generation')
     parser.add_argument('--cache-only', action='store_true',
                       help='Only use cached recruiters, do not search online')
+
     parser.set_defaults(send_slack=DEFAULT_SLACK_NOTIFICATIONS)
     args = parser.parse_args()
     
@@ -354,7 +358,7 @@ def main():
             
         logger.info("Job strategy generation process completed successfully")
         return 0
-        
+ 
     except Exception as e:
         logger.error(f"Failed to generate job strategy: {str(e)}", exc_info=True)
         return 1

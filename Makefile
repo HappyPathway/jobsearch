@@ -1,5 +1,6 @@
 .PHONY: venv install clean init-db scrape-profile combine-summary parse-resume parse-cover-letter run help all generate-github-pages mark-applied test-integration gh-strategy-cleanup gh-generate-docs gh-pages gh-test gh-init gh-job-strategy gh-profile-update slack-list-channels search-jobs generate-strategy generate-docs-for-jobs generate-strategy-from-file job-workflow daily-workflow full-workflow job-search-and-docs sync-and-publish
 
+
 VENV_NAME=venv
 PYTHON=$(VENV_NAME)/bin/python
 PIP=$(VENV_NAME)/bin/pip

@@ -114,5 +114,6 @@ jobs:
           except SlackApiError as e:
               error_message = e.response.get("error", "Unknown error")
               print(f"Error sending Slack notification: {error_message}")
+
           '
 
