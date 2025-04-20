@@ -38,17 +38,17 @@ def get_profile_data():
                 ],
                 'skills': [
                     {
-                        'name': skill.name,
-                        'years': skill.years,
-                        'proficiency': skill.proficiency
+                        'skill_name': getattr(skill, 'skill_name', 'Unknown'),
+                        'years': getattr(skill, 'years', 0),
+                        'proficiency': getattr(skill, 'proficiency', 'Beginner')
                     } for skill in skills
                 ],
                 'target_roles': [
                     {
-                        'title': role.title,
-                        'industry': role.industry,
-                        'salary_range': role.salary_range,
-                        'priority': role.priority
+                        'title': getattr(role, 'role_name', 'Unknown'),
+                        'industry': getattr(role, 'industry', 'Tech'),
+                        'salary_range': getattr(role, 'salary_range', ''),
+                        'priority': getattr(role, 'priority', 1)
                     } for role in roles
                 ]
             }
@@ -70,12 +70,13 @@ def generate_daily_strategy(sorted_jobs):
     job_list = ""
     for i, job in enumerate(sorted_jobs[:10], 1):  # Limit to top 10 jobs
         job_list += f"Job {i}: {job['title']} at {job['company']}\n"
-        job_list += f"   Match Score: {job['match_score']}\n"
-        job_list += f"   Application Priority: {job['application_priority']}\n"
-        job_list += f"   Key Requirements: {', '.join(job['key_requirements'])}\n"
-        job_list += f"   Career Growth Potential: {job['career_growth_potential']}\n\n"
+        job_list += f"   Match Score: {job.get('match_score', 0)}\n"  # Use get() with default value
+        job_list += f"   Application Priority: {job.get('application_priority', 'Medium')}\n"  # Use get() with default
+        job_list += f"   Key Requirements: {', '.join(job.get('key_requirements', ['Not specified']))}\n"  # Use get() with default
+        job_list += f"   Career Growth Potential: {job.get('career_growth_potential', 'Unknown')}\n\n"  # Use get() with default
     
-    skills_list = ", ".join([f"{skill['name']} ({skill['proficiency']})" for skill in profile_data['skills']])
+    # Fix skill_name attribute reference
+    skills_list = ", ".join([f"{skill.get('skill_name', skill.get('name', 'Unknown'))} ({skill.get('proficiency', 'N/A')})" for skill in profile_data['skills']])
     target_roles_list = ", ".join([role['title'] for role in profile_data['target_roles']])
     
     prompt = f"""You are a career strategist helping to create a daily job search strategy. Based on today's job matches, create a compelling strategy document with the following sections:
@@ -202,169 +203,105 @@ Format your response as detailed paragraphs for each section. Be specific and ac
         return "Unable to generate weekly focus due to an error."
 
 def format_strategy_output(strategy, include_weekly_focus=True):
-    """Format strategy output in HTML format"""
-    logger.info("Formatting strategy output in HTML")
+    """Format strategy output in markdown format"""
+    logger.info("Formatting strategy output in markdown")
     
-    content = strategy['content']
-    date = strategy['date']
+    content = strategy.get('content', '')
+    date = strategy.get('date', datetime.now().strftime('%Y-%m-%d'))
     jobs = strategy.get('jobs', [])
     weekly_focus = strategy.get('weekly_focus', '')
     
-    html = f"""<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Job Search Strategy - {date}</title>
-    <style>
-        body {{
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }}
-        h1, h2, h3 {{
-            color: #2c3e50;
-        }}
-        h1 {{
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
-        }}
-        h2 {{
-            margin-top: 30px;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 5px;
-        }}
-        .job-card {{
-            background-color: #f9f9f9;
-            border-left: 4px solid #3498db;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 4px;
-        }}
-        .job-title {{
-            font-weight: bold;
-            color: #2980b9;
-        }}
-        .job-company {{
-            font-style: italic;
-        }}
-        .job-priority {{
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 3px;
-            font-size: 0.8em;
-            font-weight: bold;
-        }}
-        .high {{
-            background-color: #e74c3c;
-            color: white;
-        }}
-        .medium {{
-            background-color: #f39c12;
-            color: white;
-        }}
-        .low {{
-            background-color: #2ecc71;
-            color: white;
-        }}
-        .score {{
-            display: inline-block;
-            padding: 3px 8px;
-            background-color: #34495e;
-            color: white;
-            border-radius: 3px;
-            font-size: 0.8em;
-        }}
-        .weekly-focus {{
-            background-color: #f1f8ff;
-            border-left: 4px solid #2980b9;
-            padding: 15px;
-            margin-top: 30px;
-            border-radius: 4px;
-        }}
-    </style>
-</head>
-<body>
-    <h1>Job Search Strategy - {date}</h1>
+    output = []
+    output.append(f"# Job Search Strategy - {date}\n")
+    output.append(content)
+    output.append("\n## Today's Top Job Matches\n")
     
-    <div class="strategy-content">
-        {content.replace('\n', '<br>')}
-    </div>
-    
-    <h2>Today's Top Job Matches</h2>
-    """
-    
-    # Add job cards
-    for job in jobs:
-        priority_class = job.get('application_priority', 'low').lower()
+    # Add job information
+    for i, job in enumerate(jobs, 1):
+        title = job.get('title', 'Unknown Position')
+        company = job.get('company', 'Unknown Company')
+        priority = job.get('application_priority', 'Low')
         score = job.get('match_score', 0)
+        requirements = ', '.join(job.get('key_requirements', ['None specified']))
+        growth = job.get('career_growth_potential', 'Unknown')
+        url = job.get('url', '#')
         
-        html += f"""
-    <div class="job-card">
-        <div class="job-title">{job.get('title', 'Unknown Position')}</div>
-        <div class="job-company">{job.get('company', 'Unknown Company')}</div>
-        <div>
-            <span class="job-priority {priority_class}">{job.get('application_priority', 'Low').upper()}</span>
-            <span class="score">Match: {score}%</span>
-        </div>
-        <p><strong>Key Requirements:</strong> {', '.join(job.get('key_requirements', ['None specified']))}</p>
-        <p><strong>Career Growth:</strong> {job.get('career_growth_potential', 'Unknown')}</p>
-    </div>
-        """
+        output.append(f"### {i}. {title} at {company}\n")
+        output.append(f"**Priority**: {priority.upper()} | **Match Score**: {score}%\n")
+        output.append(f"**Key Requirements**: {requirements}\n")
+        output.append(f"**Career Growth**: {growth}\n")
+        if url != '#':
+            output.append(f"[View Job]({url})\n")
     
     # Add weekly focus if available
     if include_weekly_focus and weekly_focus:
-        html += f"""
-    <div class="weekly-focus">
-        <h2>Weekly Focus</h2>
-        {weekly_focus.replace('\n', '<br>')}
-    </div>
-        """
+        output.append("\n## Weekly Focus\n")
+        output.append(weekly_focus)
     
-    html += """
-</body>
-</html>
-    """
+    # Add recruiters if available
+    if 'recruiters' in strategy and strategy['recruiters']:
+        output.append("\n## Company Recruiters\n")
+        output.append("Connect with these recruiters to expand your network and get insider information on job openings.\n")
+        
+        for company, recruiters in strategy['recruiters'].items():
+            output.append(f"### {company}\n")
+            for recruiter in recruiters:
+                name = recruiter.get('name', 'Unknown')
+                title = recruiter.get('title', 'Unknown')
+                url = recruiter.get('url', '')
+                
+                if url:
+                    output.append(f"- [{name}]({url}) - {title}")
+                else:
+                    output.append(f"- **{name}** - {title}")
+                    
+                if 'status' in recruiter:
+                    output.append(f"  - Status: {recruiter['status']}")
+            output.append("")
     
-    return html
+    return '\n'.join(output)
 
 def format_strategy_output_plain(strategy, include_weekly_focus=True):
     """Format strategy output in plain text format"""
     logger.info("Formatting strategy output in plain text")
     
-    content = strategy['content']
-    date = strategy['date']
+    content = strategy.get('content', '')
+    date = strategy.get('date', datetime.now().strftime('%Y-%m-%d'))
     jobs = strategy.get('jobs', [])
     weekly_focus = strategy.get('weekly_focus', '')
     
-    text = f"""JOB SEARCH STRATEGY - {date}
-{'=' * 80}
-
-{content}
-
-TODAY'S TOP JOB MATCHES
-{'=' * 80}
-"""
+    output = []
+    output.append(f"JOB SEARCH STRATEGY - {date}")
+    output.append('=' * 80)
+    output.append('')
+    output.append(content)
+    output.append('')
+    output.append("TODAY'S TOP JOB MATCHES")
+    output.append('=' * 80)
     
     # Add job information
     for i, job in enumerate(jobs, 1):
-        text += f"""
-JOB {i}: {job.get('title', 'Unknown Position')} at {job.get('company', 'Unknown Company')}
-Priority: {job.get('application_priority', 'Low').upper()}  |  Match Score: {job.get('match_score', 0)}%
-Key Requirements: {', '.join(job.get('key_requirements', ['None specified']))}
-Career Growth: {job.get('career_growth_potential', 'Unknown')}
-{'-' * 50}
-"""
+        output.append(f"\nJOB {i}: {job.get('title', 'Unknown Position')} at {job.get('company', 'Unknown Company')}")
+        output.append(f"Priority: {job.get('application_priority', 'Low').upper()}  |  Match Score: {job.get('match_score', 0)}%")
+        output.append(f"Key Requirements: {', '.join(job.get('key_requirements', ['None specified']))}")
+        output.append(f"Career Growth: {job.get('career_growth_potential', 'Unknown')}")
+        output.append('-' * 50)
     
     # Add weekly focus if available
     if include_weekly_focus and weekly_focus:
-        text += f"""
-WEEKLY FOCUS
-{'=' * 80}
-{weekly_focus}
-"""
+        output.append("\nWEEKLY FOCUS")
+        output.append('=' * 80)
+        output.append(weekly_focus)
     
-    return text
+    # Add recruiters if available
+    if 'recruiters' in strategy and strategy['recruiters']:
+        output.append("\nRECRUITERS FOUND")
+        output.append('=' * 80)
+        for company, recruiters in strategy['recruiters'].items():
+            output.append(f"\n{company}:")
+            for recruiter in recruiters:
+                output.append(f"- {recruiter.get('name', 'Unknown')}, {recruiter.get('title', 'Unknown')}")
+                if 'url' in recruiter:
+                    output.append(f"  URL: {recruiter['url']}")
+    
+    return '\n'.join(output)

@@ -17,6 +17,7 @@ from job_search import search_linkedin_jobs
 from document_generator import generate_documents_for_jobs
 from strategy_generator import generate_daily_strategy, generate_weekly_focus
 from strategy_formatter import format_strategy_output, format_strategy_output_plain
+from recruiter_finder import get_recruiter_finder
 
 # Import Slack notifier
 try:
@@ -47,7 +48,43 @@ def search_jobs(search_queries, job_limit=5):
     logger.info(f"Found {sum(len(search['listings']) for search in job_searches)} jobs across {len(job_searches)} search queries")
     return job_searches
 
-def generate_and_save_strategy(job_searches, output_dir, send_slack=DEFAULT_SLACK_NOTIFICATIONS):
+def find_recruiters_for_jobs(job_searches, limit_per_company=2, cache_only=True):
+    """Find recruiters for companies with job listings"""
+    logger.info("Searching for recruiters at companies with job listings")
+    
+    # Get recruiter finder instance
+    recruiter_finder = get_recruiter_finder()
+    
+    # Track companies we've already processed to avoid duplicates
+    processed_companies = set()
+    
+    # Dictionary to store recruiters by company
+    company_recruiters = {}
+    
+    # Process each job search result
+    for search in job_searches:
+        for job in search["listings"]:
+            company = job.get("company")
+            if not company or company in processed_companies:
+                continue
+                
+            processed_companies.add(company)
+            
+            # Find recruiters for this company
+            recruiters = recruiter_finder.search_company_recruiters(
+                company, 
+                limit=limit_per_company, 
+                cache_only=cache_only
+            )
+            
+            if recruiters:
+                company_recruiters[company] = recruiters
+                logger.info(f"Found {len(recruiters)} recruiters for {company}")
+    
+    logger.info(f"Found recruiters for {len(company_recruiters)} companies")
+    return company_recruiters
+
+def generate_and_save_strategy(job_searches, output_dir, send_slack=DEFAULT_SLACK_NOTIFICATIONS, include_recruiters=False):
     """Generate and save job search strategy"""
     logger.info("Generating job search strategy")
     
@@ -56,9 +93,23 @@ def generate_and_save_strategy(job_searches, output_dir, send_slack=DEFAULT_SLAC
     for search in job_searches:
         all_jobs.extend(search["listings"])
     
+    # Find recruiters if requested
+    recruiters = {}
+    if include_recruiters:
+        recruiters = find_recruiters_for_jobs(job_searches)
+    
     # Generate strategy
     strategy = generate_daily_strategy(all_jobs)
-    weekly_focus = generate_weekly_focus()
+    
+    # For weekly focus, we should ideally have past strategies
+    # Since we don't have them readily available, we'll pass an empty list for now
+    # This will result in a generic weekly focus message
+    weekly_focus = generate_weekly_focus([])  # Pass empty list instead of no arguments
+    
+    # Add recruiters and weekly focus to strategy
+    if recruiters:
+        strategy['recruiters'] = recruiters
+    strategy['weekly_focus'] = weekly_focus
     
     # Format the output in both Markdown and plain text
     markdown_content = format_strategy_output(strategy, weekly_focus)
@@ -92,6 +143,7 @@ def generate_and_save_strategy(job_searches, output_dir, send_slack=DEFAULT_SLAC
             daily_focus = strategy.get('daily_focus', {})
             job_count = len(all_jobs)
             high_priority_count = len([j for j in all_jobs if j.get('application_priority', '').lower() == 'high'])
+            recruiter_count = sum(len(recs) for recs in recruiters.values()) if recruiters else 0
             
             # Create a rich formatted message with Slack Block Kit
             blocks = [
@@ -124,6 +176,13 @@ def generate_and_save_strategy(job_searches, output_dir, send_slack=DEFAULT_SLAC
                     ]
                 }
             ]
+            
+            # Add recruiter info if available
+            if recruiter_count > 0:
+                blocks[2]["fields"].append({
+                    "type": "mrkdwn",
+                    "text": f"*Recruiters Found:* {recruiter_count}"
+                })
             
             # Add success metrics if available
             if daily_focus.get('success_metrics'):
@@ -217,6 +276,10 @@ def main():
                       help='Generate a Medium article in preview mode (no publishing)')
     parser.add_argument('--generate-documents', action='store_true',
                       help='Generate documents for high-priority jobs')
+    parser.add_argument('--include-recruiters', action='store_true',
+                      help='Include recruiter search in strategy generation')
+    parser.add_argument('--cache-only', action='store_true',
+                      help='Only use cached recruiters, do not search online')
     parser.set_defaults(send_slack=DEFAULT_SLACK_NOTIFICATIONS)
     args = parser.parse_args()
     
@@ -270,7 +333,8 @@ def main():
             strategy, md_path, txt_path = generate_and_save_strategy(
                 job_searches, 
                 strategy_dir,
-                args.send_slack
+                args.send_slack,
+                args.include_recruiters
             )
         
         # Generate documents if requested

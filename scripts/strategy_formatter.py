@@ -53,6 +53,16 @@ def format_strategy_output_plain(strategy, include_weekly_focus=True):
         if skill.get('status'):
             output.append(f"  Status: {skill['status']}")
     
+    # Recruiters
+    if 'recruiters' in strategy and strategy['recruiters']:
+        output.append("\nRecruiters Found:")
+        for company, recruiters in strategy['recruiters'].items():
+            output.append(f"\n{company}:")
+            for recruiter in recruiters:
+                output.append(f"- {recruiter['name']}, {recruiter['title']}")
+                if recruiter.get('url'):
+                    output.append(f"  URL: {recruiter['url']}")
+    
     # Application Strategy
     app_strategy = strategy.get('application_strategy', {})
     output.append("\nApplication Strategy:")
@@ -133,6 +143,22 @@ def format_strategy_output_markdown(strategy, weekly_focus=None):
             output.append(f"   - Status: To Apply")
             if job.get('notes'):
                 output.append(f"   - Notes: {job['notes']}")
+            output.append("")
+    
+    # Recruiters Section
+    if 'recruiters' in strategy and strategy['recruiters']:
+        output.append("## Company Recruiters\n")
+        output.append("Connect with these recruiters to expand your network and get insider information on job openings.\n")
+        
+        for company, recruiters in strategy['recruiters'].items():
+            output.append(f"### {company}")
+            for recruiter in recruiters:
+                if recruiter.get('url'):
+                    output.append(f"- [{recruiter['name']}]({recruiter['url']}) - {recruiter['title']}")
+                else:
+                    output.append(f"- **{recruiter['name']}** - {recruiter['title']}")
+                if recruiter.get('status'):
+                    output.append(f"  - Status: {recruiter['status']}")
             output.append("")
     
     # Networking Strategy
