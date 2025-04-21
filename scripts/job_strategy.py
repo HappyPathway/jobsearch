@@ -5,13 +5,11 @@ import sys
 import random
 import time
 import argparse
-
 from pathlib import Path
 from datetime import datetime
 
 from dotenv import load_dotenv
 import google.generativeai as genai
-
 
 # Local module imports
 from logging_utils import setup_logging
@@ -86,6 +84,139 @@ def find_recruiters_for_jobs(job_searches, limit_per_company=2, cache_only=True)
     logger.info(f"Found recruiters for {len(company_recruiters)} companies")
     return company_recruiters
 
+def validate_strategy_content(strategy):
+    """Validate the content of the strategy"""
+    return bool(strategy.get('daily_focus')) and bool(strategy.get('weekly_focus'))
+
+def enhance_with_default_content(strategy):
+    """Enhance strategy with default content"""
+    strategy['daily_focus'] = strategy.get('daily_focus', {'title': 'Default Daily Focus'})
+    strategy['weekly_focus'] = strategy.get('weekly_focus', 'Default Weekly Focus')
+    return strategy
+
+def get_sample_jobs():
+    """Provide sample job data for fallback"""
+    return [
+        {"title": "Sample Job 1", "company": "Sample Company A", "application_priority": "high"},
+        {"title": "Sample Job 2", "company": "Sample Company B", "application_priority": "medium"},
+        {"title": "Sample Job 3", "company": "Sample Company C", "application_priority": "low"}
+    ]
+
+def get_target_roles_from_profile():
+    """Extract target job roles from the user's profile data in the database"""
+    logger.info("Retrieving target roles from profile data")
+    try:
+        # Import needed modules
+        from models import TargetRole, Experience
+        from utils import session_scope
+        from strategy_generator import get_profile_data
+        
+        # First try to get from database
+        try:
+            with session_scope() as session:
+                roles = session.query(TargetRole).all()
+                if roles:
+                    target_roles = [role.role_name for role in roles if hasattr(role, 'role_name') and role.role_name]
+                    logger.info(f"Found {len(target_roles)} target roles in database: {target_roles}")
+                    return target_roles
+        except Exception as e:
+            logger.warning(f"Error accessing database for target roles: {str(e)}")
+        
+        # If database query fails, try using profile data from strategy generator
+        profile_data = get_profile_data()
+        if profile_data and 'target_roles' in profile_data and profile_data['target_roles']:
+            target_roles = [role['title'] for role in profile_data['target_roles'] if 'title' in role and role['title']]
+            if target_roles:
+                logger.info(f"Found {len(target_roles)} target roles from profile data: {target_roles}")
+                return target_roles
+                
+        # Try to get previous job titles from user's experience (NEW FALLBACK)
+        previous_titles = []
+        
+        # First try from database
+        try:
+            with session_scope() as session:
+                experiences = session.query(Experience).order_by(Experience.end_date.desc()).all()
+                if experiences:
+                    previous_titles = [exp.title for exp in experiences if hasattr(exp, 'title') and exp.title]
+                    logger.info(f"Found {len(previous_titles)} previous job titles in database: {previous_titles}")
+        except Exception as e:
+            logger.warning(f"Error accessing database for experience: {str(e)}")
+            
+        # If database query fails, try using profile data
+        if not previous_titles and profile_data and 'experiences' in profile_data:
+            previous_titles = [exp.get('title') for exp in profile_data['experiences'] if 'title' in exp and exp['title']]
+            logger.info(f"Found {len(previous_titles)} previous job titles from profile data: {previous_titles}")
+        
+        # If we have previous titles, use them
+        if previous_titles:
+            # Limit to 3-5 most recent titles and remove duplicates while preserving order
+            seen = set()
+            unique_titles = []
+            for title in previous_titles:
+                if title not in seen:
+                    seen.add(title)
+                    unique_titles.append(title)
+            
+            return unique_titles[:5]
+        
+        # If no roles are found in profile data, analyze skills to suggest roles
+        if profile_data and 'skills' in profile_data and profile_data['skills']:
+            skill_names = [skill['skill_name'] for skill in profile_data['skills'] if 'skill_name' in skill]
+            top_skills = skill_names[:5] if len(skill_names) > 5 else skill_names
+            
+            if top_skills:
+                logger.info(f"No target roles found, attempting to analyze skills: {top_skills}")
+                target_roles = suggest_roles_from_skills(top_skills)
+                if target_roles:
+                    return target_roles
+    
+    except Exception as e:
+        logger.error(f"Error getting target roles from profile: {str(e)}")
+    
+    # Default fallback roles if nothing else works
+    fallback_roles = ["Software Engineer", "Project Manager", "Data Analyst"]
+    logger.warning(f"Using generic fallback target roles: {fallback_roles}")
+    return fallback_roles
+
+def suggest_roles_from_skills(skills):
+    """Use AI to suggest job roles based on user's top skills"""
+    logger.info(f"Suggesting job roles based on skills: {skills}")
+    
+    try:
+        skills_text = ", ".join(skills)
+        
+        prompt = f"""Based on the following professional skills, suggest 3-5 specific job titles/roles that would be a good match for a job search:
+
+Skills: {skills_text}
+
+Provide only the job titles as a comma-separated list. Be specific and relevant to the listed skills."""
+        
+        model = genai.GenerativeModel('gemini-1.5-pro')
+        response = model.generate_content(
+            prompt,
+            generation_config={
+                "max_output_tokens": 100,
+                "temperature": 0.2,
+            }
+        )
+        
+        # Process the response to extract role names
+        if response and response.text:
+            # Split by common separators and clean up
+            suggested_roles = [role.strip() for role in response.text.replace('\n', ',').split(',')]
+            # Filter out empty strings
+            suggested_roles = [role for role in suggested_roles if role]
+            
+            if suggested_roles:
+                logger.info(f"AI suggested roles: {suggested_roles}")
+                return suggested_roles[:5]  # Limit to 5 roles
+    
+    except Exception as e:
+        logger.error(f"Error suggesting roles from skills: {str(e)}")
+    
+    return None
+
 def generate_and_save_strategy(job_searches, output_dir, send_slack=DEFAULT_SLACK_NOTIFICATIONS, include_recruiters=False):
     """Generate and save job search strategy"""
     logger.info("Generating job search strategy")
@@ -94,6 +225,14 @@ def generate_and_save_strategy(job_searches, output_dir, send_slack=DEFAULT_SLAC
     all_jobs = []
     for search in job_searches:
         all_jobs.extend(search["listings"])
+    
+    # Validate that we have enough job data to generate a meaningful strategy
+    if not all_jobs or len(all_jobs) < 3:
+        logger.warning("Insufficient job data to generate a meaningful strategy (fewer than 3 jobs)")
+        # Create fallback job data during initialization to ensure we have content
+        if not all_jobs:
+            logger.info("Using sample job data for strategy generation")
+            all_jobs = get_sample_jobs()
     
     # Find recruiters if requested
     recruiters = {}
@@ -112,6 +251,11 @@ def generate_and_save_strategy(job_searches, output_dir, send_slack=DEFAULT_SLAC
     if recruiters:
         strategy['recruiters'] = recruiters
     strategy['weekly_focus'] = weekly_focus
+    
+    # Validate strategy content
+    if not validate_strategy_content(strategy):
+        logger.warning("Generated strategy content is incomplete, enhancing with default content")
+        strategy = enhance_with_default_content(strategy)
     
     # Format the output in both Markdown and plain text
     markdown_content = format_strategy_output(strategy, weekly_focus)
@@ -137,7 +281,7 @@ def generate_and_save_strategy(job_searches, output_dir, send_slack=DEFAULT_SLAC
     logger.info(f"Strategy saved to {md_path} and {txt_path}")
     
     # Send Slack notification if enabled
-    if send_slack and SLACK_AVAILABLE:
+    if send_slack and SLACK_AVAILABLE and validate_strategy_content(strategy):
         try:
             logger.info("Sending Slack notification about generated job strategy")
             
@@ -198,11 +342,13 @@ def generate_and_save_strategy(job_searches, output_dir, send_slack=DEFAULT_SLAC
                 })
             
             # Add a link to the strategy file
+            # Use GitHub environment variables to get the correct repo path
+            github_repository = os.getenv("GITHUB_REPOSITORY", "darnold/jobsearch")
             blocks.append({
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"<https://github.com/darnold/jobsearch/blob/main/strategies/{os.path.basename(md_path)}|View full strategy>"
+                    "text": f"<https://github.com/{github_repository}/blob/main/strategies/{os.path.basename(md_path)}|View full strategy>"
                 }
             })
             
@@ -264,7 +410,6 @@ def main():
     parser = argparse.ArgumentParser(description='Generate job search strategy')
     parser.add_argument('--job-limit', type=int, default=5,
                       help='Number of job postings to return per search query (default: 5)')
-
     parser.add_argument('--search-only', action='store_true',
                       help='Only search for jobs, do not generate strategy')
     parser.add_argument('--strategy-only', action='store_true',
@@ -283,7 +428,6 @@ def main():
                       help='Include recruiter search in strategy generation')
     parser.add_argument('--cache-only', action='store_true',
                       help='Only use cached recruiters, do not search online')
-
     parser.set_defaults(send_slack=DEFAULT_SLACK_NOTIFICATIONS)
     args = parser.parse_args()
     
@@ -298,11 +442,20 @@ def main():
         
         # Search for jobs if not in strategy-only mode
         if not args.strategy_only:
-            search_queries = [
-                "Cloud Architect",
-                "Principal Cloud Engineer", 
-                "DevOps Architect"
-            ]
+            # Get target roles dynamically from user's profile instead of hardcoded values
+            search_queries = get_target_roles_from_profile()
+            
+            # Ensure we have at least 2-3 search queries for better results
+            if len(search_queries) < 2:
+                logger.warning(f"Only found {len(search_queries)} target roles, adding fallback roles")
+                additional_roles = ["Software Engineer", "Project Manager", "Data Analyst"]
+                for role in additional_roles:
+                    if role not in search_queries:
+                        search_queries.append(role)
+                        if len(search_queries) >= 3:
+                            break
+            
+            logger.info(f"Using search queries from profile data: {search_queries}")
             job_searches = search_jobs(search_queries, args.job_limit)
             
             # Save job data for potential future use
@@ -358,7 +511,7 @@ def main():
             
         logger.info("Job strategy generation process completed successfully")
         return 0
- 
+        
     except Exception as e:
         logger.error(f"Failed to generate job strategy: {str(e)}", exc_info=True)
         return 1

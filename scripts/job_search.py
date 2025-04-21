@@ -21,6 +21,62 @@ def normalize_linkedin_url(url):
         return f"https://www.linkedin.com/jobs/view/{match.group(1)}"
     return url
 
+def normalize_title(title):
+    """Normalize job titles for better matching"""
+    if not title:
+        return ""
+    
+    # Convert to lowercase
+    title = title.lower()
+    
+    # Remove location-specific info in parentheses
+    title = re.sub(r'\s*\([^)]*\)', '', title)
+    
+    # Remove common location prefixes/suffixes
+    title = re.sub(r'\s*(- remote|\(remote\)|remote|onsite|hybrid|\d+%|\bUS\b)', '', title, flags=re.IGNORECASE)
+    
+    # Remove extra whitespace
+    title = re.sub(r'\s+', ' ', title).strip()
+    
+    return title
+
+def deduplicate_jobs(jobs):
+    """Remove duplicate job postings based on title + company, even with different locations"""
+    logger.info(f"Deduplicating {len(jobs)} job listings")
+    
+    unique_jobs = []
+    seen_jobs = {}  # Dictionary to track {(normalized_title, company): job_index}
+    
+    for job in jobs:
+        # Create a normalized key for matching
+        normalized_title = normalize_title(job.get('title', ''))
+        company = job.get('company', '').lower()
+        key = (normalized_title, company)
+        
+        # If we've seen this job before
+        if key in seen_jobs:
+            existing_index = seen_jobs[key]
+            existing_job = unique_jobs[existing_index]
+            
+            # Check if we should replace with this one (e.g., if this is remote and other isn't)
+            desc_lower = job.get('description', '').lower()
+            existing_desc = existing_job.get('description', '').lower()
+            
+            # Prefer remote positions or those with more details
+            if ('remote' in desc_lower and 'remote' not in existing_desc) or \
+               (len(desc_lower) > len(existing_desc)):
+                unique_jobs[existing_index] = job
+                logger.info(f"Replaced duplicate: '{existing_job['title']}' with '{job['title']}' at {company}")
+            else:
+                logger.info(f"Skipped duplicate: '{job['title']}' matches '{existing_job['title']}' at {company}")
+        else:
+            # New unique job
+            seen_jobs[key] = len(unique_jobs)
+            unique_jobs.append(job)
+    
+    logger.info(f"Deduplicated to {len(unique_jobs)} unique job listings (removed {len(jobs) - len(unique_jobs)} duplicates)")
+    return unique_jobs
+
 def get_cached_jobs():
     """Get all cached jobs from the database"""
     logger.info("Retrieving cached jobs")
@@ -140,8 +196,8 @@ def search_linkedin_jobs(query, location="United States", limit=2):
     # Set up root directory
     root_dir = Path(__file__).resolve().parent.parent
     
-    # Collect new job links - request more to account for filtering
-    jobs = collect_job_links(query, location, limit * 2)
+    # Collect new job links - request more to account for filtering and deduplication
+    jobs = collect_job_links(query, location, limit * 3)
     
     # Filter out jobs we've already applied to, normalize URLs, and apply one-week filter
     jobs = [
@@ -152,6 +208,12 @@ def search_linkedin_jobs(query, location="United States", limit=2):
             or datetime.strptime(job['first_seen_date'], '%Y-%m-%d') > one_week_ago
         )
     ]
+
+    # Deduplicate jobs based on title and company
+    jobs = deduplicate_jobs(jobs)
+
+    # Limit to requested number after deduplication
+    jobs = jobs[:limit]
 
     # Load profile data for personalization
     with open(os.path.join(root_dir, 'docs', 'profile.json')) as f:

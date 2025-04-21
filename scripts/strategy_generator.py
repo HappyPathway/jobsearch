@@ -66,6 +66,11 @@ def generate_daily_strategy(sorted_jobs):
     # Get profile data
     profile_data = get_profile_data()
     
+    # Check if we have enough job data
+    if not sorted_jobs or len(sorted_jobs) < 2:
+        logger.warning(f"Limited job data available: {len(sorted_jobs) if sorted_jobs else 0} jobs")
+        return create_fallback_strategy(profile_data)
+    
     # Construct the prompt for Gemini
     job_list = ""
     for i, job in enumerate(sorted_jobs[:10], 1):  # Limit to top 10 jobs
@@ -77,7 +82,7 @@ def generate_daily_strategy(sorted_jobs):
     
     # Fix skill_name attribute reference
     skills_list = ", ".join([f"{skill.get('skill_name', skill.get('name', 'Unknown'))} ({skill.get('proficiency', 'N/A')})" for skill in profile_data['skills']])
-    target_roles_list = ", ".join([role['title'] for role in profile_data['target_roles']])
+    target_roles_list = ", ".join([role['title'] for role in profile_data['target_roles']]) if profile_data['target_roles'] else "Cloud/DevOps Roles"
     
     prompt = f"""You are a career strategist helping to create a daily job search strategy. Based on today's job matches, create a compelling strategy document with the following sections:
 
@@ -107,21 +112,182 @@ Format your response as detailed paragraphs for each section. Be specific and ac
             }
         )
         
+        # Parse the content to extract daily focus
+        content = response.text
+        daily_focus = extract_daily_focus(content)
+        
         strategy = {
             'date': datetime.now().strftime('%Y-%m-%d'),
-            'content': response.text,
-            'jobs': sorted_jobs[:10]  # Include top 10 jobs in the strategy
+            'content': content,
+            'jobs': sorted_jobs[:10],  # Include top 10 jobs in the strategy
+            'daily_focus': daily_focus
         }
         
         logger.info("Successfully generated daily strategy")
         return strategy
     except Exception as e:
         logger.error(f"Error generating daily strategy: {str(e)}")
-        return {
-            'date': datetime.now().strftime('%Y-%m-%d'),
-            'content': "Unable to generate strategy due to an error.",
-            'jobs': sorted_jobs[:10]
+        return create_fallback_strategy(profile_data, sorted_jobs[:10] if sorted_jobs else [])
+
+def extract_daily_focus(content):
+    """Extract daily focus information from strategy content"""
+    focus = {'title': 'Daily Planning'}
+    
+    # Try to extract the title
+    if "Today's Focus:" in content:
+        lines = content.split('\n')
+        for i, line in enumerate(lines):
+            if "Today's Focus:" in line:
+                # Try to get the title from this line
+                title = line.split("Today's Focus:", 1)[1].strip()
+                if not title and i + 1 < len(lines):
+                    # If empty, try the next line
+                    title = lines[i + 1].strip()
+                if title:
+                    focus['title'] = title
+                break
+    
+    # Try to extract success metrics
+    success_metrics = []
+    if "Success Metrics:" in content or "High-Priority Applications:" in content:
+        lines = content.split('\n')
+        capture = False
+        for line in lines:
+            if "Success Metrics:" in line or "High-Priority Applications:" in line:
+                capture = True
+                continue
+            if capture and line.strip() and line.strip()[0] in ['-', '•', '*'] and len(line.strip()) > 2:
+                metric = line.strip()[1:].strip()
+                if metric:
+                    success_metrics.append(metric)
+            # Stop capturing if we hit another section header
+            if capture and line.strip() and line.strip().endswith(':') and not line.strip().startswith('-'):
+                break
+        
+    if success_metrics:
+        focus['success_metrics'] = success_metrics
+        
+    return focus
+
+def create_fallback_strategy(profile_data, jobs=None):
+    """Create a fallback strategy when there's insufficient job data"""
+    logger.info("Creating fallback strategy due to insufficient job data")
+    
+    # Default focus based on profile data
+    target_roles = [role['title'] for role in profile_data.get('target_roles', [])]
+    if not target_roles:
+        target_roles = ["Cloud Architect", "DevOps Engineer", "Cloud Engineer"]
+    
+    top_skills = [skill['skill_name'] for skill in profile_data.get('skills', [])[:5]]
+    if not top_skills:
+        top_skills = ["AWS", "Terraform", "Kubernetes", "Python", "CI/CD"]
+    
+    # Craft a meaningful strategy with networking and skill development focus
+    current_date = datetime.now().strftime('%Y-%m-%d')
+    
+    # Create a default content with real strategy value
+    content = f"""## Today's Focus: Network and Skill Development
+*Why*: Without specific job opportunities identified, focus on expanding your professional network and enhancing your technical skills to position yourself for future opportunities.
+
+### Success Metrics
+- [ ] Connect with 3 professionals in your target industry
+- [ ] Complete 1 hour of focused learning on a key skill
+- [ ] Update your professional profiles with recent achievements
+- [ ] Research 3 companies of interest
+
+## Morning Tasks
+
+### High Priority
+1. **LinkedIn Networking** ⏱️ 60min  
+   *Why*: Building relationships with professionals in your field increases visibility and uncovers hidden opportunities.
+
+### Medium Priority
+1. **Skill Development** ⏱️ 90min  
+   *Why*: Continuous learning keeps you competitive in the rapidly evolving tech landscape.
+
+## Afternoon Tasks
+
+### High Priority
+1. **Research Target Companies** ⏱️ 60min  
+   *Why*: Understanding company culture and needs helps tailor future applications.
+
+### Medium Priority
+1. **Update Online Profiles** ⏱️ 45min  
+   *Why*: Ensures your professional presence reflects your most recent skills and achievements.
+
+## Target Roles & Current Opportunities
+
+### {target_roles[0] if target_roles else "Cloud Architect"}
+*Why*: Aligns with your core technical expertise and offers strong career growth potential.
+
+#### Key Skills to Emphasize
+- {', '.join(top_skills[:3] if top_skills else ["Terraform", "AWS", "Kubernetes"])}
+- Architecture Design
+- Technical Leadership
+
+#### Target Companies
+- AWS
+- Google Cloud
+- HashiCorp
+- Fast-growing tech startups
+
+## Networking Strategy
+**Daily Connection Target**: 3
+
+### Platforms
+- LinkedIn
+- GitHub
+- Industry Slack communities
+
+### Outreach Template
+```
+Hi [Name],
+
+I came across your profile and was impressed by your work in [specific area]. I'm currently a [Your Role] specializing in [your specialty] and I'm interested in connecting with other professionals in the [target industry] space.
+
+Best regards,
+[Your Name]
+```
+
+## Skill Development Plan
+
+### Current Focus: {top_skills[0] if top_skills else "Cloud Architecture"}
+- **Goal**: Deepen knowledge of advanced features and best practices
+- **Timeline**: Ongoing
+- **Status**: In Progress
+
+### Current Focus: {top_skills[1] if len(top_skills) > 1 else "CI/CD"}
+- **Goal**: Explore automation capabilities and integration patterns
+- **Timeline**: 2 weeks
+- **Status**: Planned
+
+## Application Strategy
+**Daily Target**: Quality over quantity
+
+### Quality Checklist
+- [ ] Tailored resume and cover letter
+- [ ] Quantifiable achievements highlighted
+- [ ] Keywords optimized for ATS
+- [ ] Company research completed
+"""
+
+    # Create the strategy object
+    strategy = {
+        'date': current_date,
+        'content': content,
+        'jobs': jobs if jobs else [],
+        'daily_focus': {
+            'title': 'Network and Skill Development',
+            'success_metrics': [
+                "Connect with 3 professionals in your target industry",
+                "Complete 1 hour of focused learning on a key skill",
+                "Update your professional profiles with recent achievements",
+                "Research 3 companies of interest"
+            ]
         }
+    }
+    
+    return strategy
 
 def generate_weekly_focus(strategies_of_week):
     """Generate a weekly focus based on the daily strategies of the past week"""
