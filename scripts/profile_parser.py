@@ -6,6 +6,9 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 import os
 from logging_utils import setup_logging
+import tempfile
+from datetime import datetime
+from gcs_utils import gcs
 
 logger = setup_logging('profile_parser')
 
@@ -16,63 +19,16 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 def extract_profile_with_gemini(text):
     """Use Gemini to extract structured profile information from resume text"""
     try:
-        prompt = f"""You are an expert at parsing resumes for technical roles. Extract only the most significant skills and expertise from this resume, focusing on technologies and practices that appear multiple times or in meaningful contexts.
-
-Rules for skill analysis:
-1. Only include skills with significant usage (mentioned multiple times or in important contexts)
-2. Weight recent experience more heavily
-3. Consider the context - implementation/architecture vs just using a tool
-4. Look for patterns of expertise (e.g. multiple AWS services = strong AWS knowledge)
-
-Resume text to analyze:
-{text}
-
-Provide a JSON response with this exact structure (no comments or extra text):
-{{
-    "contact_info": {{
-        "name": str,
-        "email": str,
-        "phone": str,
-        "location": str,
-        "linkedin": str
-    }},
-    "core_skills": {{
-        "infrastructure_and_cloud": [
-            {{
-                "name": str,
-                "proficiency": "expert|advanced|intermediate",
-                "years": int,
-                "last_used": "YYYY",
-                "mentions": int,
-                "context": str
-            }}
-        ],
-        "development_and_automation": [],
-        "platforms_and_tools": [],
-        "methodologies": []
-    }},
-    "experience": [
-        {{
-            "company": str,
-            "title": str,
-            "dates": str,
-            "location": str,
-            "description": [str]
-        }}
-    ],
-    "education": []
-}}
-
-Notes:
-- Proficiency levels:
-  expert = Deep expertise, multiple years, leadership/architecture level
-  advanced = Solid working knowledge, regular usage
-  intermediate = Basic working knowledge, occasional usage
-- Only include skills mentioned multiple times or in significant contexts
-- Group related technologies (e.g. group AWS services under AWS expertise)
-- Include brief context about how the skill was used"""
-
         model = genai.GenerativeModel('gemini-1.5-pro')
+        prompt = """Extract structured profile information from this resume text.
+Include:
+1. Contact information (name, email, phone, location, LinkedIn)
+2. Core skills organized by category
+3. Experience entries with achievements
+4. Education history
+
+Return as a clean JSON object with consistent formatting."""
+
         response = model.generate_content(
             prompt,
             generation_config={
@@ -148,38 +104,24 @@ Notes:
                     skill['proficiency'] = 'intermediate'
                 if 'years' not in skill:
                     skill['years'] = 1
-                if 'last_used' not in skill:
-                    skill['last_used'] = '2024'
-                if 'mentions' not in skill:
-                    skill['mentions'] = 1
-                if 'context' not in skill:
-                    skill['context'] = ''
-        
-        # If location is empty but we have experience entries, infer from most recent
-        if not profile['contact_info']['location'] and profile['experience']:
-            recent_locations = [exp.get('location', '') for exp in profile['experience'][:3]]
-            if any(loc for loc in recent_locations if 'San Francisco' in loc or 'San Jose' in loc or 'Bay' in loc):
-                profile['contact_info']['location'] = 'Bay Area, CA'
-            elif any(recent_locations):
-                profile['contact_info']['location'] = recent_locations[0]
         
         return profile
         
     except Exception as e:
-        logger.error(f"Error extracting profile with Gemini: {str(e)}")
-        logger.error(f"Full error: {str(e.__class__.__name__)}: {str(e)}")
+        logger.error(f"Error extracting profile information: {str(e)}")
         return None
 
 def create_profile_json():
-    """Create JSON profile from resume"""
-    docs_dir = Path(__file__).parent.parent / 'docs'
-    resume_path = docs_dir / 'Resume.pdf'
-    
-    if not resume_path.exists():
-        logger.error(f"Resume not found at {resume_path}")
-        return None
-    
+    """Create JSON profile from resume and store in GCS"""
     try:
+        # Read resume from docs directory
+        docs_dir = Path(__file__).parent.parent / 'inputs'
+        resume_path = docs_dir / 'Resume.pdf'
+        
+        if not resume_path.exists():
+            logger.error(f"Resume not found at {resume_path}")
+            return None
+        
         # Extract text from PDF
         with pdfplumber.open(resume_path) as pdf:
             text = '\n'.join(page.extract_text() for page in pdf.pages)
@@ -191,14 +133,21 @@ def create_profile_json():
             return None
             
         # Add last updated timestamp
-        profile['last_updated'] = resume_path.stat().st_mtime
+        profile['last_updated'] = datetime.now().isoformat()
         
-        # Save to profile.json
-        profile_path = docs_dir / 'profile.json'
-        with open(profile_path, 'w') as f:
-            json.dump(profile, f, indent=2)
+        # Store in GCS
+        with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
+            temp_path = Path(temp_file.name)
+            json.dump(profile, temp_file, indent=2)
+
+        # Upload to GCS
+        gcs_path = 'profile/profile.json'
+        gcs.upload_file(temp_path, gcs_path)
+
+        # Clean up temp file
+        temp_path.unlink()
             
-        logger.info(f"Successfully created profile JSON at {profile_path}")
+        logger.info(f"Successfully stored profile JSON in GCS at {gcs_path}")
         return profile
         
     except Exception as e:

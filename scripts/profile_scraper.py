@@ -5,8 +5,10 @@ from dotenv import load_dotenv
 import os
 import json
 import re
+import tempfile
 from logging_utils import setup_logging
 from models import Experience, Skill, get_session
+import gcs
 
 logger = setup_logging('profile_scraper')
 
@@ -29,31 +31,17 @@ def extract_text_from_pdf(pdf_path):
 
 def parse_profile_text(text):
     """Use Gemini to parse LinkedIn profile text into structured data"""
-    logger.info("Starting profile text parsing with Gemini")
-    prompt = f"""Parse this text into a single line of JSON with no line breaks.
-Output only the JSON object, nothing else.
-
-Text to parse:
-{text}
-
-Example format (single line, replace with actual data):
-{{"experiences":[{{"company":"Company","title":"Title","start_date":"2020-01","end_date":"Present","description":"Work description"}}],"skills":["Skill1"],"certifications":[],"education":[{{"school":"School","degree":"Degree","field":"Field","start_date":"2020-01","end_date":"2020-12"}}]}}
-
-Rules:
-1. Output must be a single line of valid JSON
-2. Use double quotes for all strings
-3. No trailing commas
-4. No line breaks or formatting
-5. Format dates as YYYY-MM
-6. Use 'Present' for current positions
-7. Keep descriptions concise
-8. Extract key skills
-9. Only include stated certifications
-10. Only include information from the text"""
-
     try:
-        model = genai.GenerativeModel("gemini-1.5-pro")
-        logger.debug("Sending text to Gemini for parsing")
+        prompt = """Parse the LinkedIn profile text into structured data.
+Focus on extracting:
+1. Experiences with accomplishments
+2. Skills with context
+3. Educational background
+4. Certifications and awards
+
+Return a JSON object with all extracted information."""
+
+        model = genai.GenerativeModel('gemini-1.5-pro')
         response = model.generate_content(
             prompt,
             generation_config={
@@ -61,65 +49,27 @@ Rules:
                 "temperature": 0.1,
             }
         )
+
+        # Parse response into structured data
+        data = json.loads(response.text)
         
-        # Clean up the response
-        json_str = response.text.strip()
-        logger.debug("Received response from Gemini")
+        # Store raw data in GCS
+        with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
+            temp_path = Path(temp_file.name)
+            json.dump(data, temp_file, indent=2)
+
+        # Upload to GCS
+        gcs_path = 'profile/linkedin_raw.json'
+        gcs.upload_file(temp_path, gcs_path)
+
+        # Clean up temp file
+        temp_path.unlink()
         
-        # Extract just the JSON object
-        match = re.search(r'({.*})', json_str)
-        if match:
-            json_str = match.group(1)
-        
-        # Basic cleanup
-        json_str = json_str.replace('\n', ' ').replace('\r', ' ')
-        json_str = re.sub(r'\s+', ' ', json_str)
-        
-        try:
-            parsed = json.loads(json_str)
-        except json.JSONDecodeError as e:
-            logger.error(f"JSON parse failed: {str(e)}")
-            return None
-        
-        # Normalize and validate data
-        logger.info("Normalizing parsed data")
-        normalized = {
-            "experiences": [],
-            "skills": [],
-            "certifications": [],
-            "education": []
-        }
-        
-        # Normalize experiences
-        for exp in parsed.get('experiences', []):
-            if isinstance(exp, dict):
-                normalized["experiences"].append({
-                    "company": str(exp.get('company', '')).strip(),
-                    "title": str(exp.get('title', '')).strip(),
-                    "start_date": str(exp.get('start_date', '')).strip(),
-                    "end_date": str(exp.get('end_date', 'Present')).strip(),
-                    "description": ' '.join(str(exp.get('description', '')).split())
-                })
-        
-        # Normalize lists
-        normalized["skills"] = [str(s).strip() for s in parsed.get('skills', []) if s]
-        normalized["certifications"] = [str(c).strip() for c in parsed.get('certifications', []) if c]
-        
-        # Normalize education
-        for edu in parsed.get('education', []):
-            if isinstance(edu, dict):
-                normalized["education"].append({
-                    "school": str(edu.get('school', '')).strip(),
-                    "degree": str(edu.get('degree', '')).strip(),
-                    "field": str(edu.get('field', '')).strip() if edu.get('field') else '',
-                    "start_date": str(edu.get('start_date', '')).strip(),
-                    "end_date": str(edu.get('end_date', '')).strip()
-                })
-        
-        logger.info(f"Successfully parsed profile data: {len(normalized['experiences'])} experiences, {len(normalized['skills'])} skills")
-        return normalized
+        logger.info(f"Stored raw LinkedIn data in GCS at {gcs_path}")
+        return data
+
     except Exception as e:
-        logger.error(f"Error parsing profile with Gemini: {str(e)}")
+        logger.error(f"Error parsing profile text: {str(e)}")
         return None
 
 def save_to_database(parsed_data):
@@ -172,7 +122,7 @@ def save_to_database(parsed_data):
         raise
 
 def main():
-    pdf_path = Path(__file__).parent.parent / 'docs' / 'Profile.pdf'
+    pdf_path = Path(__file__).parent.parent / 'inputs' / 'Profile.pdf'
     logger.info(f"Starting profile scraping process")
     
     if not pdf_path.exists():

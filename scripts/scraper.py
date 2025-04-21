@@ -131,7 +131,7 @@ def save_to_database(conn, experiences, skills):
     conn.commit()
 
 def main():
-    pdf_path = Path(__file__).parent.parent / 'docs' / 'Profile.pdf'
+    pdf_path = Path(__file__).parent.parent / 'inputs' / 'Profile.pdf'
     if not pdf_path.exists():
         print(f"Error: LinkedIn profile PDF not found at {pdf_path}")
         return

@@ -25,6 +25,7 @@ import logging
 import requests
 from dotenv import load_dotenv
 import google.generativeai as genai
+import tempfile
 
 # Add parent directory to Python path to find local modules
 sys.path.append(str(Path(__file__).resolve().parent.parent))
@@ -183,32 +184,40 @@ Your response should be a single domain name, no extra text."""
     def _load_published_history(self):
         """Load history of previously published articles"""
         try:
-            root_dir = Path(__file__).resolve().parent.parent
-            history_file = os.path.join(root_dir, 'docs', 'medium_history.json')
+            # Load publication history from GCS
+            gcs_path = 'articles/medium_history.json'
+            temp_file = tempfile.NamedTemporaryFile(delete=False)
+            temp_path = Path(temp_file.name)
             
-            if os.path.exists(history_file):
-                with open(history_file, 'r') as f:
-                    self.skills_history = json.load(f)
-                logger.info(f"Loaded history for {len(self.skills_history)} skills")
-            else:
-                logger.info("No history file found, creating new one")
-                self.skills_history = {}
+            gcs.download_file(gcs_path, temp_path)
             
+            with open(temp_path, 'r') as f:
+                self.skills_history = json.load(f)
+            
+            temp_path.unlink()
+            
+            logger.info(f"Loaded history for {len(self.skills_history)} skills from GCS")
             return self.skills_history
         except Exception as e:
             logger.error(f"Error loading publication history: {str(e)}")
             return {}
     
     def _save_published_history(self):
-        """Save history of published articles"""
+        """Save history of published articles to GCS"""
         try:
-            root_dir = Path(__file__).resolve().parent.parent
-            history_file = os.path.join(root_dir, 'docs', 'medium_history.json')
+            # Save publication history to GCS
+            with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
+                temp_path = Path(temp_file.name)
+                json.dump(self.skills_history, temp_file, indent=2)
+
+            # Upload to GCS
+            gcs_path = 'articles/medium_history.json'
+            gcs.upload_file(temp_path, gcs_path)
+
+            # Clean up temp file
+            temp_path.unlink()
             
-            with open(history_file, 'w') as f:
-                json.dump(self.skills_history, f, indent=2)
-            
-            logger.info(f"Saved history for {len(self.skills_history)} skills")
+            logger.info(f"Saved publication history for {len(self.skills_history)} skills to GCS")
         except Exception as e:
             logger.error(f"Error saving publication history: {str(e)}")
     
@@ -367,20 +376,12 @@ Title your post using the suggested title from the outline."""
             logger.error(f"Error generating article: {str(e)}")
             return None
     
-    def save_article_locally(self, article_data):
-        """Save the generated article locally"""
+    def save_article(self, article_data):
+        """Save the generated article to GCS"""
         try:
             if not article_data:
                 logger.error("No article data to save")
                 return None
-            
-            root_dir = Path(__file__).resolve().parent.parent
-            articles_dir = os.path.join(root_dir, 'articles')
-            
-            # Create articles directory if it doesn't exist
-            if not os.path.exists(articles_dir):
-                os.makedirs(articles_dir)
-                logger.info(f"Created articles directory at {articles_dir}")
             
             # Create filename from title and date
             date_str = datetime.now().strftime("%Y-%m-%d")
@@ -390,21 +391,31 @@ Title your post using the suggested title from the outline."""
             md_filename = f"{date_str}_{title_slug}.md"
             json_filename = f"{date_str}_{title_slug}.json"
             
-            md_path = os.path.join(articles_dir, md_filename)
-            json_path = os.path.join(articles_dir, json_filename)
+            # Store files in GCS
+            with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_md:
+                temp_md_path = Path(temp_md.name)
+                temp_md.write(article_data['content'])
+
+            with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_json:
+                temp_json_path = Path(temp_json.name)
+                json.dump(article_data, temp_json, indent=2)
+
+            # Upload to GCS
+            md_gcs_path = f'articles/{md_filename}'
+            json_gcs_path = f'articles/{json_filename}'
+
+            gcs.upload_file(temp_md_path, md_gcs_path)
+            gcs.upload_file(temp_json_path, json_gcs_path)
+
+            # Clean up temp files
+            temp_md_path.unlink()
+            temp_json_path.unlink()
             
-            # Save as markdown
-            with open(md_path, 'w') as f:
-                f.write(article_data['content'])
+            logger.info(f"Article saved to GCS at {md_gcs_path}")
+            logger.info(f"Article metadata saved to GCS at {json_gcs_path}")
             
-            # Save metadata as JSON
-            with open(json_path, 'w') as f:
-                json.dump(article_data, f, indent=2)
-            
-            logger.info(f"Article saved to {md_path}")
-            logger.info(f"Metadata saved to {json_path}")
-            
-            return md_path
+            return md_gcs_path
+
         except Exception as e:
             logger.error(f"Error saving article: {str(e)}")
             return None
@@ -484,17 +495,8 @@ Title your post using the suggested title from the outline."""
             logger.error(f"Failed to generate article for skill: {selected_skill}")
             return None
         
-        # Save the article locally
-        local_path = self.save_article_locally(article_data)
-        
-        # Update GCS if configured
-        try:
-            if GCS_BUCKET_NAME:
-                gcs = GCSUtils(GCS_BUCKET_NAME)
-                gcs.upload_file(local_path)
-                logger.info(f"Uploaded article to GCS: {os.path.basename(local_path)}")
-        except Exception as e:
-            logger.warning(f"Failed to upload article to GCS: {str(e)}")
+        # Save the article to GCS
+        gcs_path = self.save_article(article_data)
         
         # Publish to Medium if API token is configured
         if self.api_token and self.user_data:
@@ -505,7 +507,7 @@ Title your post using the suggested title from the outline."""
         else:
             logger.info("Medium API not configured, skipping publication")
         
-        return local_path
+        return gcs_path
 
 
 def main():
@@ -526,7 +528,7 @@ def main():
         
         # Generate and optionally publish article
         if args.preview:
-            # Just generate and save locally
+            # Just generate and save to GCS
             selected_skill = args.skill or medium.select_skill_for_article()
             if not selected_skill:
                 logger.error("No skill selected")
@@ -534,10 +536,10 @@ def main():
             
             article_data = medium.generate_article(selected_skill)
             if article_data:
-                local_path = medium.save_article_locally(article_data)
-                if local_path:
-                    logger.info(f"Article generated in preview mode: {local_path}")
-                    print(f"Article generated: {local_path}")
+                gcs_path = medium.save_article(article_data)
+                if gcs_path:
+                    logger.info(f"Article generated in preview mode: {gcs_path}")
+                    print(f"Article generated: {gcs_path}")
                     return 0
             else:
                 logger.error("Failed to generate article")

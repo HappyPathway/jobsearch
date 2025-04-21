@@ -9,6 +9,8 @@ from models import Experience, Skill, ResumeSection, TargetRole, get_session
 import google.generativeai as genai
 from dotenv import load_dotenv
 import os
+import tempfile
+from gcs_utils import gcs
 
 logger = setup_logging('github_pages')
 load_dotenv()
@@ -106,131 +108,39 @@ Write a compelling summary that:
         return ""
 
 def generate_pages():
-    """Generate static GitHub Pages from career data"""
-    logger.info("Starting GitHub Pages generation")
-    
-    # Set up Jinja2 environment
-    env = Environment(
-        loader=FileSystemLoader('scripts/templates'),
-        trim_blocks=True,
-        lstrip_blocks=True
-    )
-    template = env.get_template('github_pages.html')
-    
+    """Generate static GitHub Pages and store in GCS"""
     try:
-        # Load profile data from profile.json
-        profile_json_path = Path(__file__).parent.parent / 'docs' / 'profile.json'
-        with open(profile_json_path, 'r') as f:
-            profile = json.load(f)
-        
-        if not profile:
-            logger.error("Profile data is empty or not loaded properly")
-            return False
-        
-        with get_session() as session:
-            # Get all required data from database
-            experiences = session.query(Experience).order_by(
-                Experience.end_date.desc(),
-                Experience.start_date.desc()
-            ).all()
+        # Create temporary directory for generation
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_dir_path = Path(temp_dir)
             
-            db_skills = session.query(Skill).all()
-            
-            summary = session.query(ResumeSection).filter_by(
-                section_name='summary'
-            ).first()
-            
-            target_roles = session.query(TargetRole).order_by(
-                TargetRole.priority
-            ).limit(5).all()
-            
-            # Generate professional tagline and summary
-            tagline = generate_tagline(experiences, db_skills, target_roles)
-            professional_summary = generate_professional_summary(experiences, db_skills, target_roles)
-            
-            # Create a mapping of skill names to their usage count from the database
-            skill_usage_counts = {
-                skill.skill_name: len(skill.experiences)
-                for skill in db_skills
-            }
-            
-            # Combine skills from profile.json with database usage counts
-            combined_skills = {}
-            
-            # Add skills from profile.json core_skills categories
-            for category, skills in profile.get('core_skills', {}).items():
-                for skill in skills:
-                    skill_name = skill.get('name')
-                    if skill_name:
-                        combined_skills[skill_name] = {
-                            'name': skill_name,
-                            'proficiency': skill.get('proficiency', 'intermediate'),
-                            'years': skill.get('years', 1),
-                            'last_used': skill.get('last_used', '2024'),
-                            'context': skill.get('context', ''),
-                            'count': skill_usage_counts.get(skill_name, 0),
-                            'category': category.replace('_', ' ').title()
-                        }
-            
-            # Add any remaining skills from database that weren't in profile.json
-            for skill in db_skills:
-                if skill.skill_name not in combined_skills:
-                    combined_skills[skill.skill_name] = {
-                        'name': skill.skill_name,
-                        'proficiency': 'intermediate',
-                        'years': 1,
-                        'last_used': '2024',
-                        'context': '',
-                        'count': len(skill.experiences),
-                        'category': 'Additional Skills'
-                    }
-            
-            # Group skills by category
-            categorized_skills = {}
-            for skill in combined_skills.values():
-                category = skill['category']
-                if category not in categorized_skills:
-                    categorized_skills[category] = []
-                categorized_skills[category].append(skill)
-            
-            # Sort skills within each category by proficiency and usage count
-            proficiency_scores = {'expert': 3, 'advanced': 2, 'intermediate': 1}
-            for category in categorized_skills:
-                categorized_skills[category].sort(
-                    key=lambda x: (
-                        proficiency_scores.get(x['proficiency'], 0),
-                        x['count'],
-                        x['years']
-                    ),
-                    reverse=True
+            # Get profile data from database
+            with get_session() as session:
+                experiences = session.query(Experience).order_by(Experience.end_date.desc()).all()
+                skills = session.query(Skill).all()
+                target_roles = session.query(TargetRole).order_by(TargetRole.match_score.desc()).all()
+                sections = dict(
+                    session.query(ResumeSection.section_name, ResumeSection.content)
+                    .all()
                 )
             
-            # Prepare data for template
-            template_data = {
-                'name': profile['contact_info']['name'],
+            # Generate profile/tagline
+            tagline = generate_tagline(experiences, skills, target_roles)
+            professional_summary = generate_professional_summary(experiences, skills, target_roles)
+            
+            # Prepare profile data
+            profile = {
                 'tagline': tagline,
-                'summary': summary.content if summary else '',
-                'professional_summary': professional_summary,
-                'experiences': [
-                    {
-                        'company': exp.company,
-                        'title': exp.title,
-                        'start_date': exp.start_date,
-                        'end_date': exp.end_date,
-                        'description': exp.description,
-                        'skills': [s.skill_name for s in exp.skills]
-                    }
-                    for exp in experiences
-                ],
-                'categorized_skills': categorized_skills,
-                'target_roles': [
-                    {
-                        'name': role.role_name,
-                        'match_score': role.match_score,
-                        'reasoning': role.reasoning
-                    }
-                    for role in target_roles
-                ],
+                'summary': professional_summary,
+                'sections': sections
+            }
+            
+            # Load and render template
+            env = Environment(loader=FileSystemLoader(Path(__file__).parent))
+            template = env.get_template('templates/github_pages.html')
+            
+            # Prepare template data
+            template_data = {
                 'profile': profile,
                 'current_date': datetime.now().strftime('%B %d, %Y'),
                 'profile_image': 'assets/profile.jpg'
@@ -239,29 +149,28 @@ def generate_pages():
             # Generate HTML
             html = template.render(**template_data)
             
-            # Ensure pages directory exists
-            pages_dir = Path(__file__).parent.parent / 'pages'
-            pages_dir.mkdir(exist_ok=True)
+            # Write HTML file to temp directory
+            temp_index = temp_dir_path / 'index.html'
+            temp_index.write_text(html)
+
+            # Store in GCS under pages/
+            gcs.upload_file(temp_index, 'pages/index.html')
             
-            # Write HTML file
-            index_path = pages_dir / 'index.html'
-            with open(index_path, 'w') as f:
-                f.write(html)
-                
-            # Copy static assets
+            # Copy static assets to GCS if they exist
             static_src = Path(__file__).parent / 'static'
-            static_dest = pages_dir / 'static'
             if static_src.exists():
-                shutil.copytree(static_src, static_dest, dirs_exist_ok=True)
+                for file in static_src.rglob('*'):
+                    if file.is_file():
+                        rel_path = file.relative_to(static_src)
+                        gcs_path = f'pages/static/{rel_path}'
+                        gcs.upload_file(file, gcs_path)
             
-            # Copy profile picture if it exists
-            profile_src = Path(__file__).parent.parent / 'docs' / 'Profile.jpeg'
+            # Copy profile picture from /docs directory to GCS pages/assets
+            profile_src = Path(__file__).parent.parent / 'inputs' / 'Profile.jpeg'
             if profile_src.exists():
-                profile_dest = pages_dir / 'assets'
-                profile_dest.mkdir(exist_ok=True)
-                shutil.copy2(profile_src, profile_dest / 'profile.jpg')
+                gcs.upload_file(profile_src, 'pages/assets/profile.jpg')
             
-            logger.info("Successfully generated GitHub Pages")
+            logger.info("Successfully generated GitHub Pages and stored in GCS")
             return True
             
     except Exception as e:
@@ -269,6 +178,7 @@ def generate_pages():
         return False
 
 def main():
+    """Main entry point"""
     if generate_pages():
         print("Successfully generated GitHub Pages")
     else:

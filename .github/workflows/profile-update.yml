@@ -4,10 +4,10 @@ on:
   workflow_dispatch:  # Manual trigger
   push:
     paths:
-      - 'docs/Profile.pdf'
-      - 'docs/Resume.pdf'
-      - 'docs/CoverLetter.pdf'
-      - 'docs/profile.json'
+      - 'inputs/Profile.pdf'
+      - 'inputs/Resume.pdf'
+      - 'inputs/CoverLetter.pdf'
+      - 'inputs/profile.json'
 
 # Sets permissions to allow PR creation
 permissions:

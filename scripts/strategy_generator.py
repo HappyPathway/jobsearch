@@ -7,6 +7,8 @@ from utils import session_scope
 from logging_utils import setup_logging
 import google.generativeai as genai
 from dotenv import load_dotenv
+from gcs_utils import gcs
+import tempfile
 
 # Configure Google Generative AI
 load_dotenv()
@@ -58,6 +60,43 @@ def get_profile_data():
     except Exception as e:
         logger.error(f"Error retrieving profile data: {str(e)}")
         return {'experiences': [], 'skills': [], 'target_roles': []}
+
+def store_strategy(strategy, base_filename):
+    """Store strategy content in GCS"""
+    try:
+        # Generate both markdown and plain text versions
+        from strategy_formatter import (
+            format_strategy_output_markdown,
+            format_strategy_output_plain
+        )
+
+        markdown_content = format_strategy_output_markdown(strategy, strategy.get('weekly_focus'))
+        plain_content = format_strategy_output_plain(strategy, strategy.get('weekly_focus'))
+
+        # Store in GCS
+        with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_md:
+            temp_md_path = Path(temp_md.name)
+            temp_md.write(markdown_content)
+        
+        with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_txt:
+            temp_txt_path = Path(temp_txt.name)
+            temp_txt.write(plain_content)
+
+        # Upload to GCS
+        md_gcs_path = f'strategies/{base_filename}.md'
+        txt_gcs_path = f'strategies/{base_filename}.txt'
+
+        gcs.upload_file(temp_md_path, md_gcs_path)
+        gcs.upload_file(temp_txt_path, txt_gcs_path)
+
+        # Clean up temp files
+        temp_md_path.unlink()
+        temp_txt_path.unlink()
+
+        return md_gcs_path, txt_gcs_path
+    except Exception as e:
+        logger.error(f"Error storing strategy: {str(e)}")
+        raise
 
 def generate_daily_strategy(sorted_jobs):
     """Generate a daily strategy based on the analyzed jobs"""
@@ -368,6 +407,32 @@ Format your response as detailed paragraphs for each section. Be specific and ac
         logger.error(f"Error generating weekly focus: {str(e)}")
         return "Unable to generate weekly focus due to an error."
 
+def generate_strategy(jobs=None, include_weekly_focus=True):
+    """Generate a complete job search strategy"""
+    try:
+        # Get profile data
+        profile_data = get_profile_data()
+
+        # Generate strategy content
+        strategy = generate_daily_strategy(jobs) if jobs else create_fallback_strategy(profile_data)
+
+        # Add weekly focus if requested
+        if include_weekly_focus:
+            weekly_focus = generate_weekly_focus([strategy])  # Using current strategy for context
+            strategy['weekly_focus'] = weekly_focus
+
+        # Store strategy in GCS
+        current_date = datetime.now().strftime('%Y-%m-%d')
+        base_filename = f'strategy_{current_date}'
+        md_path, txt_path = store_strategy(strategy, base_filename)
+
+        logger.info(f"Successfully generated and stored strategy in GCS")
+        return strategy, md_path, txt_path
+
+    except Exception as e:
+        logger.error(f"Error generating strategy: {str(e)}")
+        raise
+
 def format_strategy_output(strategy, include_weekly_focus=True):
     """Format strategy output in markdown format"""
     logger.info("Formatting strategy output in markdown")
@@ -471,3 +536,18 @@ def format_strategy_output_plain(strategy, include_weekly_focus=True):
                     output.append(f"  URL: {recruiter['url']}")
     
     return '\n'.join(output)
+
+def main():
+    """Main entry point"""
+    try:
+        strategy, md_path, txt_path = generate_strategy()
+        print(f"Strategy generated successfully:")
+        print(f"Markdown version: {md_path}")
+        print(f"Text version: {txt_path}")
+        return 0
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return 1
+
+if __name__ == "__main__":
+    exit(main())
