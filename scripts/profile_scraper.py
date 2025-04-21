@@ -8,7 +8,7 @@ import re
 import tempfile
 from logging_utils import setup_logging
 from models import Experience, Skill, get_session
-import gcs
+from gcs_utils import gcs
 
 logger = setup_logging('profile_scraper')
 
@@ -32,15 +32,42 @@ def extract_text_from_pdf(pdf_path):
 def parse_profile_text(text):
     """Use Gemini to parse LinkedIn profile text into structured data"""
     try:
-        prompt = """Parse the LinkedIn profile text into structured data.
-Focus on extracting:
-1. Experiences with accomplishments
-2. Skills with context
-3. Educational background
-4. Certifications and awards
+        prompt = f"""You are a JSON data extraction system. Extract structured data from this LinkedIn profile text and return it as a JSON object. The response must be a valid JSON object and nothing else - no markdown, no explanations, no other text.
 
-Return a JSON object with all extracted information."""
+Profile text to process:
+{text}
 
+Required JSON structure:
+{{
+    "experiences": [
+        {{
+            "company": "string",
+            "title": "string",
+            "start_date": "string",
+            "end_date": "string",
+            "description": "string"
+        }}
+    ],
+    "skills": ["string"],
+    "education": [
+        {{
+            "institution": "string",
+            "degree": "string",
+            "field": "string",
+            "graduation_date": "string"
+        }}
+    ],
+    "certifications": [
+        {{
+            "name": "string",
+            "issuer": "string",
+            "date": "string"
+        }}
+    ]
+}}"""
+        
+        logger.info("Sending profile text to Gemini for parsing")
+        
         model = genai.GenerativeModel('gemini-1.5-pro')
         response = model.generate_content(
             prompt,
@@ -49,16 +76,27 @@ Return a JSON object with all extracted information."""
                 "temperature": 0.1,
             }
         )
-
-        # Parse response into structured data
-        data = json.loads(response.text)
+        
+        # Clean the response text to ensure it's valid JSON
+        response_text = response.text.strip()
+        # Remove any markdown code block indicators
+        response_text = re.sub(r'^```json\s*|\s*```$', '', response_text)
+        response_text = re.sub(r'^```\s*|\s*```$', '', response_text)
+        
+        # Validate and parse JSON
+        try:
+            data = json.loads(response_text)
+        except json.JSONDecodeError as e:
+            logger.error(f"Invalid JSON received from Gemini: {response_text}")
+            logger.error(f"JSON parse error: {str(e)}")
+            raise ValueError("Gemini returned invalid JSON format")
         
         # Store raw data in GCS
         with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
             temp_path = Path(temp_file.name)
             json.dump(data, temp_file, indent=2)
 
-        # Upload to GCS
+        # Upload to GCS using the global gcs instance
         gcs_path = 'profile/linkedin_raw.json'
         gcs.upload_file(temp_path, gcs_path)
 
@@ -70,6 +108,8 @@ Return a JSON object with all extracted information."""
 
     except Exception as e:
         logger.error(f"Error parsing profile text: {str(e)}")
+        if 'response' in locals():
+            logger.error(response.text)
         return None
 
 def save_to_database(parsed_data):
