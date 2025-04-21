@@ -1,28 +1,4 @@
-Set up GitHub Action for Cronjob & PR:
-
-Create a GitHub Actions workflow YAML file.
-Schedule it to run at 9am and 12pm daily.
-Script the workflow to run the strategy generator and automatically submit a PR with the newest strategy file.
-
-Make Job Postings Return Configurable:
-
-Refactor the relevant script (likely job_strategy.py) to accept a parameter for the number of job postings to return.
-Ensure it only returns postings with the highest score.
-Update CLI or config file to allow user input for this parameter.
-
-Investigate Job Application Automation:
-
-Research APIs or tools for automating job applications (e.g., LinkedIn, Indeed, company career sites).
-Document findings and feasibility.
-(Optional) Prototype a simple automation for one platform if feasible.
-
-replace web ui with github pages, add profile pic and have system build nice looking profile.
-
-regenerate job descriptions from linkedin profile and resume.
-
-create directory per job that contains cover letter, resume, and job details. Name directory after job opp.
-
-Integrate Slack Notifications for Resume Generation and Job Links:
+# Slack Notifications Intergration 
 
 1. Set up Slack API Integration:
    - Create a Slack App in the Slack API dashboard (api.slack.com)
@@ -55,6 +31,223 @@ Integrate Slack Notifications for Resume Generation and Job Links:
    - Ensure no sensitive personal information is shared in public channels
    - Implement rate limiting to avoid API throttling
 
+# Slackbot Integration and Cloud Function Enhancements
+
+## File Retrieval for Slackbot
+
+### Overview
+Enable Slackbot to retrieve files from Google Cloud Storage (GCS) and present them in Slack:
+- **Markdown Files (`.md`)**: Display the content directly in Slack as rendered Markdown.
+- **PDF Files (`.pdf`)**: Upload the file to Slack as an attachment.
+
+### Implementation Steps
+1. **Slack Command**:
+   - Add a new slash command `/get-file` in the Slack app configuration.
+   - Set the request URL to the Cloud Function's endpoint.
+
+2. **Cloud Function Logic**:
+   - Fetch the file from GCS based on the file name provided in the Slack command.
+   - For Markdown files:
+     - Download the content from GCS.
+     - Use Slack's `mrkdwn` block type to render the content directly in Slack.
+   - For PDF files:
+     - Download the file to a temporary directory.
+     - Upload the file to Slack as an attachment using the `files_upload` API.
+   - For unsupported file types:
+     - Send an error message to Slack.
+
+3. **Example Slack Interaction**:
+   - **User Input**: `/get-file strategy_2025-04-20.md`
+   - **Bot Response**: Render the Markdown content directly in Slack.
+   - **User Input**: `/get-file resume.pdf`
+   - **Bot Response**: Upload the `resume.pdf` file to Slack as an attachment.
+
+---
+
+## Converting GitHub Actions to Cloud Functions with Slackbot Commands
+
+### Actions to Convert
+1. **Job Strategy Generation**:
+   - **Command**: `/generate-strategy`
+   - **Options**:
+     - `job_limit`: Number of jobs per search query (default: 5).
+     - `include_recruiters`: Include recruiter information (default: false).
+     - `generate_documents`: Generate application documents (default: false).
+     - `generate_article`: Generate a Medium article (default: false).
+     - `preview_article`: Generate a Medium article in preview mode (default: false).
+   - **Examples**:
+     - `/generate-strategy`
+     - `/generate-strategy job_limit:10`
+     - `/generate-strategy include_recruiters:true`
+
+2. **Medium Article Generation**:
+   - **Command**: `/generate-article`
+   - **Options**:
+     - `skill`: Focus the article on a specific skill.
+     - `preview`: Generate the article in preview mode (default: false).
+   - **Examples**:
+     - `/generate-article`
+     - `/generate-article skill:Python`
+     - `/generate-article preview:true`
+
+3. **Profile Data Management**:
+   - **Commands**:
+     - `/update-profile`: Update LinkedIn profile data.
+     - `/update-resume`: Update resume data.
+     - `/update-cover-letter`: Update cover letter data.
+     - `/combine-profile-data`: Combine and summarize all profile data.
+
+4. **GitHub Pages Deployment**:
+   - **Command**: `/deploy-pages`
+   - **Description**: Deploy the GitHub Pages site with the latest updates.
+
+5. **Strategy File Cleanup**:
+   - **Command**: `/cleanup-strategies`
+   - **Options**:
+     - `retention_days`: Number of days to retain files (default: 7).
+   - **Examples**:
+     - `/cleanup-strategies`
+     - `/cleanup-strategies retention_days:30`
+
+---
+
+## Setting Up the Slackbot
+
+### 1. Create a Slack App
+- Go to [Slack API Dashboard](https://api.slack.com/apps) and create a new app.
+- Enable the following features:
+  - **Slash Commands**: Add commands like `/generate-strategy` and `/get-file`.
+  - **Interactive Components**: Enable for buttons, dropdowns, etc.
+
+### 2. Configure Permissions
+- Add the following OAuth scopes:
+  - `chat:write`
+  - `files:write`
+  - `commands`
+
+### 3. Set Up Environment Variables
+- Add the following environment variables to the Cloud Functions:
+  - `SLACK_API_TOKEN`: OAuth token for the Slack bot.
+  - `GCS_BUCKET_NAME`: Name of the GCS bucket where files are stored.
+
+### 4. Deployment Configuration
+- Update `cloudbuild.yaml` to include the environment variables:
+  ```yaml
+  steps:
+    - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+      args:
+        - gcloud
+        - functions
+        - deploy
+        - generate-job-strategy
+        - --runtime=python39
+        - --trigger-http
+        - --set-env-vars=SLACK_API_TOKEN=${_SLACK_API_TOKEN},GCS_BUCKET_NAME=${_GCS_BUCKET_NAME}
+  ```
+
+### 5. Testing
+- Test each Slack command to ensure proper functionality:
+  - Verify file retrieval for Markdown and PDF files.
+  - Verify job strategy generation and other actions.
+
+---
+
+## Additional Features
+
+### Slack Notifications
+- **Resume Generation**:
+  - Notify when a new resume or cover letter is generated.
+  - Include job title, company, and match score in the notification.
+  - Upload generated PDFs as attachments.
+- **Job Application Status Dashboard**:
+  - Daily summary of pending applications.
+  - Notifications for status changes.
+  - Reminders for follow-ups.
+
+### Security Considerations
+- Store API tokens securely.
+- Ensure no sensitive personal information is shared in public channels.
+- Implement rate limiting to avoid API throttling.
+
+# Secrets Management
+
+## Overview
+Properly managing secrets is critical to ensure the security of sensitive information such as API keys, tokens, and credentials. This section outlines the steps to identify, organize, and migrate secrets to Google Secret Manager.
+
+### Current Secrets
+The following secrets are currently in use across the project:
+
+#### `.env` File Secrets
+- `GEMINI_API_KEY`: API key for Google Gemini.
+- `MEDIUM_API_TOKEN`: API token for Medium.
+- `GCS_BUCKET_NAME`: Name of the Google Cloud Storage bucket.
+- `SLACK_API_TOKEN`: OAuth token for the Slack bot.
+- `SLACK_CHANNEL_ID`: Default Slack channel ID for notifications.
+
+#### GitHub Repository Secrets
+- `GITHUB_TOKEN`: Token for GitHub Actions.
+- `GOOGLE_CREDENTIALS`: JSON credentials for Google Cloud authentication.
+
+### Migration to Google Secret Manager
+1. **Identify All Secrets**:
+   - Audit the `.env` file and GitHub repository secrets to ensure all secrets are accounted for.
+
+2. **Create Secrets in Google Secret Manager**:
+   - Use the Google Cloud Console or CLI to create secrets for each key.
+   - Example CLI command:
+     ```bash
+     gcloud secrets create GEMINI_API_KEY --data-file=.env
+     ```
+
+3. **Update Cloud Functions**:
+   - Modify the Cloud Functions to fetch secrets from Google Secret Manager instead of environment variables.
+   - Use the `google-cloud-secretmanager` library to access secrets.
+   - Example:
+     ```python
+     from google.cloud import secretmanager
+
+     def get_secret(secret_name):
+         client = secretmanager.SecretManagerServiceClient()
+         name = f"projects/<project-id>/secrets/{secret_name}/versions/latest"
+         response = client.access_secret_version(request={"name": name})
+         return response.payload.data.decode("UTF-8")
+     ```
+
+4. **Update GitHub Actions**:
+   - Replace GitHub repository secrets with references to Google Secret Manager.
+   - Use the `google-github-actions/auth` action to authenticate with Google Cloud.
+   - Example:
+     ```yaml
+     - name: Authenticate to Google Cloud
+       uses: google-github-actions/auth@v0
+       with:
+         credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+     - name: Access Secret
+       run: |
+         gcloud secrets versions access latest --secret="GEMINI_API_KEY"
+     ```
+
+5. **Secure Local Development**:
+   - Use a `.env.local` file for local development.
+   - Ensure `.env.local` is added to `.gitignore` to prevent accidental commits.
+
+6. **Audit and Remove Legacy Secrets**:
+   - Verify that all secrets are successfully migrated.
+   - Remove secrets from `.env` and GitHub repository once migration is complete.
+
+### Best Practices
+- **Access Control**: Limit access to secrets based on the principle of least privilege.
+- **Rotation**: Regularly rotate secrets to minimize the impact of potential leaks.
+- **Monitoring**: Enable logging and monitoring for secret access to detect unauthorized usage.
+- **Encryption**: Ensure all secrets are encrypted at rest and in transit.
+
+### Next Steps
+1. Create a list of all secrets currently in use.
+2. Migrate secrets to Google Secret Manager.
+3. Update Cloud Functions and GitHub Actions to use Google Secret Manager.
+4. Test the updated configuration to ensure functionality.
+5. Remove legacy secrets from `.env` and GitHub repository.
 
 # analyze_job_with_gemini
 Gemini doesn't have enough information in its prompt to be able really analyze the job. 

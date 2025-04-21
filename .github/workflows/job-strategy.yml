@@ -55,28 +55,3 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
           python scripts/job_strategy.py --job-limit ${{ github.event.inputs.job_limit || '2' }}
-          
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v6
-        with:
-          commit-message: 'chore: Update job search strategy'
-          title: 'Update Job Search Strategy'
-          body: |
-            Automated job search strategy update
-            
-            - Generated at: $(date)
-            - Jobs per search query: ${{ github.event.inputs.job_limit || '2' }}
-            - Includes latest job opportunities and market insights
-            - Using database from GCS bucket
-            
-            ## Generated Files
-            - New strategy document in Markdown format
-            - New strategy document in plain text format (for compatibility)
-            
-            ## Next Steps
-            1. Review the strategy
-            2. Consider any high-priority job opportunities
-            3. Execute on daily tasks and goals
-          branch: strategy-update
-          delete-branch: true
-          base: main

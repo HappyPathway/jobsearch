@@ -71,23 +71,70 @@ def get_profile_data():
         return exp_list, skill_names, sections, full_name
 
 def create_job_directory(job_info):
-    """Create a directory for the job application"""
+    """Create a directory path for the job application in GCS"""
     logger.info(f"Creating directory for {job_info['title']} at {job_info['company']}")
     
-    # Create applications directory if it doesn't exist
-    base_dir = Path(__file__).parent.parent / 'applications'
-    base_dir.mkdir(exist_ok=True)
-    
-    # Create directory name from date and company
+    # Create base path for applications
     date_str = datetime.now().strftime("%Y-%m-%d")
     company_slug = slugify(job_info['company'])
     title_slug = slugify(job_info['title'])
     dir_name = f"{date_str}_{company_slug}_{title_slug}"
     
-    job_dir = base_dir / dir_name
-    job_dir.mkdir(exist_ok=True)
+    # Return the GCS path prefix
+    base_path = f"applications/{dir_name}"
+    return Path(base_path)
+
+def store_document(content, gcs_path, local_temp=None):
+    """Store a document in GCS with optional local temp file
     
-    return job_dir
+    Args:
+        content (str): The content to store
+        gcs_path (Path): The GCS path where to store the file
+        local_temp (Path, optional): Local temp path if needed for PDF generation
+    
+    Returns:
+        tuple: (gcs_path, local_temp_path if created else None)
+    """
+    from gcs_utils import gcs
+    import tempfile
+    
+    # If we need a local temp file for processing
+    if local_temp:
+        local_temp.parent.mkdir(parents=True, exist_ok=True)
+        with open(local_temp, 'w') as f:
+            f.write(content)
+        # Upload to GCS
+        gcs.upload_file(local_temp, str(gcs_path))
+        return str(gcs_path), local_temp
+    else:
+        # Create a temporary file
+        with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp:
+            temp.write(content)
+            temp_path = Path(temp.name)
+        
+        # Upload to GCS
+        gcs.upload_file(temp_path, str(gcs_path))
+        
+        # Clean up temp file
+        temp_path.unlink()
+        return str(gcs_path), None
+
+def get_document(gcs_path, local_path=None):
+    """Get a document from GCS
+    
+    Args:
+        gcs_path (str): The GCS path to retrieve
+        local_path (Path, optional): Where to save the file locally if needed
+    
+    Returns:
+        Path: Path to the local file if downloaded, None if file doesn't exist
+    """
+    from gcs_utils import gcs
+    
+    if local_path:
+        if gcs.download_file(gcs_path, local_path):
+            return local_path
+    return None
 
 def write_resume_with_gemini(resume_content):
     """Use Gemini with a specialized writing prompt to create engaging resume content"""
@@ -435,83 +482,90 @@ def generate_job_documents(job_info, use_writing_pass=True, use_visual_resume=Tr
         else:
             cover_letter_text = format_cover_letter(cover_letter_content, job_info)
         
-        # Create job directory and save documents
+        # Create job directory path in GCS
         job_dir = create_job_directory(job_info)
         
-        # Save text versions
-        resume_txt_path = job_dir / "resume.txt"
-        cover_letter_txt_path = job_dir / "cover_letter.txt"
-        
-        # Create README.md instead of job_details.json
-        readme_path = job_dir / "README.md"
-        
-        with open(resume_txt_path, 'w') as f:
-            f.write(resume_text)
-        
-        with open(cover_letter_txt_path, 'w') as f:
-            f.write(cover_letter_text)
-        
-        # Generate PDF versions
-        ats_resume_pdf_path = job_dir / "resume_ats.pdf"  # ATS-friendly version
-        visual_resume_pdf_path = job_dir / "resume_visual.pdf" if use_visual_resume else None
-        default_resume_pdf_path = job_dir / "resume.pdf"  # The main resume file
-        cover_letter_pdf_path = job_dir / "cover_letter.pdf"
-        
-        if setup_pdf_environment():
-            try:
-                # Create ATS-friendly resume (simple format for parsing)
-                create_resume_pdf(resume_content, str(ats_resume_pdf_path.with_suffix('')))
-                
-                # Create visual resume if requested
-                if use_visual_resume:
-                    from pdf_generator import create_visual_resume_pdf
-                    create_visual_resume_pdf(resume_content, str(visual_resume_pdf_path.with_suffix('')))
-                    
-                # Create default resume (copy of visual resume if enabled, otherwise ATS version)
-                if use_visual_resume and visual_resume_pdf_path.exists():
-                    import shutil
-                    shutil.copy(visual_resume_pdf_path, default_resume_pdf_path)
-                else:
-                    import shutil
-                    shutil.copy(ats_resume_pdf_path, default_resume_pdf_path)
-                
-                # Create cover letter
-                create_cover_letter_pdf(cover_letter_content, job_info, str(cover_letter_pdf_path.with_suffix('')), full_name)
-                logger.info("Successfully generated PDF documents")
-            except Exception as e:
-                logger.error(f"Error generating PDF documents: {str(e)}")
-                default_resume_pdf_path = resume_txt_path
-                cover_letter_pdf_path = resume_txt_path
-        else:
-            logger.warning("PDF environment not available, using text versions only")
-            default_resume_pdf_path = resume_txt_path
-            cover_letter_pdf_path = cover_letter_txt_path
-        
-        # Generate README.md with markdown content instead of job_details.json
-        markdown_content = generate_readme_markdown(job_info)
-        with open(readme_path, 'w') as f:
-            f.write(markdown_content)
+        # Create temporary directory for PDF generation
+        import tempfile
+        import shutil
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_dir_path = Path(temp_dir)
             
-        # Track job application in the database - use default resume as the main resume
-        job_id, application_id = track_job_application(job_info, str(default_resume_pdf_path), str(cover_letter_pdf_path))
-        
-        logger.info(f"Successfully generated documents in {job_dir}")
-        
-        # Send Slack notification if enabled
-        if send_slack and SLACK_AVAILABLE:
-            try:
-                logger.info("Sending Slack notification about generated documents")
-                notifier = get_notifier()
-                notifier.send_job_application_notification(
-                    job_info, 
-                    str(default_resume_pdf_path), 
-                    str(cover_letter_pdf_path)
-                )
-            except Exception as e:
-                logger.error(f"Error sending Slack notification: {str(e)}")
-        
-        # Return paths to the main resume and cover letter
-        return str(default_resume_pdf_path), str(cover_letter_pdf_path)
+            # Store text versions in GCS
+            resume_txt_gcs_path = job_dir / "resume.txt"
+            cover_letter_txt_gcs_path = job_dir / "cover_letter.txt"
+            readme_gcs_path = job_dir / "README.md"
+            
+            # Store text files
+            store_document(resume_text, resume_txt_gcs_path)
+            store_document(cover_letter_text, cover_letter_txt_gcs_path)
+            store_document(generate_readme_markdown(job_info), readme_gcs_path)
+            
+            # Define PDF paths
+            default_resume_pdf_path = job_dir / "resume.pdf"
+            ats_resume_pdf_path = job_dir / "resume_ats.pdf"
+            visual_resume_pdf_path = job_dir / "resume_visual.pdf"
+            cover_letter_pdf_path = job_dir / "cover_letter.pdf"
+            
+            # Local temp paths for PDF generation
+            temp_ats_pdf = temp_dir_path / "resume_ats.pdf"
+            temp_visual_pdf = temp_dir_path / "resume_visual.pdf"
+            temp_cover_letter_pdf = temp_dir_path / "cover_letter.pdf"
+            
+            if setup_pdf_environment():
+                try:
+                    # Create ATS-friendly resume
+                    create_resume_pdf(resume_content, str(temp_ats_pdf))
+                    store_document("", ats_resume_pdf_path, temp_ats_pdf)
+                    
+                    # Create visual resume if requested
+                    if use_visual_resume:
+                        from pdf_generator import create_visual_resume_pdf
+                        create_visual_resume_pdf(resume_content, str(temp_visual_pdf))
+                        store_document("", visual_resume_pdf_path, temp_visual_pdf)
+                        
+                        # Set default resume to visual version
+                        shutil.copy(temp_visual_pdf, temp_dir_path / "resume.pdf")
+                        store_document("", default_resume_pdf_path, temp_dir_path / "resume.pdf")
+                    else:
+                        # Set default resume to ATS version
+                        shutil.copy(temp_ats_pdf, temp_dir_path / "resume.pdf")
+                        store_document("", default_resume_pdf_path, temp_dir_path / "resume.pdf")
+                    
+                    # Create cover letter
+                    create_cover_letter_pdf(cover_letter_content, job_info, str(temp_cover_letter_pdf), full_name)
+                    store_document("", cover_letter_pdf_path, temp_cover_letter_pdf)
+                    
+                    logger.info("Successfully generated and stored PDF documents in GCS")
+                except Exception as e:
+                    logger.error(f"Error generating PDF documents: {str(e)}")
+                    default_resume_pdf_path = resume_txt_gcs_path
+                    cover_letter_pdf_path = cover_letter_txt_gcs_path
+            else:
+                logger.warning("PDF environment not available, using text versions only")
+                default_resume_pdf_path = resume_txt_gcs_path
+                cover_letter_pdf_path = cover_letter_txt_gcs_path
+            
+            # Track job application in the database - use default resume as the main resume
+            job_id, application_id = track_job_application(job_info, str(default_resume_pdf_path), str(cover_letter_pdf_path))
+            
+            logger.info(f"Successfully generated documents in GCS at {job_dir}")
+            
+            # Send Slack notification if enabled
+            if send_slack and SLACK_AVAILABLE:
+                try:
+                    logger.info("Sending Slack notification about generated documents")
+                    notifier = get_notifier()
+                    notifier.send_job_application_notification(
+                        job_info, 
+                        str(default_resume_pdf_path), 
+                        str(cover_letter_pdf_path)
+                    )
+                except Exception as e:
+                    logger.error(f"Error sending Slack notification: {str(e)}")
+            
+            # Return paths to the main resume and cover letter in GCS
+            return str(default_resume_pdf_path), str(cover_letter_pdf_path)
         
     except Exception as e:
         logger.error(f"Error generating job documents: {str(e)}")

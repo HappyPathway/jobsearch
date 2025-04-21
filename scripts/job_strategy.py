@@ -5,6 +5,7 @@ import sys
 import random
 import time
 import argparse
+import tempfile
 from pathlib import Path
 from datetime import datetime
 
@@ -18,6 +19,7 @@ from document_generator import generate_documents_for_jobs
 from strategy_generator import generate_daily_strategy, generate_weekly_focus
 from strategy_formatter import format_strategy_output, format_strategy_output_plain
 from recruiter_finder import get_recruiter_finder
+from gcs_utils import gcs
 
 # Import Slack notifier
 try:
@@ -243,8 +245,6 @@ def generate_and_save_strategy(job_searches, output_dir, send_slack=DEFAULT_SLAC
     strategy = generate_daily_strategy(all_jobs)
     
     # For weekly focus, we should ideally have past strategies
-    # Since we don't have them readily available, we'll pass an empty list for now
-    # This will result in a generic weekly focus message
     weekly_focus = generate_weekly_focus([])  # Pass empty list instead of no arguments
     
     # Add recruiters and weekly focus to strategy
@@ -265,26 +265,32 @@ def generate_and_save_strategy(job_searches, output_dir, send_slack=DEFAULT_SLAC
     current_date = datetime.now().strftime("%Y-%m-%d")
     base_filename = f"strategy_{current_date}"
     
-    # Create output directory if it doesn't exist
-    Path(output_dir).mkdir(parents=True, exist_ok=True)
+    # Store in GCS
+    with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_md:
+        temp_md_path = Path(temp_md.name)
+        temp_md.write(markdown_content)
     
-    # Save Markdown version
-    md_path = os.path.join(output_dir, f"{base_filename}.md")
-    with open(md_path, 'w') as f:
-        f.write(markdown_content)
+    with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_txt:
+        temp_txt_path = Path(temp_txt.name)
+        temp_txt.write(plain_content)
+
+    # Upload to GCS
+    md_gcs_path = f'strategies/{base_filename}.md'
+    txt_gcs_path = f'strategies/{base_filename}.txt'
+
+    gcs.upload_file(temp_md_path, md_gcs_path)
+    gcs.upload_file(temp_txt_path, txt_gcs_path)
+
+    # Clean up temp files
+    temp_md_path.unlink()
+    temp_txt_path.unlink()
     
-    # Save plain text version for backwards compatibility
-    txt_path = os.path.join(output_dir, f"{base_filename}.txt")
-    with open(txt_path, 'w') as f:
-        f.write(plain_content)
-    
-    logger.info(f"Strategy saved to {md_path} and {txt_path}")
+    logger.info(f"Strategy saved to GCS at {md_gcs_path} and {txt_gcs_path}")
     
     # Send Slack notification if enabled
     if send_slack and SLACK_AVAILABLE and validate_strategy_content(strategy):
         try:
             logger.info("Sending Slack notification about generated job strategy")
-            
             # Create a summary of the strategy for the notification
             daily_focus = strategy.get('daily_focus', {})
             job_count = len(all_jobs)
@@ -341,14 +347,12 @@ def generate_and_save_strategy(job_searches, output_dir, send_slack=DEFAULT_SLAC
                     }
                 })
             
-            # Add a link to the strategy file
-            # Use GitHub environment variables to get the correct repo path
-            github_repository = os.getenv("GITHUB_REPOSITORY", "darnold/jobsearch")
+            # Add a link to the strategy file in GCS
             blocks.append({
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"<https://github.com/{github_repository}/blob/main/strategies/{os.path.basename(md_path)}|View full strategy>"
+                    "text": f"<{md_gcs_path}|View full strategy in GCS>"
                 }
             })
             
@@ -361,8 +365,8 @@ def generate_and_save_strategy(job_searches, output_dir, send_slack=DEFAULT_SLAC
             logger.info("Slack notification sent successfully")
         except Exception as e:
             logger.error(f"Error sending Slack notification: {str(e)}")
-            
-    return strategy, md_path, txt_path
+    
+    return strategy, md_gcs_path, txt_gcs_path
 
 def generate_medium_article(strategy, preview_only=False):
     """Generate a Medium article based on skills in the strategy"""
