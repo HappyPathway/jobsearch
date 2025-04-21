@@ -1,13 +1,13 @@
 [
   {
-    "role": "Cloud Architect",
+    "role": "Principal Cloud Architect",
     "listings": [
       {
-        "url": "https://www.linkedin.com/jobs/view/aws-architect-at-ascending-inc-4204287363?position=1&pageNum=0&refId=W43Ra7OidDtom3pXaT%2B7hA%3D%3D&trackingId=0ZuXFX1CCCmoZKNdqTY3GQ%3D%3D",
-        "title": "AWS Architect",
-        "company": "ASCENDING Inc.",
-        "description": "Washington, DCBe an early applicant1 week ago",
-        "search_query": "Cloud Architect",
+        "url": "https://www.linkedin.com/jobs/view/senior-solutions-architect-at-postman-4195533115?position=1&pageNum=0&refId=tEcYXTrY5rwQYdI5Md6yuQ%3D%3D&trackingId=sRzlBCX0QuLSozkB98layA%3D%3D",
+        "title": "Senior Solutions Architect",
+        "company": "Postman",
+        "description": "San Francisco Bay Area2 days ago",
+        "search_query": "Principal Cloud Architect",
         "contact_info": {
           "name": "Dave J. Arnold",
           "email": "dave@roknsound.com",
@@ -17,67 +17,53 @@
         }
       },
       {
-        "url": "https://www.linkedin.com/jobs/view/aws-architect-at-ascending-inc-4207060652?position=2&pageNum=0&refId=W43Ra7OidDtom3pXaT%2B7hA%3D%3D&trackingId=GeLRdjXGmu3yZ5ZoO4xrhg%3D%3D",
-        "title": "AWS Architect",
-        "company": "ASCENDING Inc.",
-        "description": "Fairfax, VA1 week ago",
-        "search_query": "Cloud Architect",
-        "contact_info": {
-          "name": "Dave J. Arnold",
-          "email": "dave@roknsound.com",
-          "phone": "(707) 480-6346",
-          "location": "",
-          "linkedin": "https:"
-        }
-      },
-      {
-        "url": "https://www.linkedin.com/jobs/view/aws-solutions-architect-at-commit-4202660887?position=3&pageNum=0&refId=W43Ra7OidDtom3pXaT%2B7hA%3D%3D&trackingId=3ZiM7271alAjoXs8IBrWNQ%3D%3D",
-        "title": "AWS Solutions Architect",
-        "company": "Commit",
-        "description": "New York, NYBe an early applicant1 week ago",
-        "search_query": "Cloud Architect",
-        "contact_info": {
-          "name": "Dave J. Arnold",
-          "email": "dave@roknsound.com",
-          "phone": "(707) 480-6346",
-          "location": "",
-          "linkedin": "https:"
-        }
-      },
-      {
-        "url": "https://www.linkedin.com/jobs/view/cloud-architect-at-pingwind-inc-sdvosb-4063364595?position=4&pageNum=0&refId=W43Ra7OidDtom3pXaT%2B7hA%3D%3D&trackingId=BM1dcam6ik%2BHzjMaIxDYcg%3D%3D",
-        "title": "Cloud Architect",
-        "company": "PingWind Inc. (SDVOSB)",
-        "description": "United States5 months ago",
-        "search_query": "Cloud Architect",
-        "contact_info": {
-          "name": "Dave J. Arnold",
-          "email": "dave@roknsound.com",
-          "phone": "(707) 480-6346",
-          "location": "",
-          "linkedin": "https:"
-        }
-      },
-      {
-        "url": "https://www.linkedin.com/jobs/view/aws-architect-at-ascending-inc-4205441408?position=5&pageNum=0&refId=W43Ra7OidDtom3pXaT%2B7hA%3D%3D&trackingId=xxUtz8rhFWLbo6nxUlaFcw%3D%3D",
-        "title": "AWS Architect",
-        "company": "ASCENDING Inc.",
-        "description": "United StatesBe an early applicant1 week ago",
-        "search_query": "Cloud Architect",
-        "contact_info": {
-          "name": "Dave J. Arnold",
-          "email": "dave@roknsound.com",
-          "phone": "(707) 480-6346",
-          "location": "",
-          "linkedin": "https:"
-        }
-      },
-      {
-        "url": "https://www.linkedin.com/jobs/view/solutions-architect-enterprise-at-stripe-4197823217?position=6&pageNum=0&refId=W43Ra7OidDtom3pXaT%2B7hA%3D%3D&trackingId=FUZBTNVYttxifV8hZEkahQ%3D%3D",
+        "url": "https://www.linkedin.com/jobs/view/solutions-architect-enterprise-at-stripe-4197823217?position=3&pageNum=0&refId=tEcYXTrY5rwQYdI5Md6yuQ%3D%3D&trackingId=D0BySGNoA%2BC5eaxIhWFlZg%3D%3D",
         "title": "Solutions Architect, Enterprise",
         "company": "Stripe",
         "description": "United StatesBe an early applicant2 weeks ago",
-        "search_query": "Cloud Architect",
+        "search_query": "Principal Cloud Architect",
+        "contact_info": {
+          "name": "Dave J. Arnold",
+          "email": "dave@roknsound.com",
+          "phone": "(707) 480-6346",
+          "location": "",
+          "linkedin": "https:"
+        }
+      },
+      {
+        "url": "https://www.linkedin.com/jobs/view/principal-enterprise-cloud-architect-100%25-remote-at-it-engagements-inc-4182123349?position=4&pageNum=0&refId=tEcYXTrY5rwQYdI5Md6yuQ%3D%3D&trackingId=oew5gebNdga1cIG%2BrcvtSw%3D%3D",
+        "title": "Principal Enterprise Cloud Architect - 100% REMOTE",
+        "company": "IT Engagements, Inc.",
+        "description": "United States1 month ago",
+        "search_query": "Principal Cloud Architect",
+        "contact_info": {
+          "name": "Dave J. Arnold",
+          "email": "dave@roknsound.com",
+          "phone": "(707) 480-6346",
+          "location": "",
+          "linkedin": "https:"
+        }
+      },
+      {
+        "url": "https://www.linkedin.com/jobs/view/solutions-architect-at-attentive-4176309334?position=5&pageNum=0&refId=tEcYXTrY5rwQYdI5Md6yuQ%3D%3D&trackingId=IYup5WPJeKHKiBpHbSq7kQ%3D%3D",
+        "title": "Solutions Architect",
+        "company": "Attentive",
+        "description": "United States17 hours ago",
+        "search_query": "Principal Cloud Architect",
+        "contact_info": {
+          "name": "Dave J. Arnold",
+          "email": "dave@roknsound.com",
+          "phone": "(707) 480-6346",
+          "location": "",
+          "linkedin": "https:"
+        }
+      },
+      {
+        "url": "https://www.linkedin.com/jobs/view/senior-solutions-architect-at-bath-body-works-4200295313?position=6&pageNum=0&refId=tEcYXTrY5rwQYdI5Md6yuQ%3D%3D&trackingId=KVkDFNZV%2BuxDbuw56MJb5A%3D%3D",
+        "title": "Senior Solutions Architect",
+        "company": "Bath & Body Works",
+        "description": "Columbus, OH2 weeks ago",
+        "search_query": "Principal Cloud Architect",
         "contact_info": {
           "name": "Dave J. Arnold",
           "email": "dave@roknsound.com",
@@ -89,70 +75,14 @@
     ]
   },
   {
-    "role": "Principal Cloud Engineer",
+    "role": "Principal DevOps Engineer",
     "listings": [
       {
-        "url": "https://www.linkedin.com/jobs/view/head-of-data-machine-learning-and-application-platform-at-socure-4201851474?position=1&pageNum=0&refId=J6gbPcO96YMOAyzNwowpZA%3D%3D&trackingId=n30vhCMoUrdsjK0ZktapqQ%3D%3D",
-        "title": "Head of Data, Machine Learning, and Application Platform",
-        "company": "Socure",
-        "description": "United States1 week ago",
-        "search_query": "Principal Cloud Engineer",
-        "contact_info": {
-          "name": "Dave J. Arnold",
-          "email": "dave@roknsound.com",
-          "phone": "(707) 480-6346",
-          "location": "",
-          "linkedin": "https:"
-        }
-      },
-      {
-        "url": "https://www.linkedin.com/jobs/view/principal-machine-learning-generative-ai-at-autodesk-4158553105?position=2&pageNum=0&refId=J6gbPcO96YMOAyzNwowpZA%3D%3D&trackingId=M3oNIM92Qlm50ef1fV2kGQ%3D%3D",
-        "title": "Principal Machine Learning: Generative AI",
-        "company": "Autodesk",
-        "description": "Massachusetts, United StatesBe an early applicant2 weeks ago",
-        "search_query": "Principal Cloud Engineer",
-        "contact_info": {
-          "name": "Dave J. Arnold",
-          "email": "dave@roknsound.com",
-          "phone": "(707) 480-6346",
-          "location": "",
-          "linkedin": "https:"
-        }
-      },
-      {
-        "url": "https://www.linkedin.com/jobs/view/principal-machine-learning-generative-ai-at-autodesk-4158552241?position=3&pageNum=0&refId=J6gbPcO96YMOAyzNwowpZA%3D%3D&trackingId=ofSIXNd6DVUQIzlSpYXeOg%3D%3D",
-        "title": "Principal Machine Learning: Generative AI",
-        "company": "Autodesk",
-        "description": "Texas, United StatesBe an early applicant2 weeks ago",
-        "search_query": "Principal Cloud Engineer",
-        "contact_info": {
-          "name": "Dave J. Arnold",
-          "email": "dave@roknsound.com",
-          "phone": "(707) 480-6346",
-          "location": "",
-          "linkedin": "https:"
-        }
-      },
-      {
-        "url": "https://www.linkedin.com/jobs/view/java-software-engineer-principal-at-vertex-inc-4206226414?position=4&pageNum=0&refId=J6gbPcO96YMOAyzNwowpZA%3D%3D&trackingId=e0U5ykYByKfhd0Bk5IdJDA%3D%3D",
-        "title": "Java Software Engineer Principal",
-        "company": "Vertex Inc.",
-        "description": "United StatesBe an early applicant1 week ago",
-        "search_query": "Principal Cloud Engineer",
-        "contact_info": {
-          "name": "Dave J. Arnold",
-          "email": "dave@roknsound.com",
-          "phone": "(707) 480-6346",
-          "location": "",
-          "linkedin": "https:"
-        }
-      },
-      {
-        "url": "https://www.linkedin.com/jobs/view/cloud-engineer-principal-at-saic-4207718785?position=5&pageNum=0&refId=J6gbPcO96YMOAyzNwowpZA%3D%3D&trackingId=ZIj35G3hk%2FzrTWbnCxiiug%3D%3D",
+        "url": "https://www.linkedin.com/jobs/view/cloud-engineer-principal-at-saic-4207718785?position=1&pageNum=0&refId=OO4EARQuW3m37lN5%2FuNlfg%3D%3D&trackingId=TY%2FtCBpbR8C4jj57%2FLyFIw%3D%3D",
         "title": "Cloud Engineer Principal",
         "company": "SAIC",
         "description": "Colorado, United StatesBe an early applicant1 week ago",
-        "search_query": "Principal Cloud Engineer",
+        "search_query": "Principal DevOps Engineer",
         "contact_info": {
           "name": "Dave J. Arnold",
           "email": "dave@roknsound.com",
@@ -162,11 +92,53 @@
         }
       },
       {
-        "url": "https://www.linkedin.com/jobs/view/software-engineer-growth-principal-at-blueprint-4181718979?position=6&pageNum=0&refId=J6gbPcO96YMOAyzNwowpZA%3D%3D&trackingId=VKNr%2FxuQahxLxb248cHl2w%3D%3D",
-        "title": "Software Engineer (Growth) - Principal",
-        "company": "Blueprint",
-        "description": "New York, NYBe an early applicant1 month ago",
-        "search_query": "Principal Cloud Engineer",
+        "url": "https://www.linkedin.com/jobs/view/principal-aws-cloud-architect-at-sophinea-corporation-4197352477?position=3&pageNum=0&refId=OO4EARQuW3m37lN5%2FuNlfg%3D%3D&trackingId=fGhxL6LVozEyEjhOAUTBpA%3D%3D",
+        "title": "Principal AWS Cloud Architect",
+        "company": "Sophinea Corporation",
+        "description": "United StatesBe an early applicant2 weeks ago",
+        "search_query": "Principal DevOps Engineer",
+        "contact_info": {
+          "name": "Dave J. Arnold",
+          "email": "dave@roknsound.com",
+          "phone": "(707) 480-6346",
+          "location": "",
+          "linkedin": "https:"
+        }
+      },
+      {
+        "url": "https://www.linkedin.com/jobs/view/principal-cloud-network-engineer-at-yahoo-4085414972?position=4&pageNum=0&refId=OO4EARQuW3m37lN5%2FuNlfg%3D%3D&trackingId=o%2Bf12H%2FAXISuLPx3VtNtvA%3D%3D",
+        "title": "Principal Cloud Network Engineer",
+        "company": "Yahoo",
+        "description": "United States1 week ago",
+        "search_query": "Principal DevOps Engineer",
+        "contact_info": {
+          "name": "Dave J. Arnold",
+          "email": "dave@roknsound.com",
+          "phone": "(707) 480-6346",
+          "location": "",
+          "linkedin": "https:"
+        }
+      },
+      {
+        "url": "https://www.linkedin.com/jobs/view/principal-azure-databricks-consultant-digital-velocity-at-cdw-4187094359?position=5&pageNum=0&refId=OO4EARQuW3m37lN5%2FuNlfg%3D%3D&trackingId=9Mvq6HOcMqyOJcqoznNRYg%3D%3D",
+        "title": "Principal Azure Databricks Consultant - Digital Velocity",
+        "company": "CDW",
+        "description": "United StatesBe an early applicant1 week ago",
+        "search_query": "Principal DevOps Engineer",
+        "contact_info": {
+          "name": "Dave J. Arnold",
+          "email": "dave@roknsound.com",
+          "phone": "(707) 480-6346",
+          "location": "",
+          "linkedin": "https:"
+        }
+      },
+      {
+        "url": "https://www.linkedin.com/jobs/view/principal-site-reliability-engineer-at-veza-4212776657?position=6&pageNum=0&refId=OO4EARQuW3m37lN5%2FuNlfg%3D%3D&trackingId=bx2f%2BkKuHTz69dy%2FT2QLQw%3D%3D",
+        "title": "Principal Site Reliability Engineer",
+        "company": "Veza",
+        "description": "Minneapolis, MN2 days ago",
+        "search_query": "Principal DevOps Engineer",
         "contact_info": {
           "name": "Dave J. Arnold",
           "email": "dave@roknsound.com",
@@ -178,14 +150,14 @@
     ]
   },
   {
-    "role": "DevOps Architect",
+    "role": "Staff Platform Engineer",
     "listings": [
       {
-        "url": "https://www.linkedin.com/jobs/view/aws-architect-at-ascending-inc-4204287363?position=1&pageNum=0&refId=3a%2FrBg76VzRENZdfFZ68Uw%3D%3D&trackingId=thjI1N6lfAFyjTWYV3X9gA%3D%3D",
-        "title": "AWS Architect",
-        "company": "ASCENDING Inc.",
-        "description": "Washington, DCBe an early applicant1 week ago",
-        "search_query": "DevOps Architect",
+        "url": "https://www.linkedin.com/jobs/view/staff-platform-engineer-at-opala-4201330766?position=1&pageNum=0&refId=joWgOxBL0ZHHCluSkHOepg%3D%3D&trackingId=MBCiXqzpKgS%2FRh7Knr%2FTBg%3D%3D",
+        "title": "Staff Platform Engineer",
+        "company": "Opala",
+        "description": "Seattle, WABe an early applicant2 weeks ago",
+        "search_query": "Staff Platform Engineer",
         "contact_info": {
           "name": "Dave J. Arnold",
           "email": "dave@roknsound.com",
@@ -195,11 +167,11 @@
         }
       },
       {
-        "url": "https://www.linkedin.com/jobs/view/aws-architect-at-ascending-inc-4207060652?position=2&pageNum=0&refId=3a%2FrBg76VzRENZdfFZ68Uw%3D%3D&trackingId=NQLuQTet44S1x4%2FjqzVijA%3D%3D",
-        "title": "AWS Architect",
-        "company": "ASCENDING Inc.",
-        "description": "Fairfax, VA1 week ago",
-        "search_query": "DevOps Architect",
+        "url": "https://www.linkedin.com/jobs/view/platform-engineer-lead-senior-staff-at-flagler-health-4118032173?position=2&pageNum=0&refId=joWgOxBL0ZHHCluSkHOepg%3D%3D&trackingId=3K7g%2FOrbM58a6XL6dxOpOw%3D%3D",
+        "title": "Platform Engineer Lead (Senior/Staff)",
+        "company": "Flagler Health",
+        "description": "New York, NY3 months ago",
+        "search_query": "Staff Platform Engineer",
         "contact_info": {
           "name": "Dave J. Arnold",
           "email": "dave@roknsound.com",
@@ -209,11 +181,11 @@
         }
       },
       {
-        "url": "https://www.linkedin.com/jobs/view/devops-architect-at-connexions-4210014883?position=3&pageNum=0&refId=3a%2FrBg76VzRENZdfFZ68Uw%3D%3D&trackingId=1awDT09ZCg2CTcR%2B%2Bch2KA%3D%3D",
-        "title": "DevOps Architect",
-        "company": "Connexions",
-        "description": "United States4 days ago",
-        "search_query": "DevOps Architect",
+        "url": "https://www.linkedin.com/jobs/view/front-end-platform-engineer-at-actblue-4195433091?position=3&pageNum=0&refId=joWgOxBL0ZHHCluSkHOepg%3D%3D&trackingId=yDtSWd6CrkO4AGX%2BUIPK7g%3D%3D",
+        "title": "Front-End Platform Engineer",
+        "company": "ActBlue",
+        "description": "United States2 weeks ago",
+        "search_query": "Staff Platform Engineer",
         "contact_info": {
           "name": "Dave J. Arnold",
           "email": "dave@roknsound.com",
@@ -223,11 +195,11 @@
         }
       },
       {
-        "url": "https://www.linkedin.com/jobs/view/aws-solutions-architect-at-commit-4202660887?position=4&pageNum=0&refId=3a%2FrBg76VzRENZdfFZ68Uw%3D%3D&trackingId=iZVSQU1iaPzeYY7%2BCMKHWg%3D%3D",
-        "title": "AWS Solutions Architect",
-        "company": "Commit",
-        "description": "New York, NYBe an early applicant1 week ago",
-        "search_query": "DevOps Architect",
+        "url": "https://www.linkedin.com/jobs/view/staff-engineer-cloud-engineering-at-greenlight-4209575771?position=4&pageNum=0&refId=joWgOxBL0ZHHCluSkHOepg%3D%3D&trackingId=854l6nA%2Bs0XFqru9%2Fwy6lA%3D%3D",
+        "title": "Staff Engineer, Cloud Engineering",
+        "company": "Greenlight",
+        "description": "Atlanta Metropolitan Area2 days ago",
+        "search_query": "Staff Platform Engineer",
         "contact_info": {
           "name": "Dave J. Arnold",
           "email": "dave@roknsound.com",
@@ -237,11 +209,30 @@
         }
       },
       {
-        "url": "https://www.linkedin.com/jobs/view/aws-solutions-architect-remote-at-serverless-guru-4141491361?position=5&pageNum=0&refId=3a%2FrBg76VzRENZdfFZ68Uw%3D%3D&trackingId=KNeOt8d2N%2BtrDe8qtk5VTA%3D%3D",
-        "title": "AWS Solutions Architect (Remote)",
-        "company": "Serverless Guru",
-        "description": "Wilmington, DE3 months ago",
-        "search_query": "DevOps Architect",
+        "url": "https://www.linkedin.com/jobs/view/ai-platform-engineer-gcp-remote-at-lensa-4212600617?position=5&pageNum=0&refId=joWgOxBL0ZHHCluSkHOepg%3D%3D&trackingId=JMTeqhC1i%2Feo95N1Tg1Q%2Fg%3D%3D",
+        "title": "AI Platform Engineer (GCP) - Remote",
+        "company": "Lensa",
+        "description": "Frisco, TXBe an early applicant4 hours ago",
+        "search_query": "Staff Platform Engineer",
+        "contact_info": {
+          "name": "Dave J. Arnold",
+          "email": "dave@roknsound.com",
+          "phone": "(707) 480-6346",
+          "location": "",
+          "linkedin": "https:"
+        }
+      }
+    ]
+  },
+  {
+    "role": "Principal Site Reliability Engineer (SRE)",
+    "listings": [
+      {
+        "url": "https://www.linkedin.com/jobs/view/principal-site-reliability-engineer-at-veza-4212776657?position=1&pageNum=0&refId=fvZXAc%2FWzjcvvXBBC2ivqg%3D%3D&trackingId=YZAwv2MdFqtRpWrrRvaO9A%3D%3D",
+        "title": "Principal Site Reliability Engineer",
+        "company": "Veza",
+        "description": "Minneapolis, MN2 days ago",
+        "search_query": "Principal Site Reliability Engineer (SRE)",
         "contact_info": {
           "name": "Dave J. Arnold",
           "email": "dave@roknsound.com",
@@ -251,11 +242,128 @@
         }
       },
       {
-        "url": "https://www.linkedin.com/jobs/view/aws-architect-at-ascending-inc-4205441408?position=6&pageNum=0&refId=3a%2FrBg76VzRENZdfFZ68Uw%3D%3D&trackingId=KFeR7LxavXUXjdyYieW0fg%3D%3D",
-        "title": "AWS Architect",
-        "company": "ASCENDING Inc.",
+        "url": "https://www.linkedin.com/jobs/view/sr-principal-site-reliability-engineer-ohai-at-oracle-4203309261?position=2&pageNum=0&refId=fvZXAc%2FWzjcvvXBBC2ivqg%3D%3D&trackingId=YOR07CWepoLyz7HTEY9Zhg%3D%3D",
+        "title": "Sr Principal Site Reliability Engineer (OHAI)",
+        "company": "Oracle",
         "description": "United StatesBe an early applicant1 week ago",
-        "search_query": "DevOps Architect",
+        "search_query": "Principal Site Reliability Engineer (SRE)",
+        "contact_info": {
+          "name": "Dave J. Arnold",
+          "email": "dave@roknsound.com",
+          "phone": "(707) 480-6346",
+          "location": "",
+          "linkedin": "https:"
+        }
+      },
+      {
+        "url": "https://www.linkedin.com/jobs/view/senior-staff-site-reliability-engineer-cdn-at-nvidia-4200574088?position=3&pageNum=0&refId=fvZXAc%2FWzjcvvXBBC2ivqg%3D%3D&trackingId=buV%2BvkQ%2BC8EDt1rZpr%2Burg%3D%3D",
+        "title": "Senior Staff Site Reliability Engineer - CDN",
+        "company": "NVIDIA",
+        "description": "United StatesBe an early applicant2 weeks ago",
+        "search_query": "Principal Site Reliability Engineer (SRE)",
+        "contact_info": {
+          "name": "Dave J. Arnold",
+          "email": "dave@roknsound.com",
+          "phone": "(707) 480-6346",
+          "location": "",
+          "linkedin": "https:"
+        }
+      },
+      {
+        "url": "https://www.linkedin.com/jobs/view/principal-site-reliability-engineer-at-atlassian-4210557164?position=4&pageNum=0&refId=fvZXAc%2FWzjcvvXBBC2ivqg%3D%3D&trackingId=Cn7fD8T0YSlW4pOsiKkX5Q%3D%3D",
+        "title": "Principal Site Reliability Engineer",
+        "company": "Atlassian",
+        "description": "Mountain View, CAActively Hiring5 days ago",
+        "search_query": "Principal Site Reliability Engineer (SRE)",
+        "contact_info": {
+          "name": "Dave J. Arnold",
+          "email": "dave@roknsound.com",
+          "phone": "(707) 480-6346",
+          "location": "",
+          "linkedin": "https:"
+        }
+      },
+      {
+        "url": "https://www.linkedin.com/jobs/view/principal-site-reliability-engineer-at-hashicorp-4195717815?position=7&pageNum=0&refId=fvZXAc%2FWzjcvvXBBC2ivqg%3D%3D&trackingId=08zlump2KOe1GvKpYn4KRw%3D%3D",
+        "title": "Principal Site Reliability Engineer",
+        "company": "HashiCorp",
+        "description": "United StatesActively Hiring2 weeks ago",
+        "search_query": "Principal Site Reliability Engineer (SRE)",
+        "contact_info": {
+          "name": "Dave J. Arnold",
+          "email": "dave@roknsound.com",
+          "phone": "(707) 480-6346",
+          "location": "",
+          "linkedin": "https:"
+        }
+      }
+    ]
+  },
+  {
+    "role": "Head of Cloud Security",
+    "listings": [
+      {
+        "url": "https://www.linkedin.com/jobs/view/director-cybersecurity-remote-us-at-tixtrack-4183028357?position=1&pageNum=0&refId=gI8uIgOhsJJ71KzjRGgPrA%3D%3D&trackingId=pX8x3Fxmei7P8y4%2FuS7TFQ%3D%3D",
+        "title": "Director, Cybersecurity (Remote - US)",
+        "company": "TixTrack",
+        "description": "New York, NYBe an early applicant1 month ago",
+        "search_query": "Head of Cloud Security",
+        "contact_info": {
+          "name": "Dave J. Arnold",
+          "email": "dave@roknsound.com",
+          "phone": "(707) 480-6346",
+          "location": "",
+          "linkedin": "https:"
+        }
+      },
+      {
+        "url": "https://www.linkedin.com/jobs/view/sr-director-security-operations-at-oracle-4169382092?position=2&pageNum=0&refId=gI8uIgOhsJJ71KzjRGgPrA%3D%3D&trackingId=GV9sD1RJcq44fUdJ7uOvAg%3D%3D",
+        "title": "Sr. Director Security Operations",
+        "company": "Oracle",
+        "description": "United States1 week ago",
+        "search_query": "Head of Cloud Security",
+        "contact_info": {
+          "name": "Dave J. Arnold",
+          "email": "dave@roknsound.com",
+          "phone": "(707) 480-6346",
+          "location": "",
+          "linkedin": "https:"
+        }
+      },
+      {
+        "url": "https://www.linkedin.com/jobs/view/director-cybersecurity-at-crosslake-technologies-4121272736?position=3&pageNum=0&refId=gI8uIgOhsJJ71KzjRGgPrA%3D%3D&trackingId=TnBlfUOmWiZjKUz7IrSRmw%3D%3D",
+        "title": "Director, Cybersecurity",
+        "company": "Crosslake Technologies",
+        "description": "United States3 months ago",
+        "search_query": "Head of Cloud Security",
+        "contact_info": {
+          "name": "Dave J. Arnold",
+          "email": "dave@roknsound.com",
+          "phone": "(707) 480-6346",
+          "location": "",
+          "linkedin": "https:"
+        }
+      },
+      {
+        "url": "https://www.linkedin.com/jobs/view/head-of-application-security-at-granicus-4183984833?position=4&pageNum=0&refId=gI8uIgOhsJJ71KzjRGgPrA%3D%3D&trackingId=D1SoZAX4L%2F3uYshKht8PwQ%3D%3D",
+        "title": "Head of Application Security",
+        "company": "Granicus",
+        "description": "United States1 week ago",
+        "search_query": "Head of Cloud Security",
+        "contact_info": {
+          "name": "Dave J. Arnold",
+          "email": "dave@roknsound.com",
+          "phone": "(707) 480-6346",
+          "location": "",
+          "linkedin": "https:"
+        }
+      },
+      {
+        "url": "https://www.linkedin.com/jobs/view/director-of-security-operations-at-function-health-4202951214?position=5&pageNum=0&refId=gI8uIgOhsJJ71KzjRGgPrA%3D%3D&trackingId=mjMIxK9LTPOzdoJHoe8stw%3D%3D",
+        "title": "Director of Security Operations",
+        "company": "Function Health",
+        "description": "Austin, TX1 week ago",
+        "search_query": "Head of Cloud Security",
         "contact_info": {
           "name": "Dave J. Arnold",
           "email": "dave@roknsound.com",
