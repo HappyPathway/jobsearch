@@ -137,6 +137,23 @@ class JobApplication(Base):
     notes = Column(Text)
     
     job = relationship('JobCache', back_populates='applications')
+    calendar_events = relationship('CalendarEvent', back_populates='job_application')
+
+class CalendarEvent(Base):
+    __tablename__ = 'calendar_events'
+    
+    id = Column(Integer, primary_key=True)
+    job_application_id = Column(Integer, ForeignKey('job_applications.id'))
+    event_type = Column(String)  # 'interview', 'follow_up', etc.
+    start_time = Column(String)
+    end_time = Column(String)
+    description = Column(Text)
+    location = Column(String)
+    calendar_event_id = Column(String)  # ID from external calendar service
+    provider = Column(String)  # 'google', 'local', etc.
+    created_at = Column(String, default=lambda: datetime.now().isoformat())
+    
+    job_application = relationship('JobApplication', back_populates='calendar_events')
 
 class RecruiterContact(Base):
     __tablename__ = 'recruiter_contacts'
@@ -151,3 +168,22 @@ class RecruiterContact(Base):
     contacted_date = Column(String, nullable=True)
     status = Column(String, default='identified')  # identified, contacted, responded, scheduled, closed
     notes = Column(Text, nullable=True)
+
+class EmailCorrespondence(Base):
+    __tablename__ = 'email_correspondence'
+    
+    id = Column(Integer, primary_key=True)
+    job_id = Column(Integer, ForeignKey('job_cache.id'))
+    direction = Column(String)  # 'incoming' or 'outgoing'
+    sender = Column(String)
+    recipients = Column(String)  # JSON list
+    subject = Column(String)
+    body = Column(Text)
+    received_date = Column(String, nullable=True)
+    sent_date = Column(String, nullable=True)
+    thread_id = Column(String, nullable=True)
+    status = Column(String, default='unread')  # unread, read, archived
+    has_calendar_invite = Column(String, default=False)
+    processed_calendar = Column(String, default=False)
+    
+    job = relationship('JobCache')
