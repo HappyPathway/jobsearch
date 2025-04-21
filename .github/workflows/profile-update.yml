@@ -47,18 +47,3 @@ jobs:
           python scripts/resume_parser.py
           python scripts/cover_letter_parser.py
           python scripts/combine_and_summarize.py
-
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v6
-        with:
-          commit-message: 'chore: Update profile data'
-          title: 'Update Profile Data'
-          body: |
-            Automated profile data update
-            
-            - Updated from latest profile documents
-            - Includes LinkedIn profile, resume, and cover letter data
-            - Using database from GCS bucket
-          branch: profile-update
-          delete-branch: true
-          base: main

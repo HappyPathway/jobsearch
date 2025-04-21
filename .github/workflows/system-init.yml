@@ -124,26 +124,6 @@ jobs:
         run: |
           python scripts/generate_github_pages.py
 
-      - name: Create Pull Request
-        id: cpr
-        uses: peter-evans/create-pull-request@v6
-        with:
-          commit-message: 'feat: Initialize system with fresh data'
-          title: 'Initialize System'
-          body: |
-            System initialization completed:
-            
-            - Set up GCS infrastructure
-            - Created fresh database
-            - Processed profile, resume, and cover letter
-            - Generated initial job strategy
-            - Set up GitHub Pages
-            
-            Please review the changes and merge to complete initialization.
-          branch: system-init
-          delete-branch: true
-          base: main
-          
       - name: Send Slack Initialization Notification
         if: success()
         env:
