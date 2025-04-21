@@ -1,6 +1,6 @@
 functions-framework==3.*
 google-cloud-storage
-slack-sdk
 python-dotenv
 google-generativeai
 sqlalchemy
+google-cloud-secret-manager

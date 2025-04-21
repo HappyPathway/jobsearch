@@ -12,6 +12,7 @@ from job_strategy import (
     generate_documents_for_jobs,
     generate_medium_article
 )
+from secrets_manager import secrets
 
 @functions_framework.http
 def generate_job_strategy(request):
@@ -31,6 +32,22 @@ def generate_job_strategy(request):
         The strategy file paths and any additional generated content
     """
     try:
+        # Get required secrets
+        gemini_api_key = secrets.get_secret('GEMINI_API_KEY')
+        slack_api_token = secrets.get_secret('SLACK_API_TOKEN')
+        slack_channel_id = secrets.get_secret('SLACK_CHANNEL_ID')
+        
+        if not gemini_api_key:
+            return 'GEMINI_API_KEY not found in Secret Manager', 500
+            
+        # Configure environment with secrets
+        import os
+        os.environ['GEMINI_API_KEY'] = gemini_api_key
+        if slack_api_token:
+            os.environ['SLACK_API_TOKEN'] = slack_api_token
+        if slack_channel_id:
+            os.environ['SLACK_CHANNEL_ID'] = slack_channel_id
+        
         # Parse request data
         request_json = request.get_json(silent=True) or {}
         

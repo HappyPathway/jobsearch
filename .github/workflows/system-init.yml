@@ -3,65 +3,66 @@ name: System Initialization
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
+    branches: [ main ]
     paths:
-      - 'scripts/**'
       - 'docs/**'
+      - '.github/workflows/system-init.yml'
 
 permissions:
   contents: write
   pull-requests: write
+  id-token: write
 
 jobs:
   initialize:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
       
+      - id: auth
+        name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}
+
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-          
+          cache: 'pip'
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          
-      - id: 'auth'
-        name: 'Authenticate to Google Cloud'
-        uses: 'google-github-actions/auth@v2'
-        with:
-          credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
 
-      - name: Configure Git
-        run: |
-          git config --global user.name "GitHub Actions Bot"
-          git config --global user.email "actions@github.com"
-
-      - name: Set up GCS infrastructure
-        id: gcs-setup
+      - name: Setup GCS and migrate secrets
+        id: setup
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INITIAL_SECRETS: ${{ toJson(secrets) }}
         run: |
+          # Setup GCS first
           python scripts/setup_gcs.py
           
-          # Commit GCS config if changed
-          if [[ -n $(git status --porcelain config/) ]]; then
-            git add config/
-            git commit -m "chore: Update GCS configuration"
-            git push
-          fi
+          # Create temporary secrets file for migration
+          echo "$INITIAL_SECRETS" > github_secrets.json
+          
+          # Run secrets migration
+          python scripts/migrate_secrets.py
+          
+          # Clean up temporary file
+          rm github_secrets.json
           
           # Set bucket name for subsequent steps
           echo "bucket_name=$(cat config/gcs.json | jq -r .GCS_BUCKET_NAME)" >> $GITHUB_OUTPUT
-          
+
       - name: Initialize fresh database
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GCS_BUCKET_NAME: ${{ steps.gcs-setup.outputs.bucket_name }}
+          GCS_BUCKET_NAME: ${{ steps.setup.outputs.bucket_name }}
           SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
           SLACK_CHANNEL_ID: ${{ vars.SLACK_CHANNEL_ID }}
         run: |
@@ -70,7 +71,7 @@ jobs:
       - name: Process profile data
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GCS_BUCKET_NAME: ${{ steps.gcs-setup.outputs.bucket_name }}
+          GCS_BUCKET_NAME: ${{ steps.setup.outputs.bucket_name }}
           SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
           SLACK_CHANNEL_ID: ${{ vars.SLACK_CHANNEL_ID }}
         run: |
@@ -79,7 +80,7 @@ jobs:
       - name: Process resume
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GCS_BUCKET_NAME: ${{ steps.gcs-setup.outputs.bucket_name }}
+          GCS_BUCKET_NAME: ${{ steps.setup.outputs.bucket_name }}
           SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
           SLACK_CHANNEL_ID: ${{ vars.SLACK_CHANNEL_ID }}
         run: |
@@ -88,7 +89,7 @@ jobs:
       - name: Process cover letter
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GCS_BUCKET_NAME: ${{ steps.gcs-setup.outputs.bucket_name }}
+          GCS_BUCKET_NAME: ${{ steps.setup.outputs.bucket_name }}
           SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
           SLACK_CHANNEL_ID: ${{ vars.SLACK_CHANNEL_ID }}
         run: |
@@ -97,7 +98,7 @@ jobs:
       - name: Combine and summarize
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GCS_BUCKET_NAME: ${{ steps.gcs-setup.outputs.bucket_name }}
+          GCS_BUCKET_NAME: ${{ steps.setup.outputs.bucket_name }}
           SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
           SLACK_CHANNEL_ID: ${{ vars.SLACK_CHANNEL_ID }}
         run: |
@@ -106,7 +107,7 @@ jobs:
       - name: Generate job strategy
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GCS_BUCKET_NAME: ${{ steps.gcs-setup.outputs.bucket_name }}
+          GCS_BUCKET_NAME: ${{ steps.setup.outputs.bucket_name }}
           SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
           SLACK_CHANNEL_ID: ${{ vars.SLACK_CHANNEL_ID }}
           ENABLE_SLACK_NOTIFICATIONS: "true"
@@ -117,7 +118,7 @@ jobs:
       - name: Generate GitHub Pages
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GCS_BUCKET_NAME: ${{ steps.gcs-setup.outputs.bucket_name }}
+          GCS_BUCKET_NAME: ${{ steps.setup.outputs.bucket_name }}
           SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
           SLACK_CHANNEL_ID: ${{ vars.SLACK_CHANNEL_ID }}
           ENABLE_SLACK_NOTIFICATIONS: "true"
