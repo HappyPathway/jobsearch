@@ -1,0 +1,15 @@
+google-cloud-storage
+google-generativeai
+sqlalchemy
+pdfplumber
+python-dotenv
+python-slugify
+google-cloud-secret-manager
+beautifulsoup4
+requests
+
+[dev]
+pytest
+black
+isort
+mypy

@@ -1,4 +1,4 @@
-.PHONY: venv install clean init-db combine-summary parse-resume parse-cover-letter run help all generate-github-pages mark-applied test-integration gh-strategy-cleanup gh-generate-docs gh-pages gh-test gh-init gh-job-strategy gh-profile-update slack-list-channels search-jobs generate-strategy generate-docs-for-jobs generate-strategy-from-file job-workflow daily-workflow full-workflow job-search-and-docs sync-and-publish force-unlock terraform-init terraform-plan terraform-apply terraform-destroy migrate-db clean-db
+.PHONY: venv install install-dev test lint clean init-db combine-summary parse-resume parse-cover-letter run help all generate-github-pages mark-applied test-integration gh-strategy-cleanup gh-generate-docs gh-pages gh-test gh-init gh-job-strategy gh-profile-update slack-list-channels search-jobs generate-strategy generate-docs-for-jobs generate-strategy-from-file job-workflow daily-workflow full-workflow job-search-and-docs sync-and-publish force-unlock terraform-init terraform-plan terraform-apply terraform-destroy migrate-db clean-db
 
 PYTHON_VERSION ?= 3.12
 VENV_NAME=venv
@@ -9,6 +9,9 @@ PYTHONPATH=PYTHONPATH="$(shell pwd)"
 help:
 	@echo "Available commands:"
 	@echo "  make install         - Set up virtual environment and install dependencies"
+	@echo "  make install-dev     - Install development dependencies"
+	@echo "  make test            - Run tests"
+	@echo "  make lint            - Run code linting and type checks"
 	@echo "  make clean          - Remove virtual environment and cache files"
 	@echo "  make clean-db       - Remove database files locally and from GCS"
 	@echo "  make init-db        - Initialize the database schema"
@@ -62,9 +65,24 @@ venv:
 install: venv
 	$(PIP) install --upgrade pip
 	$(PIP) install -r requirements.txt
+	pip install -e .
+
+install-dev:
+	pip install -e ".[dev]"
+
+test:
+	pytest
+
+lint:
+	black jobsearch scripts tests
+	isort jobsearch scripts tests
+	mypy jobsearch scripts tests
 
 clean:
 	rm -rf $(VENV_NAME)
+	rm -rf build/
+	rm -rf dist/
+	rm -rf *.egg-info/
 	find . -type f -name '*.pyc' -delete
 	find . -type d -name '__pycache__' -delete
 	find . -type f -name 'career_data.db' -delete

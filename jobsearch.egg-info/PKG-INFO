@@ -1,3 +1,20 @@
+Metadata-Version: 2.1
+Name: jobsearch
+Version: 1.0.0
+Summary: Job Search Automation Platform
+Author: 
+Author-email: 
+Keywords: job search,automation,ai
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: End Users/Desktop
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Provides-Extra: dev
+
 # 🚀 Career Automation Platform
 
 **Transform your job search into a strategic advantage.**

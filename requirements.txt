@@ -11,3 +11,11 @@ google-cloud-storage>=2.14.0
 slack-sdk>=3.23.0
 google-cloud-secret-manager
 mcp>=0.1.0
+
+-e .
+
+# Additional dependencies not required for package installation
+pytest>=7.0.0
+black>=22.0.0
+isort>=5.0.0
+mypy>=1.0.0
