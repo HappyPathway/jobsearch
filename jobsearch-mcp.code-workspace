@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../gcs-mcp-server"
+		},
+		{
+			"path": "../../Library/Application Support/Code - Insiders/User"
+		}
+	],
+	"settings": {}
+}

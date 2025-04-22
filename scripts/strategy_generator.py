@@ -98,6 +98,37 @@ def store_strategy(strategy, base_filename):
         logger.error(f"Error storing strategy: {str(e)}")
         raise
 
+def read_strategy(date):
+    """Read strategy content from GCS for a given date
+    
+    Args:
+        date (str): Date in YYYY-MM-DD format
+    Returns:
+        dict: Strategy content with 'markdown' and 'text' keys, or None if not found
+    """
+    from gcs_utils import gcs
+    
+    md_content, txt_content = gcs.read_strategy(date)
+    if md_content is None:
+        return None
+        
+    return {
+        'markdown': md_content,
+        'text': txt_content
+    }
+
+def format_success_metrics(metrics):
+    """Format success metrics text properly"""
+    formatted_text = ""
+    for metric in metrics:
+        # Remove any double asterisks
+        metric = metric.replace("**", "*")
+        # Ensure proper formatting for section headers
+        if metric.startswith("*") and not metric.endswith("*"):
+            metric = metric.replace("*", "", 1)  # Remove leading asterisk
+        formatted_text += f"• {metric}\n"
+    return formatted_text.strip()
+
 def generate_daily_strategy(sorted_jobs):
     """Generate a daily strategy based on the analyzed jobs"""
     logger.info("Generating daily strategy")
@@ -162,6 +193,23 @@ Format your response as detailed paragraphs for each section. Be specific and ac
             'daily_focus': daily_focus
         }
         
+        if not validate_strategy_content(strategy):
+            logger.warning("Generated strategy content is incomplete, falling back to defaults")
+            strategy = {
+                'daily_focus': {'title': 'Daily Planning'},
+                'success_metrics': [],
+                'content': ''
+            }
+        
+        # Format success metrics properly
+        if 'success_metrics' in strategy['daily_focus']:
+            strategy['daily_focus']['success_metrics'] = [
+                metric.strip() for metric in strategy['daily_focus']['success_metrics']
+                if metric and metric.strip()
+            ]
+            formatted_metrics = format_success_metrics(strategy['daily_focus']['success_metrics'])
+            strategy['daily_focus']['formatted_metrics'] = formatted_metrics
+
         logger.info("Successfully generated daily strategy")
         return strategy
     except Exception as e:

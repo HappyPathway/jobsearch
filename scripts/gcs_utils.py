@@ -132,6 +132,22 @@ class GCSManager:
             logger.error(f"Error releasing lock: {str(e)}")
             return False
 
+    def force_unlock(self):
+        """Force remove the database lock regardless of state
+        
+        Returns:
+            bool: True if lock was removed or didn't exist
+        """
+        try:
+            blob = self.bucket.blob(self.db_lock_blob_name)
+            if blob.exists():
+                blob.delete()
+                logger.info("Database lock forcefully removed")
+            return True
+        except Exception as e:
+            logger.error(f"Error force removing lock: {str(e)}")
+            return False
+
     def sync_db(self):
         """Ensure local and GCS databases are in sync"""
         if not self.acquire_lock():
@@ -231,6 +247,111 @@ class GCSManager:
         except Exception as e:
             logger.error(f"Error deleting file from GCS: {str(e)}")
             return False
+
+    def read_strategy(self, strategy_date):
+        """Read a strategy file from GCS
+        
+        Args:
+            strategy_date (str): Date in YYYY-MM-DD format
+        Returns:
+            tuple: (markdown_content, text_content) or (None, None) if not found
+        """
+        try:
+            md_path = f'strategies/strategy_{strategy_date}.md'
+            txt_path = f'strategies/strategy_{strategy_date}.txt'
+            
+            md_blob = self.bucket.blob(md_path)
+            txt_blob = self.bucket.blob(txt_path)
+            
+            if not md_blob.exists() or not txt_blob.exists():
+                logger.error(f"Strategy files for {strategy_date} not found")
+                return None, None
+                
+            return (
+                md_blob.download_as_text(),
+                txt_blob.download_as_text()
+            )
+        except Exception as e:
+            logger.error(f"Error reading strategy files: {str(e)}")
+            return None, None
+
+    def read_application_files(self, application_date, company, role):
+        """Read application files from GCS
+        
+        Args:
+            application_date (str): Date in YYYY-MM-DD format
+            company (str): Company name
+            role (str): Role name
+        Returns:
+            dict: Dictionary of file contents by filename
+        """
+        try:
+            base_path = f'applications/{application_date}_{company}_{role}'
+            files = {}
+            
+            # List all files in the application directory
+            for blob in self.bucket.list_blobs(prefix=base_path):
+                files[blob.name.split('/')[-1]] = blob.download_as_text()
+            
+            return files
+        except Exception as e:
+            logger.error(f"Error reading application files: {str(e)}")
+            return {}
+
+    def safe_upload(self, content, gcs_path):
+        """Safely upload content to GCS using a temporary file
+        
+        Args:
+            content (str): Content to upload
+            gcs_path (str): GCS path for the file
+        Returns:
+            bool: True if successful
+        """
+        try:
+            import tempfile
+            with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp:
+                temp_path = Path(temp.name)
+                temp.write(content)
+            
+            success = self.upload_file(temp_path, gcs_path)
+            temp_path.unlink()
+            return success
+        except Exception as e:
+            logger.error(f"Error in safe upload to {gcs_path}: {str(e)}")
+            if 'temp_path' in locals():
+                try:
+                    temp_path.unlink()
+                except:
+                    pass
+            return False
+
+    def safe_download(self, gcs_path):
+        """Safely download content from GCS using a temporary file
+        
+        Args:
+            gcs_path (str): GCS path to download
+        Returns:
+            str: File contents or None if failed
+        """
+        try:
+            import tempfile
+            with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp:
+                temp_path = Path(temp.name)
+            
+            if self.download_file(gcs_path, temp_path):
+                with open(temp_path) as f:
+                    content = f.read()
+                temp_path.unlink()
+                return content
+            return None
+        except Exception as e:
+            logger.error(f"Error in safe download from {gcs_path}: {str(e)}")
+            if 'temp_path' in locals():
+                try:
+                    temp_path.unlink()
+                except:
+                    pass
+            return None
 
 # Global instance
 gcs = GCSManager()

@@ -219,7 +219,7 @@ Provide only the job titles as a comma-separated list. Be specific and relevant 
     
     return None
 
-def generate_and_save_strategy(job_searches, output_dir, send_slack=DEFAULT_SLACK_NOTIFICATIONS, include_recruiters=False):
+def generate_and_save_strategy(job_searches, output_dir, send_slack=DEFAULT_SLACK_NOTIFICATIONS, include_recruiters=False, cache_only=True):
     """Generate and save job search strategy"""
     logger.info("Generating job search strategy")
     
@@ -239,27 +239,20 @@ def generate_and_save_strategy(job_searches, output_dir, send_slack=DEFAULT_SLAC
     # Find recruiters if requested
     recruiters = {}
     if include_recruiters:
-        recruiters = find_recruiters_for_jobs(job_searches)
+        recruiters = find_recruiters_for_jobs(job_searches, cache_only=cache_only)
     
     # Generate strategy
     strategy = generate_daily_strategy(all_jobs)
     
-    # For weekly focus, we should ideally have past strategies
-    weekly_focus = generate_weekly_focus([])  # Pass empty list instead of no arguments
-    
     # Add recruiters and weekly focus to strategy
     if recruiters:
         strategy['recruiters'] = recruiters
-    strategy['weekly_focus'] = weekly_focus
+    strategy['weekly_focus'] = generate_weekly_focus([])
     
     # Validate strategy content
     if not validate_strategy_content(strategy):
         logger.warning("Generated strategy content is incomplete, enhancing with default content")
         strategy = enhance_with_default_content(strategy)
-    
-    # Format the output in both Markdown and plain text
-    markdown_content = format_strategy_output(strategy, weekly_focus)
-    plain_content = format_strategy_output_plain(strategy, weekly_focus)
     
     # Generate filenames with current date
     current_date = datetime.now().strftime("%Y-%m-%d")
@@ -268,11 +261,11 @@ def generate_and_save_strategy(job_searches, output_dir, send_slack=DEFAULT_SLAC
     # Store in GCS
     with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_md:
         temp_md_path = Path(temp_md.name)
-        temp_md.write(markdown_content)
+        temp_md.write(format_strategy_output(strategy, strategy['weekly_focus']))
     
     with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_txt:
         temp_txt_path = Path(temp_txt.name)
-        temp_txt.write(plain_content)
+        temp_txt.write(format_strategy_output_plain(strategy, strategy['weekly_focus']))
 
     # Upload to GCS
     md_gcs_path = f'strategies/{base_filename}.md'
@@ -291,13 +284,11 @@ def generate_and_save_strategy(job_searches, output_dir, send_slack=DEFAULT_SLAC
     if send_slack and SLACK_AVAILABLE and validate_strategy_content(strategy):
         try:
             logger.info("Sending Slack notification about generated job strategy")
-            # Create a summary of the strategy for the notification
             daily_focus = strategy.get('daily_focus', {})
             job_count = len(all_jobs)
             high_priority_count = len([j for j in all_jobs if j.get('application_priority', '').lower() == 'high'])
             recruiter_count = sum(len(recs) for recs in recruiters.values()) if recruiters else 0
             
-            # Create a rich formatted message with Slack Block Kit
             blocks = [
                 {
                     "type": "header",
@@ -329,30 +320,59 @@ def generate_and_save_strategy(job_searches, output_dir, send_slack=DEFAULT_SLAC
                 }
             ]
             
-            # Add recruiter info if available
-            if recruiter_count > 0:
-                blocks[2]["fields"].append({
-                    "type": "mrkdwn",
-                    "text": f"*Recruiters Found:* {recruiter_count}"
+            # Add success metrics section using formatted metrics
+            if daily_focus.get('formatted_metrics'):
+                blocks.append({"type": "divider"})
+                blocks.append({
+                    "type": "header",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "📊 Success Metrics",
+                        "emoji": True
+                    }
                 })
-            
-            # Add success metrics if available
-            if daily_focus.get('success_metrics'):
-                metrics_text = "\n".join([f"• {metric}" for metric in daily_focus.get('success_metrics', [])])
                 blocks.append({
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": f"*Success Metrics:*\n{metrics_text}"
+                        "text": daily_focus['formatted_metrics']
                     }
                 })
             
-            # Add a link to the strategy file in GCS
+            # Add high priority job details
+            high_priority_jobs = [j for j in all_jobs if j.get('application_priority', '').lower() == 'high']
+            if high_priority_jobs:
+                blocks.append({"type": "divider"})
+                blocks.append({
+                    "type": "header",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "🔥 High Priority Opportunities",
+                        "emoji": True
+                    }
+                })
+                
+                for job in high_priority_jobs[:5]:  # Limit to top 5
+                    blocks.append({
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": (
+                                f"*<{job['url']}|{job['title']}>*\n"
+                                f"*Company:* {job['company']}\n"
+                                f"*Match Score:* {job.get('match_score', 0)}%\n"
+                                f"*Requirements:* {', '.join(job.get('key_requirements', ['None specified']))}"
+                            )
+                        }
+                    })
+            
+            # Add a link to the strategy file
+            blocks.append({"type": "divider"})
             blocks.append({
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"<{md_gcs_path}|View full strategy in GCS>"
+                    "text": f"<{md_gcs_path}|📝 View full strategy>"
                 }
             })
             
@@ -432,7 +452,9 @@ def main():
                       help='Include recruiter search in strategy generation')
     parser.add_argument('--cache-only', action='store_true',
                       help='Only use cached recruiters, do not search online')
-    parser.set_defaults(send_slack=DEFAULT_SLACK_NOTIFICATIONS)
+    parser.add_argument('--no-cache-only', action='store_false', dest='cache_only',
+                      help='Allow searching for recruiters online')
+    parser.set_defaults(send_slack=DEFAULT_SLACK_NOTIFICATIONS, cache_only=True)
     args = parser.parse_args()
     
     try:
@@ -495,7 +517,8 @@ def main():
                 job_searches, 
                 strategy_dir,
                 args.send_slack,
-                args.include_recruiters
+                args.include_recruiters,
+                args.cache_only
             )
         
         # Generate documents if requested

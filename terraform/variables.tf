@@ -17,11 +17,7 @@ variable "cloud_functions" {
     "generate_medium_article",
     "update_profile_data",
     "deploy_github_pages",
-    "cleanup_strategy_files"
+    "cleanup_strategy_files",
+    "retrieve_file"
   ]
-}
-
-variable "source_bucket" {
-  description = "GCS bucket containing Cloud Functions source code"
-  type        = string
 }

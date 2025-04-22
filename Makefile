@@ -1,4 +1,4 @@
-.PHONY: venv install clean init-db combine-summary parse-resume parse-cover-letter run help all generate-github-pages mark-applied test-integration gh-strategy-cleanup gh-generate-docs gh-pages gh-test gh-init gh-job-strategy gh-profile-update slack-list-channels search-jobs generate-strategy generate-docs-for-jobs generate-strategy-from-file job-workflow daily-workflow full-workflow job-search-and-docs sync-and-publish
+.PHONY: venv install clean init-db combine-summary parse-resume parse-cover-letter run help all generate-github-pages mark-applied test-integration gh-strategy-cleanup gh-generate-docs gh-pages gh-test gh-init gh-job-strategy gh-profile-update slack-list-channels search-jobs generate-strategy generate-docs-for-jobs generate-strategy-from-file job-workflow daily-workflow full-workflow job-search-and-docs sync-and-publish force-unlock terraform-init terraform-plan terraform-apply terraform-destroy
 VENV_NAME=venv
 PYTHON=$(VENV_NAME)/bin/python
 PIP=$(VENV_NAME)/bin/pip
@@ -8,6 +8,7 @@ help:
 	@echo "  make install         - Set up virtual environment and install dependencies"
 	@echo "  make clean          - Remove virtual environment and cache files"
 	@echo "  make init-db        - Initialize the database schema"
+	@echo "  make force-unlock   - Force remove GCS database lock (use --force to skip confirmation)"
 	@echo "  make scrape-profile - Scrape LinkedIn profile data"
 	@echo "  make parse-resume   - Parse resume PDF"
 	@echo "  make parse-cover-letter - Parse cover letter PDF"
@@ -40,6 +41,12 @@ help:
 	@echo "  make full-workflow      - Run full workflow (strategy, documents, applied status, GitHub Pages)"
 	@echo "  make job-search-and-docs - Run job search and document generation"
 	@echo "  make sync-and-publish   - Sync database with GCS and publish GitHub Pages"
+	@echo ""
+	@echo "Terraform commands:"
+	@echo "  make terraform-init    - Initialize Terraform backend"
+	@echo "  make terraform-plan    - Plan Terraform changes"
+	@echo "  make terraform-apply  - Deploy cloud functions with Terraform"
+	@echo "  make terraform-destroy - Destroy cloud functions infrastructure"
 
 venv:
 	python3 -m venv $(VENV_NAME)
@@ -56,6 +63,9 @@ clean:
 
 init-db: install
 	$(PYTHON) scripts/init_db.py
+
+force-unlock: install
+	$(PYTHON) scripts/force_unlock.py $(if $(FORCE),--force)
 
 scrape-profile:
 	$(PYTHON) scripts/profile_scraper.py
@@ -145,3 +155,16 @@ job-search-and-docs: search-jobs generate-docs-for-jobs
 sync-and-publish: generate-github-pages
 	$(PYTHON) scripts/gcs_utils.py sync-db
 	@echo "✅ Synced database with GCS and published GitHub Pages"
+
+terraform-init:
+	cd terraform && terraform init -upgrade
+
+terraform-plan:
+	cd terraform && terraform plan
+
+terraform-apply: terraform-init
+	@echo "Applying Terraform changes..."
+	cd terraform && terraform apply -auto-approve
+
+terraform-destroy:
+	cd terraform && terraform destroy -auto-approve

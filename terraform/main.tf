@@ -18,6 +18,13 @@ resource "google_service_account" "function_account" {
   display_name = "Service Account for Job Search Functions"
 }
 
+# Create GCS bucket for function source code
+resource "google_storage_bucket" "function_source" {
+  name     = "${var.project_id}-function-source"
+  location = var.region
+  uniform_bucket_level_access = true
+}
+
 # Grant Secret Manager access
 resource "google_project_iam_member" "secret_accessor" {
   project = var.project_id

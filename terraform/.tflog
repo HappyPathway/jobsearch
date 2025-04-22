@@ -1,0 +1,342 @@
+2025-04-21T13:52:34.833-0700 [INFO]  Terraform version: 1.10.5
+2025-04-21T13:52:34.833-0700 [DEBUG] using github.com/hashicorp/go-tfe v1.70.0
+2025-04-21T13:52:34.833-0700 [DEBUG] using github.com/hashicorp/hcl/v2 v2.23.0
+2025-04-21T13:52:34.833-0700 [DEBUG] using github.com/hashicorp/terraform-svchost v0.1.1
+2025-04-21T13:52:34.833-0700 [DEBUG] using github.com/zclconf/go-cty v1.16.2
+2025-04-21T13:52:34.833-0700 [INFO]  Go runtime version: go1.23.3
+2025-04-21T13:52:34.833-0700 [INFO]  CLI args: []string{"/usr/local/Cellar/tfenv/1.0.2/versions/1.10.5/terraform", "providers", "schema", "-json", "-no-color"}
+2025-04-21T13:52:34.833-0700 [TRACE] Stdout is not a terminal
+2025-04-21T13:52:34.833-0700 [TRACE] Stderr is not a terminal
+2025-04-21T13:52:34.833-0700 [TRACE] Stdin is not a terminal
+2025-04-21T13:52:34.833-0700 [DEBUG] Attempting to open CLI config file: /Users/darnold/.terraformrc
+2025-04-21T13:52:34.833-0700 [INFO]  Loading CLI configuration from /Users/darnold/.terraformrc
+2025-04-21T13:52:34.833-0700 [INFO]  Loading CLI configuration from /Users/darnold/.terraform.d/credentials.tfrc.json
+2025-04-21T13:52:34.833-0700 [DEBUG] checking for credentials in "/Users/darnold/.terraform.d/plugins"
+2025-04-21T13:52:34.834-0700 [DEBUG] checking for credentials in "/Users/darnold/.terraform.d/plugins/darwin_amd64"
+2025-04-21T13:52:34.834-0700 [DEBUG] Using modified User-Agent: HashiCorp Terraform/1.10.5 (+https://www.terraform.io) HashiCorp-terraform-exec/0.21.0
+2025-04-21T13:52:34.834-0700 [DEBUG] ignoring non-existing provider search directory terraform.d/plugins
+2025-04-21T13:52:34.834-0700 [DEBUG] will search for provider plugins in /Users/darnold/.terraform.d/plugins
+2025-04-21T13:52:34.834-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/HappyPathway/openai/0.1.0" contains invalid type "0.1.0"; ignoring
+2025-04-21T13:52:34.834-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/HappyPathway/openai/0.1.0/darwin_amd64" contains invalid type "0.1.0"; ignoring
+2025-04-21T13:52:34.834-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/HappyPathway/openai/0.1.0/darwin_amd64/terraform-provider-openai" contains invalid type "0.1.0"; ignoring
+2025-04-21T13:52:34.834-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/darnold/gigrack/0.1.0" contains invalid type "0.1.0"; ignoring
+2025-04-21T13:52:34.834-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/darnold/gigrack/0.1.0/darwin_amd64" contains invalid type "0.1.0"; ignoring
+2025-04-21T13:52:34.834-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/darnold/gigrack/0.1.0/darwin_amd64/terraform-provider-gigrack" contains invalid type "0.1.0"; ignoring
+2025-04-21T13:52:34.834-0700 [WARN]  Provider plugin search ignored symlink /Users/darnold/.terraform.d/plugins/darwin_amd64/terraform-provider-configstash: only the base directory /Users/darnold/.terraform.d/plugins may be a symlink
+2025-04-21T13:52:34.835-0700 [TRACE] getproviders.SearchLocalDirectory: found hashicorp.com/edu/hashicups v0.3.1 for darwin_amd64 at /Users/darnold/.terraform.d/plugins/hashicorp.com/edu/hashicups/0.3.1/darwin_amd64
+2025-04-21T13:52:34.836-0700 [TRACE] getproviders.SearchLocalDirectory: found registry.terraform.io/darnold/gigrack v0.1.0 for darwin_amd64 at /Users/darnold/.terraform.d/plugins/registry.terraform.io/darnold/gigrack/0.1.0/darwin_amd64
+2025-04-21T13:52:34.836-0700 [WARN]  ignoring local provider path "/Users/darnold/.terraform.d/plugins/registry.terraform.io/darnold/openai/3b6fef8/darwin_amd64" with invalid version "3b6fef8": invalid characters "b6fef8"
+2025-04-21T13:52:34.836-0700 [WARN]  ignoring local provider path "/Users/darnold/.terraform.d/plugins/registry.terraform.io/darnold/openai/70f25a4/darwin_amd64" with invalid version "70f25a4": invalid characters "f25a4"
+2025-04-21T13:52:34.836-0700 [TRACE] getproviders.SearchLocalDirectory: found registry.terraform.io/happypathway/openai v5.0.0 for darwin_amd64 at /Users/darnold/.terraform.d/plugins/registry.terraform.io/happypathway/openai/5.0.0/darwin_amd64
+2025-04-21T13:52:34.836-0700 [DEBUG] ignoring non-existing provider search directory /Users/darnold/Library/Application Support/io.terraform/plugins
+2025-04-21T13:52:34.836-0700 [DEBUG] ignoring non-existing provider search directory /Library/Application Support/io.terraform/plugins
+2025-04-21T13:52:34.839-0700 [INFO]  Checkpoint disabled. Not running.
+2025-04-21T13:52:34.841-0700 [INFO]  CLI command args: []string{"providers", "schema", "-json", "-no-color"}
+2025-04-21T13:52:34.841-0700 [DEBUG] Using modified User-Agent: Terraform/1.10.5 HashiCorp-terraform-exec/0.21.0
+2025-04-21T13:52:34.841-0700 [DEBUG] Using modified User-Agent: HashiCorp Terraform/1.10.5 (+https://www.terraform.io) HashiCorp-terraform-exec/0.21.0
+2025-04-21T13:52:34.850-0700 [TRACE] Meta.Backend: no config given or present on disk, so returning nil config
+2025-04-21T13:52:34.850-0700 [TRACE] Meta.Backend: backend has not previously been initialized in this working directory
+2025-04-21T13:52:34.850-0700 [TRACE] Meta.Backend: using default local state only (no backend configuration, and no existing initialized backend)
+2025-04-21T13:52:34.851-0700 [TRACE] Meta.Backend: instantiated backend of type <nil>
+2025-04-21T13:52:34.856-0700 [TRACE] providercache.fillMetaCache: scanning directory .terraform/providers
+2025-04-21T13:52:34.858-0700 [TRACE] getproviders.SearchLocalDirectory: found registry.terraform.io/hashicorp/google v4.85.0 for darwin_amd64 at .terraform/providers/registry.terraform.io/hashicorp/google/4.85.0/darwin_amd64
+2025-04-21T13:52:34.858-0700 [TRACE] providercache.fillMetaCache: including .terraform/providers/registry.terraform.io/hashicorp/google/4.85.0/darwin_amd64 as a candidate package for registry.terraform.io/hashicorp/google 4.85.0
+2025-04-21T13:52:35.133-0700 [DEBUG] checking for provisioner in "."
+2025-04-21T13:52:35.133-0700 [DEBUG] checking for provisioner in "/usr/local/Cellar/tfenv/1.0.2/versions/1.10.5"
+2025-04-21T13:52:35.133-0700 [DEBUG] checking for provisioner in "/Users/darnold/.terraform.d/plugins"
+2025-04-21T13:52:35.133-0700 [DEBUG] checking for provisioner in "/Users/darnold/.terraform.d/plugins/darwin_amd64"
+2025-04-21T13:52:35.134-0700 [TRACE] Meta.Backend: backend <nil> does not support operations, so wrapping it in a local backend
+2025-04-21T13:52:35.138-0700 [TRACE] backend/local: requesting state manager for workspace "default"
+2025-04-21T13:52:35.138-0700 [TRACE] backend/local: state manager for workspace "default" will:
+ - read initial snapshot from terraform.tfstate
+ - write new snapshots to terraform.tfstate
+ - create any backup at terraform.tfstate.backup
+2025-04-21T13:52:35.138-0700 [TRACE] backend/local: requesting state lock for workspace "default"
+2025-04-21T13:52:35.138-0700 [TRACE] backend/local: reading remote state for workspace "default"
+2025-04-21T13:52:35.138-0700 [TRACE] statemgr.Filesystem: reading initial snapshot from terraform.tfstate
+2025-04-21T13:52:35.138-0700 [TRACE] statemgr.Filesystem: snapshot file has nil snapshot, but that's okay
+2025-04-21T13:52:35.138-0700 [TRACE] statemgr.Filesystem: read nil snapshot
+2025-04-21T13:52:35.138-0700 [TRACE] backend/local: populating backendrun.LocalRun for current working directory
+2025-04-21T13:52:35.152-0700 [TRACE] Config.VerifyDependencySelections: provider registry.terraform.io/hashicorp/google has 4.85.0 to satisfy "~> 4.0"
+2025-04-21T13:52:35.153-0700 [TRACE] terraform.NewContext: starting
+2025-04-21T13:52:35.153-0700 [TRACE] terraform.NewContext: complete
+2025-04-21T13:52:35.154-0700 [TRACE] LoadSchemas: retrieving schema for provider type "registry.terraform.io/hashicorp/google"
+2025-04-21T13:52:35.154-0700 [TRACE] terraform.contextPlugins: Initializing provider "registry.terraform.io/hashicorp/google" to read its schema
+2025-04-21T13:52:35.154-0700 [DEBUG] created provider logger: level=trace
+2025-04-21T13:52:35.154-0700 [INFO]  provider: configuring client automatic mTLS
+2025-04-21T13:52:35.180-0700 [DEBUG] provider: starting plugin: path=.terraform/providers/registry.terraform.io/hashicorp/google/4.85.0/darwin_amd64/terraform-provider-google_v4.85.0_x5 args=[".terraform/providers/registry.terraform.io/hashicorp/google/4.85.0/darwin_amd64/terraform-provider-google_v4.85.0_x5"]
+2025-04-21T13:52:35.187-0700 [DEBUG] provider: plugin started: path=.terraform/providers/registry.terraform.io/hashicorp/google/4.85.0/darwin_amd64/terraform-provider-google_v4.85.0_x5 pid=20518
+2025-04-21T13:52:35.188-0700 [DEBUG] provider: waiting for RPC address: plugin=.terraform/providers/registry.terraform.io/hashicorp/google/4.85.0/darwin_amd64/terraform-provider-google_v4.85.0_x5
+2025-04-21T13:52:39.722-0700 [INFO]  provider.terraform-provider-google_v4.85.0_x5: configuring server automatic mTLS: timestamp=2025-04-21T13:52:39.720-0700
+2025-04-21T13:52:39.739-0700 [DEBUG] provider.terraform-provider-google_v4.85.0_x5: plugin address: address=/var/folders/bl/3m8n98q9675fvvnglrsp46gh0000gn/T/plugin359357765 network=unix timestamp=2025-04-21T13:52:39.739-0700
+2025-04-21T13:52:39.740-0700 [DEBUG] provider: using plugin: version=5
+2025-04-21T13:52:39.773-0700 [TRACE] provider.stdio: waiting for stdio data
+2025-04-21T13:52:39.774-0700 [TRACE] GRPCProvider: GetProviderSchema
+2025-04-21T13:52:39.775-0700 [TRACE] provider.terraform-provider-google_v4.85.0_x5: Received request: tf_proto_version=5.3 tf_provider_addr=registry.terraform.io/hashicorp/google @caller=github.com/hashicorp/terraform-plugin-go@v0.14.3/tfprotov5/tf5server/server.go:491 tf_req_id=8486a80b-cf05-6723-eec6-3eb715a3b628 tf_rpc=GetProviderSchema @module=sdk.proto timestamp=2025-04-21T13:52:39.775-0700
+2025-04-21T13:52:39.775-0700 [TRACE] provider.terraform-provider-google_v4.85.0_x5: Sending request downstream: tf_req_id=8486a80b-cf05-6723-eec6-3eb715a3b628 tf_rpc=GetProviderSchema tf_provider_addr=registry.terraform.io/hashicorp/google tf_proto_version=5.3 @caller=github.com/hashicorp/terraform-plugin-go@v0.14.3/tfprotov5/internal/tf5serverlogging/downstream_request.go:17 @module=sdk.proto timestamp=2025-04-21T13:52:39.775-0700
+2025-04-21T13:52:39.775-0700 [TRACE] provider.terraform-provider-google_v4.85.0_x5: serving cached schema information: @caller=github.com/hashicorp/terraform-plugin-mux@v0.8.0/internal/logging/mux.go:16 @module=sdk.mux tf_rpc=GetProviderSchema timestamp=2025-04-21T13:52:39.775-0700
+2025-04-21T13:52:39.776-0700 [TRACE] provider.terraform-provider-google_v4.85.0_x5: Received downstream response: @module=sdk.proto diagnostic_error_count=0 diagnostic_warning_count=0 tf_proto_version=5.3 tf_provider_addr=registry.terraform.io/hashicorp/google tf_req_duration_ms=0 tf_req_id=8486a80b-cf05-6723-eec6-3eb715a3b628 tf_rpc=GetProviderSchema @caller=github.com/hashicorp/terraform-plugin-go@v0.14.3/tfprotov5/internal/tf5serverlogging/downstream_request.go:37 timestamp=2025-04-21T13:52:39.775-0700
+2025-04-21T13:52:39.780-0700 [TRACE] provider.terraform-provider-google_v4.85.0_x5: Served request: tf_rpc=GetProviderSchema @caller=github.com/hashicorp/terraform-plugin-go@v0.14.3/tfprotov5/tf5server/server.go:510 tf_provider_addr=registry.terraform.io/hashicorp/google tf_req_id=8486a80b-cf05-6723-eec6-3eb715a3b628 @module=sdk.proto tf_proto_version=5.3 timestamp=2025-04-21T13:52:39.780-0700
+2025-04-21T13:52:39.836-0700 [TRACE] GRPCProvider: Close
+2025-04-21T13:52:39.839-0700 [DEBUG] provider.stdio: received EOF, stopping recv loop: err="rpc error: code = Unavailable desc = error reading from server: EOF"
+2025-04-21T13:52:39.842-0700 [INFO]  provider: plugin process exited: plugin=.terraform/providers/registry.terraform.io/hashicorp/google/4.85.0/darwin_amd64/terraform-provider-google_v4.85.0_x5 id=20518
+2025-04-21T13:52:39.843-0700 [DEBUG] provider: plugin exited
+2025-04-21T13:54:23.437-0700 [INFO]  Terraform version: 1.10.5
+2025-04-21T13:54:23.438-0700 [DEBUG] using github.com/hashicorp/go-tfe v1.70.0
+2025-04-21T13:54:23.438-0700 [DEBUG] using github.com/hashicorp/hcl/v2 v2.23.0
+2025-04-21T13:54:23.438-0700 [DEBUG] using github.com/hashicorp/terraform-svchost v0.1.1
+2025-04-21T13:54:23.438-0700 [DEBUG] using github.com/zclconf/go-cty v1.16.2
+2025-04-21T13:54:23.438-0700 [INFO]  Go runtime version: go1.23.3
+2025-04-21T13:54:23.438-0700 [INFO]  CLI args: []string{"/usr/local/Cellar/tfenv/1.0.2/versions/1.10.5/terraform", "version", "-json"}
+2025-04-21T13:54:23.438-0700 [TRACE] Stdout is not a terminal
+2025-04-21T13:54:23.438-0700 [TRACE] Stderr is not a terminal
+2025-04-21T13:54:23.438-0700 [TRACE] Stdin is not a terminal
+2025-04-21T13:54:23.438-0700 [DEBUG] Attempting to open CLI config file: /Users/darnold/.terraformrc
+2025-04-21T13:54:23.438-0700 [INFO]  Loading CLI configuration from /Users/darnold/.terraformrc
+2025-04-21T13:54:23.439-0700 [INFO]  Loading CLI configuration from /Users/darnold/.terraform.d/credentials.tfrc.json
+2025-04-21T13:54:23.439-0700 [DEBUG] checking for credentials in "/Users/darnold/.terraform.d/plugins"
+2025-04-21T13:54:23.439-0700 [DEBUG] checking for credentials in "/Users/darnold/.terraform.d/plugins/darwin_amd64"
+2025-04-21T13:54:23.439-0700 [DEBUG] Using modified User-Agent: HashiCorp Terraform/1.10.5 (+https://www.terraform.io) HashiCorp-terraform-exec/0.21.0
+2025-04-21T13:54:23.439-0700 [DEBUG] ignoring non-existing provider search directory terraform.d/plugins
+2025-04-21T13:54:23.439-0700 [DEBUG] will search for provider plugins in /Users/darnold/.terraform.d/plugins
+2025-04-21T13:54:23.440-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/HappyPathway/openai/0.1.0" contains invalid type "0.1.0"; ignoring
+2025-04-21T13:54:23.440-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/HappyPathway/openai/0.1.0/darwin_amd64" contains invalid type "0.1.0"; ignoring
+2025-04-21T13:54:23.440-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/HappyPathway/openai/0.1.0/darwin_amd64/terraform-provider-openai" contains invalid type "0.1.0"; ignoring
+2025-04-21T13:54:23.440-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/darnold/gigrack/0.1.0" contains invalid type "0.1.0"; ignoring
+2025-04-21T13:54:23.440-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/darnold/gigrack/0.1.0/darwin_amd64" contains invalid type "0.1.0"; ignoring
+2025-04-21T13:54:23.440-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/darnold/gigrack/0.1.0/darwin_amd64/terraform-provider-gigrack" contains invalid type "0.1.0"; ignoring
+2025-04-21T13:54:23.440-0700 [WARN]  Provider plugin search ignored symlink /Users/darnold/.terraform.d/plugins/darwin_amd64/terraform-provider-configstash: only the base directory /Users/darnold/.terraform.d/plugins may be a symlink
+2025-04-21T13:54:23.441-0700 [TRACE] getproviders.SearchLocalDirectory: found hashicorp.com/edu/hashicups v0.3.1 for darwin_amd64 at /Users/darnold/.terraform.d/plugins/hashicorp.com/edu/hashicups/0.3.1/darwin_amd64
+2025-04-21T13:54:23.442-0700 [TRACE] getproviders.SearchLocalDirectory: found registry.terraform.io/darnold/gigrack v0.1.0 for darwin_amd64 at /Users/darnold/.terraform.d/plugins/registry.terraform.io/darnold/gigrack/0.1.0/darwin_amd64
+2025-04-21T13:54:23.442-0700 [WARN]  ignoring local provider path "/Users/darnold/.terraform.d/plugins/registry.terraform.io/darnold/openai/3b6fef8/darwin_amd64" with invalid version "3b6fef8": invalid characters "b6fef8"
+2025-04-21T13:54:23.442-0700 [WARN]  ignoring local provider path "/Users/darnold/.terraform.d/plugins/registry.terraform.io/darnold/openai/70f25a4/darwin_amd64" with invalid version "70f25a4": invalid characters "f25a4"
+2025-04-21T13:54:23.442-0700 [TRACE] getproviders.SearchLocalDirectory: found registry.terraform.io/happypathway/openai v5.0.0 for darwin_amd64 at /Users/darnold/.terraform.d/plugins/registry.terraform.io/happypathway/openai/5.0.0/darwin_amd64
+2025-04-21T13:54:23.442-0700 [DEBUG] ignoring non-existing provider search directory /Users/darnold/Library/Application Support/io.terraform/plugins
+2025-04-21T13:54:23.442-0700 [DEBUG] ignoring non-existing provider search directory /Library/Application Support/io.terraform/plugins
+2025-04-21T13:54:23.446-0700 [INFO]  Checkpoint disabled. Not running.
+2025-04-21T13:54:23.447-0700 [INFO]  CLI command args: []string{"version", "-json"}
+2025-04-21T13:56:16.807-0700 [INFO]  Terraform version: 1.10.5
+2025-04-21T13:56:16.807-0700 [DEBUG] using github.com/hashicorp/go-tfe v1.70.0
+2025-04-21T13:56:16.807-0700 [DEBUG] using github.com/hashicorp/hcl/v2 v2.23.0
+2025-04-21T13:56:16.807-0700 [DEBUG] using github.com/hashicorp/terraform-svchost v0.1.1
+2025-04-21T13:56:16.807-0700 [DEBUG] using github.com/zclconf/go-cty v1.16.2
+2025-04-21T13:56:16.807-0700 [INFO]  Go runtime version: go1.23.3
+2025-04-21T13:56:16.807-0700 [INFO]  CLI args: []string{"/usr/local/Cellar/tfenv/1.0.2/versions/1.10.5/terraform", "providers", "schema", "-json", "-no-color"}
+2025-04-21T13:56:16.807-0700 [TRACE] Stdout is not a terminal
+2025-04-21T13:56:16.807-0700 [TRACE] Stderr is not a terminal
+2025-04-21T13:56:16.807-0700 [TRACE] Stdin is not a terminal
+2025-04-21T13:56:16.807-0700 [DEBUG] Attempting to open CLI config file: /Users/darnold/.terraformrc
+2025-04-21T13:56:16.807-0700 [INFO]  Loading CLI configuration from /Users/darnold/.terraformrc
+2025-04-21T13:56:16.807-0700 [INFO]  Loading CLI configuration from /Users/darnold/.terraform.d/credentials.tfrc.json
+2025-04-21T13:56:16.807-0700 [DEBUG] checking for credentials in "/Users/darnold/.terraform.d/plugins"
+2025-04-21T13:56:16.807-0700 [DEBUG] checking for credentials in "/Users/darnold/.terraform.d/plugins/darwin_amd64"
+2025-04-21T13:56:16.807-0700 [DEBUG] Using modified User-Agent: HashiCorp Terraform/1.10.5 (+https://www.terraform.io) HashiCorp-terraform-exec/0.21.0
+2025-04-21T13:56:16.807-0700 [DEBUG] ignoring non-existing provider search directory terraform.d/plugins
+2025-04-21T13:56:16.807-0700 [DEBUG] will search for provider plugins in /Users/darnold/.terraform.d/plugins
+2025-04-21T13:56:16.808-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/HappyPathway/openai/0.1.0" contains invalid type "0.1.0"; ignoring
+2025-04-21T13:56:16.808-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/HappyPathway/openai/0.1.0/darwin_amd64" contains invalid type "0.1.0"; ignoring
+2025-04-21T13:56:16.808-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/HappyPathway/openai/0.1.0/darwin_amd64/terraform-provider-openai" contains invalid type "0.1.0"; ignoring
+2025-04-21T13:56:16.808-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/darnold/gigrack/0.1.0" contains invalid type "0.1.0"; ignoring
+2025-04-21T13:56:16.808-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/darnold/gigrack/0.1.0/darwin_amd64" contains invalid type "0.1.0"; ignoring
+2025-04-21T13:56:16.808-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/darnold/gigrack/0.1.0/darwin_amd64/terraform-provider-gigrack" contains invalid type "0.1.0"; ignoring
+2025-04-21T13:56:16.808-0700 [WARN]  Provider plugin search ignored symlink /Users/darnold/.terraform.d/plugins/darwin_amd64/terraform-provider-configstash: only the base directory /Users/darnold/.terraform.d/plugins may be a symlink
+2025-04-21T13:56:16.808-0700 [TRACE] getproviders.SearchLocalDirectory: found hashicorp.com/edu/hashicups v0.3.1 for darwin_amd64 at /Users/darnold/.terraform.d/plugins/hashicorp.com/edu/hashicups/0.3.1/darwin_amd64
+2025-04-21T13:56:16.809-0700 [TRACE] getproviders.SearchLocalDirectory: found registry.terraform.io/darnold/gigrack v0.1.0 for darwin_amd64 at /Users/darnold/.terraform.d/plugins/registry.terraform.io/darnold/gigrack/0.1.0/darwin_amd64
+2025-04-21T13:56:16.809-0700 [WARN]  ignoring local provider path "/Users/darnold/.terraform.d/plugins/registry.terraform.io/darnold/openai/3b6fef8/darwin_amd64" with invalid version "3b6fef8": invalid characters "b6fef8"
+2025-04-21T13:56:16.809-0700 [WARN]  ignoring local provider path "/Users/darnold/.terraform.d/plugins/registry.terraform.io/darnold/openai/70f25a4/darwin_amd64" with invalid version "70f25a4": invalid characters "f25a4"
+2025-04-21T13:56:16.809-0700 [TRACE] getproviders.SearchLocalDirectory: found registry.terraform.io/happypathway/openai v5.0.0 for darwin_amd64 at /Users/darnold/.terraform.d/plugins/registry.terraform.io/happypathway/openai/5.0.0/darwin_amd64
+2025-04-21T13:56:16.809-0700 [DEBUG] ignoring non-existing provider search directory /Users/darnold/Library/Application Support/io.terraform/plugins
+2025-04-21T13:56:16.809-0700 [DEBUG] ignoring non-existing provider search directory /Library/Application Support/io.terraform/plugins
+2025-04-21T13:56:16.812-0700 [INFO]  Checkpoint disabled. Not running.
+2025-04-21T13:56:16.814-0700 [INFO]  CLI command args: []string{"providers", "schema", "-json", "-no-color"}
+2025-04-21T13:56:16.815-0700 [DEBUG] Using modified User-Agent: Terraform/1.10.5 HashiCorp-terraform-exec/0.21.0
+2025-04-21T13:56:16.815-0700 [DEBUG] Using modified User-Agent: HashiCorp Terraform/1.10.5 (+https://www.terraform.io) HashiCorp-terraform-exec/0.21.0
+2025-04-21T13:56:16.816-0700 [TRACE] Meta.Backend: no config given or present on disk, so returning nil config
+2025-04-21T13:56:16.816-0700 [TRACE] Meta.Backend: backend has not previously been initialized in this working directory
+2025-04-21T13:56:16.816-0700 [TRACE] Meta.Backend: using default local state only (no backend configuration, and no existing initialized backend)
+2025-04-21T13:56:16.816-0700 [TRACE] Meta.Backend: instantiated backend of type <nil>
+2025-04-21T13:56:16.817-0700 [TRACE] providercache.fillMetaCache: scanning directory .terraform/providers
+2025-04-21T13:56:16.817-0700 [TRACE] getproviders.SearchLocalDirectory: found registry.terraform.io/hashicorp/archive v2.7.0 for darwin_amd64 at .terraform/providers/registry.terraform.io/hashicorp/archive/2.7.0/darwin_amd64
+2025-04-21T13:56:16.817-0700 [TRACE] getproviders.SearchLocalDirectory: found registry.terraform.io/hashicorp/google v4.85.0 for darwin_amd64 at .terraform/providers/registry.terraform.io/hashicorp/google/4.85.0/darwin_amd64
+2025-04-21T13:56:16.817-0700 [TRACE] providercache.fillMetaCache: including .terraform/providers/registry.terraform.io/hashicorp/archive/2.7.0/darwin_amd64 as a candidate package for registry.terraform.io/hashicorp/archive 2.7.0
+2025-04-21T13:56:16.817-0700 [TRACE] providercache.fillMetaCache: including .terraform/providers/registry.terraform.io/hashicorp/google/4.85.0/darwin_amd64 as a candidate package for registry.terraform.io/hashicorp/google 4.85.0
+2025-04-21T13:56:16.865-0700 [TRACE] providercache.fillMetaCache: using cached result from previous scan of .terraform/providers
+2025-04-21T13:56:17.139-0700 [DEBUG] checking for provisioner in "."
+2025-04-21T13:56:17.139-0700 [DEBUG] checking for provisioner in "/usr/local/Cellar/tfenv/1.0.2/versions/1.10.5"
+2025-04-21T13:56:17.139-0700 [DEBUG] checking for provisioner in "/Users/darnold/.terraform.d/plugins"
+2025-04-21T13:56:17.139-0700 [DEBUG] checking for provisioner in "/Users/darnold/.terraform.d/plugins/darwin_amd64"
+2025-04-21T13:56:17.140-0700 [TRACE] Meta.Backend: backend <nil> does not support operations, so wrapping it in a local backend
+2025-04-21T13:56:17.148-0700 [TRACE] backend/local: requesting state manager for workspace "default"
+2025-04-21T13:56:17.148-0700 [TRACE] backend/local: state manager for workspace "default" will:
+ - read initial snapshot from terraform.tfstate
+ - write new snapshots to terraform.tfstate
+ - create any backup at terraform.tfstate.backup
+2025-04-21T13:56:17.148-0700 [TRACE] backend/local: requesting state lock for workspace "default"
+2025-04-21T13:56:17.148-0700 [TRACE] backend/local: reading remote state for workspace "default"
+2025-04-21T13:56:17.149-0700 [TRACE] statemgr.Filesystem: reading initial snapshot from terraform.tfstate
+2025-04-21T13:56:17.149-0700 [TRACE] statemgr.Filesystem: read snapshot with lineage "2cf9b659-4309-c90a-df17-09a5eea2fd8e" serial 21
+2025-04-21T13:56:17.149-0700 [TRACE] backend/local: populating backendrun.LocalRun for current working directory
+2025-04-21T13:56:17.167-0700 [TRACE] Config.VerifyDependencySelections: provider registry.terraform.io/hashicorp/google has 4.85.0 to satisfy "~> 4.0"
+2025-04-21T13:56:17.167-0700 [TRACE] Config.VerifyDependencySelections: provider registry.terraform.io/hashicorp/archive has 2.7.0 to satisfy ""
+2025-04-21T13:56:17.168-0700 [TRACE] terraform.NewContext: starting
+2025-04-21T13:56:17.168-0700 [TRACE] terraform.NewContext: complete
+2025-04-21T13:56:17.169-0700 [TRACE] LoadSchemas: retrieving schema for provider type "registry.terraform.io/hashicorp/archive"
+2025-04-21T13:56:17.169-0700 [TRACE] terraform.contextPlugins: Initializing provider "registry.terraform.io/hashicorp/archive" to read its schema
+2025-04-21T13:56:17.169-0700 [DEBUG] created provider logger: level=trace
+2025-04-21T13:56:17.169-0700 [INFO]  provider: configuring client automatic mTLS
+2025-04-21T13:56:17.182-0700 [DEBUG] provider: starting plugin: path=.terraform/providers/registry.terraform.io/hashicorp/archive/2.7.0/darwin_amd64/terraform-provider-archive_v2.7.0_x5 args=[".terraform/providers/registry.terraform.io/hashicorp/archive/2.7.0/darwin_amd64/terraform-provider-archive_v2.7.0_x5"]
+2025-04-21T13:56:17.190-0700 [DEBUG] provider: plugin started: path=.terraform/providers/registry.terraform.io/hashicorp/archive/2.7.0/darwin_amd64/terraform-provider-archive_v2.7.0_x5 pid=22236
+2025-04-21T13:56:17.190-0700 [DEBUG] provider: waiting for RPC address: plugin=.terraform/providers/registry.terraform.io/hashicorp/archive/2.7.0/darwin_amd64/terraform-provider-archive_v2.7.0_x5
+2025-04-21T13:56:17.966-0700 [INFO]  provider.terraform-provider-archive_v2.7.0_x5: configuring server automatic mTLS: timestamp=2025-04-21T13:56:17.962-0700
+2025-04-21T13:56:17.990-0700 [DEBUG] provider.terraform-provider-archive_v2.7.0_x5: plugin address: address=/var/folders/bl/3m8n98q9675fvvnglrsp46gh0000gn/T/plugin1402374026 network=unix timestamp=2025-04-21T13:56:17.989-0700
+2025-04-21T13:56:17.990-0700 [DEBUG] provider: using plugin: version=5
+2025-04-21T13:56:18.035-0700 [TRACE] provider.stdio: waiting for stdio data
+2025-04-21T13:56:18.036-0700 [TRACE] GRPCProvider: GetProviderSchema
+2025-04-21T13:56:18.039-0700 [TRACE] provider.terraform-provider-archive_v2.7.0_x5: Received request: @caller=github.com/hashicorp/terraform-plugin-go@v0.25.0/tfprotov5/tf5server/server.go:522 @module=sdk.proto tf_proto_version=5.7 tf_provider_addr=registry.terraform.io/hashicorp/archive tf_req_id=393931c5-b92f-5027-0df4-db76b5c386ff tf_rpc=GetProviderSchema timestamp=2025-04-21T13:56:18.039-0700
+2025-04-21T13:56:18.039-0700 [TRACE] provider.terraform-provider-archive_v2.7.0_x5: Sending request downstream: @caller=github.com/hashicorp/terraform-plugin-go@v0.25.0/tfprotov5/internal/tf5serverlogging/downstream_request.go:22 tf_proto_version=5.7 tf_req_id=393931c5-b92f-5027-0df4-db76b5c386ff @module=sdk.proto tf_provider_addr=registry.terraform.io/hashicorp/archive tf_rpc=GetProviderSchema timestamp=2025-04-21T13:56:18.039-0700
+2025-04-21T13:56:18.039-0700 [TRACE] provider.terraform-provider-archive_v2.7.0_x5: Checking ProviderSchema lock: @module=sdk.framework tf_provider_addr=registry.terraform.io/hashicorp/archive tf_req_id=393931c5-b92f-5027-0df4-db76b5c386ff tf_rpc=GetProviderSchema @caller=github.com/hashicorp/terraform-plugin-framework@v1.13.0/internal/fwserver/server.go:389 timestamp=2025-04-21T13:56:18.039-0700
+2025-04-21T13:56:18.039-0700 [TRACE] provider.terraform-provider-archive_v2.7.0_x5: Calling provider defined Provider Schema: tf_provider_addr=registry.terraform.io/hashicorp/archive tf_req_id=393931c5-b92f-5027-0df4-db76b5c386ff tf_rpc=GetProviderSchema @caller=github.com/hashicorp/terraform-plugin-framework@v1.13.0/internal/fwserver/server.go:400 @module=sdk.framework timestamp=2025-04-21T13:56:18.039-0700
+2025-04-21T13:56:18.039-0700 [TRACE] provider.terraform-provider-archive_v2.7.0_x5: Called provider defined Provider Schema: tf_provider_addr=registry.terraform.io/hashicorp/archive tf_req_id=393931c5-b92f-5027-0df4-db76b5c386ff tf_rpc=GetProviderSchema @caller=github.com/hashicorp/terraform-plugin-framework@v1.13.0/internal/fwserver/server.go:402 @module=sdk.framework timestamp=2025-04-21T13:56:18.039-0700
+2025-04-21T13:56:18.041-0700 [TRACE] provider.terraform-provider-archive_v2.7.0_x5: Checking ResourceTypes lock: @module=sdk.framework tf_provider_addr=registry.terraform.io/hashicorp/archive tf_req_id=393931c5-b92f-5027-0df4-db76b5c386ff tf_rpc=GetProviderSchema @caller=github.com/hashicorp/terraform-plugin-framework@v1.13.0/internal/fwserver/server.go:539 timestamp=2025-04-21T13:56:18.039-0700
+2025-04-21T13:56:18.041-0700 [TRACE] provider.terraform-provider-archive_v2.7.0_x5: Checking ProviderTypeName lock: @module=sdk.framework tf_provider_addr=registry.terraform.io/hashicorp/archive tf_req_id=393931c5-b92f-5027-0df4-db76b5c386ff tf_rpc=GetProviderSchema @caller=github.com/hashicorp/terraform-plugin-framework@v1.13.0/internal/fwserver/server.go:366 timestamp=2025-04-21T13:56:18.041-0700
+2025-04-21T13:56:18.041-0700 [TRACE] provider.terraform-provider-archive_v2.7.0_x5: Calling provider defined Provider Metadata: @module=sdk.framework tf_provider_addr=registry.terraform.io/hashicorp/archive tf_req_id=393931c5-b92f-5027-0df4-db76b5c386ff tf_rpc=GetProviderSchema @caller=github.com/hashicorp/terraform-plugin-framework@v1.13.0/internal/fwserver/server.go:377 timestamp=2025-04-21T13:56:18.041-0700
+2025-04-21T13:56:18.041-0700 [TRACE] provider.terraform-provider-archive_v2.7.0_x5: Called provider defined Provider Metadata: tf_req_id=393931c5-b92f-5027-0df4-db76b5c386ff tf_rpc=GetProviderSchema @caller=github.com/hashicorp/terraform-plugin-framework@v1.13.0/internal/fwserver/server.go:379 @module=sdk.framework tf_provider_addr=registry.terraform.io/hashicorp/archive timestamp=2025-04-21T13:56:18.041-0700
+2025-04-21T13:56:18.041-0700 [TRACE] provider.terraform-provider-archive_v2.7.0_x5: Calling provider defined Provider Resources: tf_rpc=GetProviderSchema @caller=github.com/hashicorp/terraform-plugin-framework@v1.13.0/internal/fwserver/server.go:550 @module=sdk.framework tf_provider_addr=registry.terraform.io/hashicorp/archive tf_req_id=393931c5-b92f-5027-0df4-db76b5c386ff timestamp=2025-04-21T13:56:18.041-0700
+2025-04-21T13:56:18.041-0700 [TRACE] provider.terraform-provider-archive_v2.7.0_x5: Called provider defined Provider Resources: tf_provider_addr=registry.terraform.io/hashicorp/archive tf_req_id=393931c5-b92f-5027-0df4-db76b5c386ff tf_rpc=GetProviderSchema @caller=github.com/hashicorp/terraform-plugin-framework@v1.13.0/internal/fwserver/server.go:552 @module=sdk.framework timestamp=2025-04-21T13:56:18.041-0700
+2025-04-21T13:56:18.041-0700 [TRACE] provider.terraform-provider-archive_v2.7.0_x5: Found resource type: tf_provider_addr=registry.terraform.io/hashicorp/archive tf_req_id=393931c5-b92f-5027-0df4-db76b5c386ff tf_rpc=GetProviderSchema @module=sdk.framework @caller=github.com/hashicorp/terraform-plugin-framework@v1.13.0/internal/fwserver/server.go:573 tf_resource_type=archive_file timestamp=2025-04-21T13:56:18.041-0700
+2025-04-21T13:56:18.041-0700 [TRACE] provider.terraform-provider-archive_v2.7.0_x5: Calling provider defined Resource Schema method: tf_rpc=GetProviderSchema @caller=github.com/hashicorp/terraform-plugin-framework@v1.13.0/internal/fwserver/server.go:669 @module=sdk.framework tf_provider_addr=registry.terraform.io/hashicorp/archive tf_req_id=393931c5-b92f-5027-0df4-db76b5c386ff tf_resource_type=archive_file timestamp=2025-04-21T13:56:18.041-0700
+2025-04-21T13:56:18.042-0700 [TRACE] provider.terraform-provider-archive_v2.7.0_x5: Called provider defined Resource Schema method: tf_provider_addr=registry.terraform.io/hashicorp/archive tf_req_id=393931c5-b92f-5027-0df4-db76b5c386ff @caller=github.com/hashicorp/terraform-plugin-framework@v1.13.0/internal/fwserver/server.go:671 @module=sdk.framework tf_resource_type=archive_file tf_rpc=GetProviderSchema timestamp=2025-04-21T13:56:18.042-0700
+2025-04-21T13:56:18.043-0700 [TRACE] provider.terraform-provider-archive_v2.7.0_x5: Checking DataSourceTypes lock: @module=sdk.framework tf_provider_addr=registry.terraform.io/hashicorp/archive tf_req_id=393931c5-b92f-5027-0df4-db76b5c386ff tf_rpc=GetProviderSchema @caller=github.com/hashicorp/terraform-plugin-framework@v1.13.0/internal/fwserver/server.go:210 timestamp=2025-04-21T13:56:18.043-0700
+2025-04-21T13:56:18.043-0700 [TRACE] provider.terraform-provider-archive_v2.7.0_x5: Checking ProviderTypeName lock: tf_req_id=393931c5-b92f-5027-0df4-db76b5c386ff tf_rpc=GetProviderSchema @caller=github.com/hashicorp/terraform-plugin-framework@v1.13.0/internal/fwserver/server.go:366 @module=sdk.framework tf_provider_addr=registry.terraform.io/hashicorp/archive timestamp=2025-04-21T13:56:18.043-0700
+2025-04-21T13:56:18.043-0700 [TRACE] provider.terraform-provider-archive_v2.7.0_x5: Calling provider defined Provider DataSources: tf_rpc=GetProviderSchema @caller=github.com/hashicorp/terraform-plugin-framework@v1.13.0/internal/fwserver/server.go:221 @module=sdk.framework tf_provider_addr=registry.terraform.io/hashicorp/archive tf_req_id=393931c5-b92f-5027-0df4-db76b5c386ff timestamp=2025-04-21T13:56:18.043-0700
+2025-04-21T13:56:18.043-0700 [TRACE] provider.terraform-provider-archive_v2.7.0_x5: Called provider defined Provider DataSources: @module=sdk.framework tf_provider_addr=registry.terraform.io/hashicorp/archive tf_req_id=393931c5-b92f-5027-0df4-db76b5c386ff tf_rpc=GetProviderSchema @caller=github.com/hashicorp/terraform-plugin-framework@v1.13.0/internal/fwserver/server.go:223 timestamp=2025-04-21T13:56:18.043-0700
+2025-04-21T13:56:18.043-0700 [TRACE] provider.terraform-provider-archive_v2.7.0_x5: Found data source type: @caller=github.com/hashicorp/terraform-plugin-framework@v1.13.0/internal/fwserver/server.go:244 tf_provider_addr=registry.terraform.io/hashicorp/archive tf_rpc=GetProviderSchema @module=sdk.framework tf_data_source_type=archive_file tf_req_id=393931c5-b92f-5027-0df4-db76b5c386ff timestamp=2025-04-21T13:56:18.043-0700
+2025-04-21T13:56:18.043-0700 [TRACE] provider.terraform-provider-archive_v2.7.0_x5: Calling provider defined DataSource Schema: tf_req_id=393931c5-b92f-5027-0df4-db76b5c386ff @caller=github.com/hashicorp/terraform-plugin-framework@v1.13.0/internal/fwserver/server.go:340 @module=sdk.framework tf_data_source_type=archive_file tf_provider_addr=registry.terraform.io/hashicorp/archive tf_rpc=GetProviderSchema timestamp=2025-04-21T13:56:18.043-0700
+2025-04-21T13:56:18.043-0700 [TRACE] provider.terraform-provider-archive_v2.7.0_x5: Called provider defined DataSource Schema: @module=sdk.framework tf_req_id=393931c5-b92f-5027-0df4-db76b5c386ff @caller=github.com/hashicorp/terraform-plugin-framework@v1.13.0/internal/fwserver/server.go:342 tf_data_source_type=archive_file tf_provider_addr=registry.terraform.io/hashicorp/archive tf_rpc=GetProviderSchema timestamp=2025-04-21T13:56:18.043-0700
+2025-04-21T13:56:18.044-0700 [TRACE] provider.terraform-provider-archive_v2.7.0_x5: Checking FunctionTypes lock: tf_provider_addr=registry.terraform.io/hashicorp/archive tf_req_id=393931c5-b92f-5027-0df4-db76b5c386ff tf_rpc=GetProviderSchema @caller=github.com/hashicorp/terraform-plugin-framework@v1.13.0/internal/fwserver/server_functions.go:124 @module=sdk.framework timestamp=2025-04-21T13:56:18.044-0700
+2025-04-21T13:56:18.044-0700 [TRACE] provider.terraform-provider-archive_v2.7.0_x5: Checking EphemeralResourceFuncs lock: @module=sdk.framework tf_provider_addr=registry.terraform.io/hashicorp/archive tf_req_id=393931c5-b92f-5027-0df4-db76b5c386ff tf_rpc=GetProviderSchema @caller=github.com/hashicorp/terraform-plugin-framework@v1.13.0/internal/fwserver/server_ephemeralresources.go:38 timestamp=2025-04-21T13:56:18.044-0700
+2025-04-21T13:56:18.044-0700 [TRACE] provider.terraform-provider-archive_v2.7.0_x5: Checking ProviderTypeName lock: tf_req_id=393931c5-b92f-5027-0df4-db76b5c386ff tf_rpc=GetProviderSchema @caller=github.com/hashicorp/terraform-plugin-framework@v1.13.0/internal/fwserver/server.go:366 @module=sdk.framework tf_provider_addr=registry.terraform.io/hashicorp/archive timestamp=2025-04-21T13:56:18.044-0700
+2025-04-21T13:56:18.046-0700 [TRACE] provider.terraform-provider-archive_v2.7.0_x5: Received downstream response: tf_proto_version=5.7 tf_provider_addr=registry.terraform.io/hashicorp/archive tf_req_duration_ms=6 tf_req_id=393931c5-b92f-5027-0df4-db76b5c386ff @caller=github.com/hashicorp/terraform-plugin-go@v0.25.0/tfprotov5/internal/tf5serverlogging/downstream_request.go:42 @module=sdk.proto diagnostic_warning_count=0 tf_rpc=GetProviderSchema diagnostic_error_count=0 timestamp=2025-04-21T13:56:18.045-0700
+2025-04-21T13:56:18.047-0700 [TRACE] provider.terraform-provider-archive_v2.7.0_x5: Announced server capabilities: tf_rpc=GetProviderSchema tf_server_capability_get_provider_schema_optional=true @caller=github.com/hashicorp/terraform-plugin-go@v0.25.0/tfprotov5/internal/tf5serverlogging/server_capabilities.go:27 @module=sdk.proto tf_server_capability_plan_destroy=true tf_proto_version=5.7 tf_provider_addr=registry.terraform.io/hashicorp/archive tf_req_id=393931c5-b92f-5027-0df4-db76b5c386ff tf_server_capability_move_resource_state=true timestamp=2025-04-21T13:56:18.046-0700
+2025-04-21T13:56:18.047-0700 [TRACE] provider.terraform-provider-archive_v2.7.0_x5: Served request: @caller=github.com/hashicorp/terraform-plugin-go@v0.25.0/tfprotov5/tf5server/server.go:541 tf_proto_version=5.7 tf_provider_addr=registry.terraform.io/hashicorp/archive tf_req_id=393931c5-b92f-5027-0df4-db76b5c386ff @module=sdk.proto tf_rpc=GetProviderSchema timestamp=2025-04-21T13:56:18.046-0700
+2025-04-21T13:56:18.052-0700 [DEBUG] No provider meta schema returned
+2025-04-21T13:56:18.054-0700 [TRACE] GRPCProvider: Close
+2025-04-21T13:56:18.057-0700 [DEBUG] provider.stdio: received EOF, stopping recv loop: err="rpc error: code = Unavailable desc = error reading from server: EOF"
+2025-04-21T13:56:18.064-0700 [INFO]  provider: plugin process exited: plugin=.terraform/providers/registry.terraform.io/hashicorp/archive/2.7.0/darwin_amd64/terraform-provider-archive_v2.7.0_x5 id=22236
+2025-04-21T13:56:18.064-0700 [DEBUG] provider: plugin exited
+2025-04-21T13:56:18.064-0700 [TRACE] LoadSchemas: retrieving schema for provider type "registry.terraform.io/hashicorp/google"
+2025-04-21T13:56:18.064-0700 [TRACE] terraform.contextPlugins: Initializing provider "registry.terraform.io/hashicorp/google" to read its schema
+2025-04-21T13:56:18.064-0700 [DEBUG] created provider logger: level=trace
+2025-04-21T13:56:18.064-0700 [INFO]  provider: configuring client automatic mTLS
+2025-04-21T13:56:18.069-0700 [DEBUG] provider: starting plugin: path=.terraform/providers/registry.terraform.io/hashicorp/google/4.85.0/darwin_amd64/terraform-provider-google_v4.85.0_x5 args=[".terraform/providers/registry.terraform.io/hashicorp/google/4.85.0/darwin_amd64/terraform-provider-google_v4.85.0_x5"]
+2025-04-21T13:56:18.077-0700 [DEBUG] provider: plugin started: path=.terraform/providers/registry.terraform.io/hashicorp/google/4.85.0/darwin_amd64/terraform-provider-google_v4.85.0_x5 pid=22250
+2025-04-21T13:56:18.077-0700 [DEBUG] provider: waiting for RPC address: plugin=.terraform/providers/registry.terraform.io/hashicorp/google/4.85.0/darwin_amd64/terraform-provider-google_v4.85.0_x5
+2025-04-21T13:56:18.231-0700 [INFO]  provider.terraform-provider-google_v4.85.0_x5: configuring server automatic mTLS: timestamp=2025-04-21T13:56:18.231-0700
+2025-04-21T13:56:18.252-0700 [DEBUG] provider.terraform-provider-google_v4.85.0_x5: plugin address: address=/var/folders/bl/3m8n98q9675fvvnglrsp46gh0000gn/T/plugin3659899534 network=unix timestamp=2025-04-21T13:56:18.252-0700
+2025-04-21T13:56:18.252-0700 [DEBUG] provider: using plugin: version=5
+2025-04-21T13:56:18.265-0700 [TRACE] GRPCProvider: GetProviderSchema
+2025-04-21T13:56:18.266-0700 [TRACE] provider.stdio: waiting for stdio data
+2025-04-21T13:56:18.268-0700 [TRACE] provider.terraform-provider-google_v4.85.0_x5: Received request: tf_proto_version=5.3 tf_provider_addr=registry.terraform.io/hashicorp/google tf_rpc=GetProviderSchema @caller=github.com/hashicorp/terraform-plugin-go@v0.14.3/tfprotov5/tf5server/server.go:491 @module=sdk.proto tf_req_id=ee005d65-f0ae-dcd3-d6b9-6b0e5bdfcfdb timestamp=2025-04-21T13:56:18.268-0700
+2025-04-21T13:56:18.268-0700 [TRACE] provider.terraform-provider-google_v4.85.0_x5: Sending request downstream: @caller=github.com/hashicorp/terraform-plugin-go@v0.14.3/tfprotov5/internal/tf5serverlogging/downstream_request.go:17 tf_rpc=GetProviderSchema tf_req_id=ee005d65-f0ae-dcd3-d6b9-6b0e5bdfcfdb @module=sdk.proto tf_proto_version=5.3 tf_provider_addr=registry.terraform.io/hashicorp/google timestamp=2025-04-21T13:56:18.268-0700
+2025-04-21T13:56:18.268-0700 [TRACE] provider.terraform-provider-google_v4.85.0_x5: serving cached schema information: @caller=github.com/hashicorp/terraform-plugin-mux@v0.8.0/internal/logging/mux.go:16 @module=sdk.mux tf_rpc=GetProviderSchema timestamp=2025-04-21T13:56:18.268-0700
+2025-04-21T13:56:18.269-0700 [TRACE] provider.terraform-provider-google_v4.85.0_x5: Received downstream response: tf_proto_version=5.3 tf_rpc=GetProviderSchema @caller=github.com/hashicorp/terraform-plugin-go@v0.14.3/tfprotov5/internal/tf5serverlogging/downstream_request.go:37 @module=sdk.proto tf_req_id=ee005d65-f0ae-dcd3-d6b9-6b0e5bdfcfdb diagnostic_error_count=0 diagnostic_warning_count=0 tf_provider_addr=registry.terraform.io/hashicorp/google tf_req_duration_ms=0 timestamp=2025-04-21T13:56:18.268-0700
+2025-04-21T13:56:18.274-0700 [TRACE] provider.terraform-provider-google_v4.85.0_x5: Served request: tf_req_id=ee005d65-f0ae-dcd3-d6b9-6b0e5bdfcfdb @caller=github.com/hashicorp/terraform-plugin-go@v0.14.3/tfprotov5/tf5server/server.go:510 @module=sdk.proto tf_proto_version=5.3 tf_provider_addr=registry.terraform.io/hashicorp/google tf_rpc=GetProviderSchema timestamp=2025-04-21T13:56:18.274-0700
+2025-04-21T13:56:18.322-0700 [TRACE] GRPCProvider: Close
+2025-04-21T13:56:18.323-0700 [DEBUG] provider.stdio: received EOF, stopping recv loop: err="rpc error: code = Unavailable desc = error reading from server: EOF"
+2025-04-21T13:56:18.327-0700 [INFO]  provider: plugin process exited: plugin=.terraform/providers/registry.terraform.io/hashicorp/google/4.85.0/darwin_amd64/terraform-provider-google_v4.85.0_x5 id=22250
+2025-04-21T13:56:18.327-0700 [DEBUG] provider: plugin exited
+2025-04-21T23:26:53.586-0700 [INFO]  Terraform version: 1.10.5
+2025-04-21T23:26:53.586-0700 [DEBUG] using github.com/hashicorp/go-tfe v1.70.0
+2025-04-21T23:26:53.586-0700 [DEBUG] using github.com/hashicorp/hcl/v2 v2.23.0
+2025-04-21T23:26:53.586-0700 [DEBUG] using github.com/hashicorp/terraform-svchost v0.1.1
+2025-04-21T23:26:53.586-0700 [DEBUG] using github.com/zclconf/go-cty v1.16.2
+2025-04-21T23:26:53.586-0700 [INFO]  Go runtime version: go1.23.3
+2025-04-21T23:26:53.586-0700 [INFO]  CLI args: []string{"/usr/local/Cellar/tfenv/1.0.2/versions/1.10.5/terraform", "version", "-json"}
+2025-04-21T23:26:53.586-0700 [TRACE] Stdout is not a terminal
+2025-04-21T23:26:53.586-0700 [TRACE] Stderr is not a terminal
+2025-04-21T23:26:53.586-0700 [TRACE] Stdin is not a terminal
+2025-04-21T23:26:53.586-0700 [DEBUG] Attempting to open CLI config file: /Users/darnold/.terraformrc
+2025-04-21T23:26:53.586-0700 [INFO]  Loading CLI configuration from /Users/darnold/.terraformrc
+2025-04-21T23:26:53.589-0700 [INFO]  Loading CLI configuration from /Users/darnold/.terraform.d/credentials.tfrc.json
+2025-04-21T23:26:53.590-0700 [DEBUG] checking for credentials in "/Users/darnold/.terraform.d/plugins"
+2025-04-21T23:26:53.590-0700 [DEBUG] checking for credentials in "/Users/darnold/.terraform.d/plugins/darwin_amd64"
+2025-04-21T23:26:53.590-0700 [DEBUG] Using modified User-Agent: HashiCorp Terraform/1.10.5 (+https://www.terraform.io) HashiCorp-terraform-exec/0.21.0
+2025-04-21T23:26:53.590-0700 [DEBUG] ignoring non-existing provider search directory terraform.d/plugins
+2025-04-21T23:26:53.590-0700 [DEBUG] will search for provider plugins in /Users/darnold/.terraform.d/plugins
+2025-04-21T23:26:53.590-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/HappyPathway/openai/0.1.0" contains invalid type "0.1.0"; ignoring
+2025-04-21T23:26:53.590-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/HappyPathway/openai/0.1.0/darwin_amd64" contains invalid type "0.1.0"; ignoring
+2025-04-21T23:26:53.591-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/HappyPathway/openai/0.1.0/darwin_amd64/terraform-provider-openai" contains invalid type "0.1.0"; ignoring
+2025-04-21T23:26:53.591-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/darnold/gigrack/0.1.0" contains invalid type "0.1.0"; ignoring
+2025-04-21T23:26:53.591-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/darnold/gigrack/0.1.0/darwin_amd64" contains invalid type "0.1.0"; ignoring
+2025-04-21T23:26:53.591-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/darnold/gigrack/0.1.0/darwin_amd64/terraform-provider-gigrack" contains invalid type "0.1.0"; ignoring
+2025-04-21T23:26:53.592-0700 [WARN]  Provider plugin search ignored symlink /Users/darnold/.terraform.d/plugins/darwin_amd64/terraform-provider-configstash: only the base directory /Users/darnold/.terraform.d/plugins may be a symlink
+2025-04-21T23:26:53.592-0700 [TRACE] getproviders.SearchLocalDirectory: found hashicorp.com/edu/hashicups v0.3.1 for darwin_amd64 at /Users/darnold/.terraform.d/plugins/hashicorp.com/edu/hashicups/0.3.1/darwin_amd64
+2025-04-21T23:26:53.593-0700 [TRACE] getproviders.SearchLocalDirectory: found registry.terraform.io/darnold/gigrack v0.1.0 for darwin_amd64 at /Users/darnold/.terraform.d/plugins/registry.terraform.io/darnold/gigrack/0.1.0/darwin_amd64
+2025-04-21T23:26:53.593-0700 [WARN]  ignoring local provider path "/Users/darnold/.terraform.d/plugins/registry.terraform.io/darnold/openai/3b6fef8/darwin_amd64" with invalid version "3b6fef8": invalid characters "b6fef8"
+2025-04-21T23:26:53.594-0700 [WARN]  ignoring local provider path "/Users/darnold/.terraform.d/plugins/registry.terraform.io/darnold/openai/70f25a4/darwin_amd64" with invalid version "70f25a4": invalid characters "f25a4"
+2025-04-21T23:26:53.594-0700 [TRACE] getproviders.SearchLocalDirectory: found registry.terraform.io/happypathway/openai v5.0.0 for darwin_amd64 at /Users/darnold/.terraform.d/plugins/registry.terraform.io/happypathway/openai/5.0.0/darwin_amd64
+2025-04-21T23:26:53.594-0700 [DEBUG] ignoring non-existing provider search directory /Users/darnold/Library/Application Support/io.terraform/plugins
+2025-04-21T23:26:53.594-0700 [DEBUG] ignoring non-existing provider search directory /Library/Application Support/io.terraform/plugins
+2025-04-21T23:26:53.597-0700 [INFO]  Checkpoint disabled. Not running.
+2025-04-21T23:26:53.598-0700 [INFO]  CLI command args: []string{"version", "-json"}
+2025-04-21T23:26:53.748-0700 [INFO]  Terraform version: 1.10.5
+2025-04-21T23:26:53.748-0700 [DEBUG] using github.com/hashicorp/go-tfe v1.70.0
+2025-04-21T23:26:53.748-0700 [DEBUG] using github.com/hashicorp/hcl/v2 v2.23.0
+2025-04-21T23:26:53.748-0700 [DEBUG] using github.com/hashicorp/terraform-svchost v0.1.1
+2025-04-21T23:26:53.748-0700 [DEBUG] using github.com/zclconf/go-cty v1.16.2
+2025-04-21T23:26:53.748-0700 [INFO]  Go runtime version: go1.23.3
+2025-04-21T23:26:53.748-0700 [INFO]  CLI args: []string{"/usr/local/Cellar/tfenv/1.0.2/versions/1.10.5/terraform", "providers", "schema", "-json", "-no-color"}
+2025-04-21T23:26:53.748-0700 [TRACE] Stdout is not a terminal
+2025-04-21T23:26:53.748-0700 [TRACE] Stderr is not a terminal
+2025-04-21T23:26:53.748-0700 [TRACE] Stdin is not a terminal
+2025-04-21T23:26:53.748-0700 [DEBUG] Attempting to open CLI config file: /Users/darnold/.terraformrc
+2025-04-21T23:26:53.748-0700 [INFO]  Loading CLI configuration from /Users/darnold/.terraformrc
+2025-04-21T23:26:53.753-0700 [INFO]  Loading CLI configuration from /Users/darnold/.terraform.d/credentials.tfrc.json
+2025-04-21T23:26:53.757-0700 [DEBUG] checking for credentials in "/Users/darnold/.terraform.d/plugins"
+2025-04-21T23:26:53.757-0700 [DEBUG] checking for credentials in "/Users/darnold/.terraform.d/plugins/darwin_amd64"
+2025-04-21T23:26:53.759-0700 [DEBUG] Using modified User-Agent: HashiCorp Terraform/1.10.5 (+https://www.terraform.io) HashiCorp-terraform-exec/0.21.0
+2025-04-21T23:26:53.759-0700 [DEBUG] ignoring non-existing provider search directory terraform.d/plugins
+2025-04-21T23:26:53.759-0700 [DEBUG] will search for provider plugins in /Users/darnold/.terraform.d/plugins
+2025-04-21T23:26:53.759-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/HappyPathway/openai/0.1.0" contains invalid type "0.1.0"; ignoring
+2025-04-21T23:26:53.759-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/HappyPathway/openai/0.1.0/darwin_amd64" contains invalid type "0.1.0"; ignoring
+2025-04-21T23:26:53.759-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/HappyPathway/openai/0.1.0/darwin_amd64/terraform-provider-openai" contains invalid type "0.1.0"; ignoring
+2025-04-21T23:26:53.759-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/darnold/gigrack/0.1.0" contains invalid type "0.1.0"; ignoring
+2025-04-21T23:26:53.759-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/darnold/gigrack/0.1.0/darwin_amd64" contains invalid type "0.1.0"; ignoring
+2025-04-21T23:26:53.759-0700 [WARN]  local provider path "/Users/darnold/.terraform.d/plugins/darnold/gigrack/0.1.0/darwin_amd64/terraform-provider-gigrack" contains invalid type "0.1.0"; ignoring
+2025-04-21T23:26:53.759-0700 [WARN]  Provider plugin search ignored symlink /Users/darnold/.terraform.d/plugins/darwin_amd64/terraform-provider-configstash: only the base directory /Users/darnold/.terraform.d/plugins may be a symlink
+2025-04-21T23:26:53.760-0700 [TRACE] getproviders.SearchLocalDirectory: found hashicorp.com/edu/hashicups v0.3.1 for darwin_amd64 at /Users/darnold/.terraform.d/plugins/hashicorp.com/edu/hashicups/0.3.1/darwin_amd64
+2025-04-21T23:26:53.760-0700 [TRACE] getproviders.SearchLocalDirectory: found registry.terraform.io/darnold/gigrack v0.1.0 for darwin_amd64 at /Users/darnold/.terraform.d/plugins/registry.terraform.io/darnold/gigrack/0.1.0/darwin_amd64
+2025-04-21T23:26:53.760-0700 [WARN]  ignoring local provider path "/Users/darnold/.terraform.d/plugins/registry.terraform.io/darnold/openai/3b6fef8/darwin_amd64" with invalid version "3b6fef8": invalid characters "b6fef8"
+2025-04-21T23:26:53.760-0700 [WARN]  ignoring local provider path "/Users/darnold/.terraform.d/plugins/registry.terraform.io/darnold/openai/70f25a4/darwin_amd64" with invalid version "70f25a4": invalid characters "f25a4"
+2025-04-21T23:26:53.760-0700 [TRACE] getproviders.SearchLocalDirectory: found registry.terraform.io/happypathway/openai v5.0.0 for darwin_amd64 at /Users/darnold/.terraform.d/plugins/registry.terraform.io/happypathway/openai/5.0.0/darwin_amd64
+2025-04-21T23:26:53.760-0700 [DEBUG] ignoring non-existing provider search directory /Users/darnold/Library/Application Support/io.terraform/plugins
+2025-04-21T23:26:53.760-0700 [DEBUG] ignoring non-existing provider search directory /Library/Application Support/io.terraform/plugins
+2025-04-21T23:26:53.764-0700 [INFO]  Checkpoint disabled. Not running.
+2025-04-21T23:26:53.766-0700 [INFO]  CLI command args: []string{"providers", "schema", "-json", "-no-color"}
+2025-04-21T23:26:53.766-0700 [DEBUG] Using modified User-Agent: Terraform/1.10.5 HashiCorp-terraform-exec/0.21.0
+2025-04-21T23:26:53.766-0700 [DEBUG] Using modified User-Agent: HashiCorp Terraform/1.10.5 (+https://www.terraform.io) HashiCorp-terraform-exec/0.21.0
+2025-04-21T23:26:53.770-0700 [TRACE] Meta.Backend: no config given or present on disk, so returning nil config
+2025-04-21T23:26:53.770-0700 [TRACE] Meta.Backend: backend has not previously been initialized in this working directory
+2025-04-21T23:26:53.770-0700 [TRACE] Meta.Backend: using default local state only (no backend configuration, and no existing initialized backend)
+2025-04-21T23:26:53.770-0700 [TRACE] Meta.Backend: instantiated backend of type <nil>
+2025-04-21T23:26:53.770-0700 [TRACE] providercache.fillMetaCache: scanning directory .terraform/providers
+2025-04-21T23:26:53.770-0700 [TRACE] getproviders.SearchLocalDirectory: found registry.terraform.io/hashicorp/archive v2.7.0 for darwin_amd64 at .terraform/providers/registry.terraform.io/hashicorp/archive/2.7.0/darwin_amd64
+2025-04-21T23:26:53.771-0700 [TRACE] getproviders.SearchLocalDirectory: found registry.terraform.io/hashicorp/google v4.85.0 for darwin_amd64 at .terraform/providers/registry.terraform.io/hashicorp/google/4.85.0/darwin_amd64
+2025-04-21T23:26:53.771-0700 [TRACE] providercache.fillMetaCache: including .terraform/providers/registry.terraform.io/hashicorp/archive/2.7.0/darwin_amd64 as a candidate package for registry.terraform.io/hashicorp/archive 2.7.0
+2025-04-21T23:26:53.771-0700 [TRACE] providercache.fillMetaCache: including .terraform/providers/registry.terraform.io/hashicorp/google/4.85.0/darwin_amd64 as a candidate package for registry.terraform.io/hashicorp/google 4.85.0
+2025-04-21T23:26:53.814-0700 [TRACE] providercache.fillMetaCache: using cached result from previous scan of .terraform/providers
+2025-04-21T23:26:54.074-0700 [DEBUG] checking for provisioner in "."
+2025-04-21T23:26:54.074-0700 [DEBUG] checking for provisioner in "/usr/local/Cellar/tfenv/1.0.2/versions/1.10.5"
+2025-04-21T23:26:54.074-0700 [DEBUG] checking for provisioner in "/Users/darnold/.terraform.d/plugins"
+2025-04-21T23:26:54.074-0700 [DEBUG] checking for provisioner in "/Users/darnold/.terraform.d/plugins/darwin_amd64"
+2025-04-21T23:26:54.075-0700 [TRACE] Meta.Backend: backend <nil> does not support operations, so wrapping it in a local backend
+2025-04-21T23:26:54.082-0700 [TRACE] backend/local: requesting state manager for workspace "default"
+2025-04-21T23:26:54.082-0700 [TRACE] backend/local: state manager for workspace "default" will:
+ - read initial snapshot from terraform.tfstate
+ - write new snapshots to terraform.tfstate
+ - create any backup at terraform.tfstate.backup
+2025-04-21T23:26:54.082-0700 [TRACE] backend/local: requesting state lock for workspace "default"
+2025-04-21T23:26:54.082-0700 [TRACE] backend/local: reading remote state for workspace "default"
+2025-04-21T23:26:54.082-0700 [TRACE] statemgr.Filesystem: reading initial snapshot from terraform.tfstate
+2025-04-21T23:26:54.084-0700 [TRACE] statemgr.Filesystem: read snapshot with lineage "2cf9b659-4309-c90a-df17-09a5eea2fd8e" serial 80
+2025-04-21T23:26:54.084-0700 [TRACE] backend/local: populating backendrun.LocalRun for current working directory

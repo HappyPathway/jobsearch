@@ -216,9 +216,17 @@ def search_linkedin_jobs(query, location="United States", limit=2):
     jobs = jobs[:limit]
 
     # Load profile data for personalization
-    with open(os.path.join(root_dir, 'docs', 'profile.json')) as f:
-        profile_data = json.load(f)
-    contact_info = profile_data.get('contact_info', {})
+    profile_path = os.path.join(root_dir, 'inputs', 'profile.json')
+    try:
+        with open(profile_path) as f:
+            profile_data = json.load(f)
+        contact_info = profile_data.get('contact_info', {})
+    except FileNotFoundError:
+        logger.error(f"Profile data not found at {profile_path}")
+        contact_info = {}
+    except json.JSONDecodeError as e:
+        logger.error(f"Error parsing profile data: {str(e)}")
+        contact_info = {}
     
     # Add contact info to all jobs
     for job in jobs:

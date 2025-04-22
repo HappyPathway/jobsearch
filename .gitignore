@@ -34,3 +34,14 @@ config/*
 !config/example.*.json
 
 gha-creds-*.json
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraformrc
+terraform.rc
+.terraform.lock.hcl
+crash.log
+.venv

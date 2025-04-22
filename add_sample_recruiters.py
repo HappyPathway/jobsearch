@@ -1,48 +1,48 @@
 #!/usr/bin/env python3
-import os
-import sys
-from pathlib import Path
 from datetime import datetime
+from models import RecruiterContact
+from utils import session_scope
 
-# Add the parent directory to the Python path
-current_dir = Path(__file__).resolve().parent
-sys.path.insert(0, str(current_dir))
-
-from scripts.models import RecruiterContact
-from scripts.utils import session_scope
-
-# Create sample recruiter contacts
 def add_sample_recruiters():
     print("Adding sample recruiter contacts to the database...")
     
     with session_scope() as session:
-        # Check if we already have recruiters for these companies
-        stripe_recruiters = session.query(RecruiterContact).filter_by(company='Stripe').first()
-        autodesk_recruiters = session.query(RecruiterContact).filter_by(company='Autodesk').first()
-        
-        if not stripe_recruiters:
-            session.add(RecruiterContact(
-                name='John Smith',
-                title='Technical Recruiter',
-                company='Stripe',
-                url='https://linkedin.com/in/johnsmith',
-                source='linkedin',
-                found_date=datetime.now().isoformat(),
-                status='identified',
-                notes='Specializes in cloud engineering roles'
-            ))
-            session.add(RecruiterContact(
-                name='Sarah Johnson',
-                title='Senior Technical Recruiter',
-                company='Stripe',
-                url='https://linkedin.com/in/sarahjohnson',
-                source='linkedin',
-                found_date=datetime.now().isoformat(),
-                status='identified',
-                notes='Focuses on principal engineer positions'
-            ))
-            print("Added recruiters for Stripe")
-        else:
+        # Sample companies from our job search
+        companies = {
+            'Stripe': [
+                ('Sarah Johnson', 'Senior Technical Recruiter', 'https://linkedin.com/in/sarahjohnson'),
+                ('John Smith', 'Principal Technical Recruiter', 'https://linkedin.com/in/johnsmith')
+            ],
+            'Oracle': [
+                ('Michael Chang', 'Cloud Engineering Recruiter', 'https://linkedin.com/in/michaelchang'),
+                ('Emily Brown', 'Technical Talent Acquisition Lead', 'https://linkedin.com/in/emilybrown')
+            ],
+            'Postman': [
+                ('Rachel Lee', 'Technical Recruiting Manager', 'https://linkedin.com/in/rachellee'),
+                ('David Wilson', 'Senior Technical Recruiter', 'https://linkedin.com/in/davidwilson')
+            ],
+            'Coinbase': [
+                ('Amanda Martinez', 'Cloud Infrastructure Recruiter', 'https://linkedin.com/in/amandamartinez'),
+                ('James Taylor', 'Technical Recruiting Lead', 'https://linkedin.com/in/jamestaylor')
+            ]
+        }
+
+        for company, recruiters in companies.items():
+            for name, title, url in recruiters:
+                # Check if recruiter already exists
+                existing = session.query(RecruiterContact).filter_by(url=url).first()
+                if not existing:
+                    recruiter = RecruiterContact(
+                        name=name,
+                        title=title,
+                        company=company,
+                        url=url,
+                        source='linkedin',
+                        found_date=datetime.now().isoformat(),
+                        status='identified'
+                    )
+                    session.add(recruiter)
+                    print(f"Added {name} as {title} at {company}")
             print("Recruiters for Stripe already exist")
             
         if not autodesk_recruiters:
