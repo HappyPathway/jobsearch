@@ -252,3 +252,37 @@ The following secrets are currently in use across the project:
 # analyze_job_with_gemini
 Gemini doesn't have enough information in its prompt to be able really analyze the job. 
 We haven't told it which criteri to judge by.
+
+
+# current errors
+there's some weird stuff happening with the formatting here, the description has location and post date in the same string. the description should be locaition and the data should be split so that the post date gets its own field in the json. 
+
+# code sanity
+I'm pretty sure we're having Gemini return structured data, lets make sure that it's aware of this. Please find all Gemini queries that are not explicitly defining the structure of it's returned data. 
+
+
+# Glassdoor
+
+Adding Glassdoor Company Research to Job Analysis
+I can implement a feature to search for company information on Glassdoor as part of the job analysis process. This would enrich the company_overview section with more accurate data based on Glassdoor's company profiles.
+
+
+Now, let's update the job analysis function to incorporate this company research:
+
+Finally, let's make sure the UI displays this additional company information:
+
+Benefits of this Implementation:
+Enhanced Company Insights: Job seekers get valuable information about potential employers
+Better Decision Making: More context about company size, industry, and stability
+Reduced Research Time: Automatic compilation of company information
+This implementation uses Gemini to search for public information about companies, pulling data from various sources including Glassdoor, LinkedIn, and company websites, then structured into a consistent format for your job search.
+
+
+# Migrations
+## target_roles
+* WARNING: Error accessing database for target roles: (sqlite3.OperationalError) no such column: target_roles.requirements
+[SQL: SELECT target_roles.id AS target_roles_id, target_roles.role_name AS target_roles_role_name, target_roles.priority AS target_roles_priority, target_roles.match_score AS target_roles_match_score, target_roles.reasoning AS target_roles_reasoning, target_roles.source AS target_roles_source, target_roles.last_updated AS target_roles_last_updated, target_roles.requirements AS target_roles_requirements, target_roles.next_steps AS target_roles_next_steps 
+
+## cached jobs
+ERROR: Error retrieving cached jobs: (sqlite3.OperationalError) no such column: job_cache.location
+[SQL: SELECT job_cache.id AS job_cache_id, job_cache.url AS job_cache_url, job_cache.title AS job_cache_title, job_cache.company AS job_cache_company, job_cache.description AS job_cache_description, job_cache.location AS job_cache_location, job_cache.post_date AS job_cache_post_date, job_cache.first_seen_date AS job_cache_first_seen_date, job_cache.last_seen_date AS job_cache_last_seen_date, job_cache.match_score AS job_cache_match_score, job_cache.application_priority AS job_cache_application_priority, job_cache.key_requirements AS job_cache_key_requirements, job_cache.culture_indicators AS job_cache_culture_indicators, job_cache.career_growth_potential AS job_cache_career_growth_potential, job_cache.search_query AS job_cache_search_query, job_cache.total_years_experience AS job_cache_total_years_experience, job_cache.candidate_gaps AS job_cache_candidate_gaps, job_cache.location_type AS job_cache_location_type, job_cache.company_size AS job_cache_company_size, job_cache.company_stability AS job_cache_company_stability, job_cache.glassdoor_rating AS job_cache_glassdoor_rating, job_cache.employee_count AS job_cache_employee_count, job_cache.year_founded AS job_cache_year_founded, job_cache.growth_stage AS job_cache_growth_stage, job_cache.market_position AS job_cache_market_position, job_cache.development_opportunities AS job_cache_development_opportunities 

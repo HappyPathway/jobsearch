@@ -6,6 +6,7 @@ import os
 import json
 import google.generativeai as genai
 from models import Experience, Skill, TargetRole, get_session
+from structured_prompt import StructuredPrompt
 
 load_dotenv()
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
@@ -14,7 +15,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 def fetch_data():
-    """Get experiences and skills from database using SQLAlchemy"""
+    """Get experiences, skills, and existing target roles from database using SQLAlchemy"""
     with get_session() as session:
         linkedin_exp = session.query(Experience).order_by(Experience.start_date.desc()).all()
         linkedin_exp = [
@@ -25,7 +26,18 @@ def fetch_data():
         skills = session.query(Skill).all()
         skill_names = [skill.skill_name for skill in skills]
         
-        return linkedin_exp, skill_names
+        # Fetch existing target roles
+        existing_roles = session.query(TargetRole).order_by(TargetRole.priority).all()
+        target_roles = [
+            {
+                "role_name": role.role_name,
+                "priority": role.priority,
+                "match_score": role.match_score
+            }
+            for role in existing_roles
+        ]
+        
+        return linkedin_exp, skill_names, target_roles
 
 def format_experiences(exps):
     out = []
@@ -34,68 +46,93 @@ def format_experiences(exps):
         out.append(f"- **{e[1]}** at **{e[0]}** ({e[2]} - {e[3]}): {e[4]}")
     return "\n".join(out)
 
-def generate_target_roles(experiences, skills):
+def generate_target_roles(experiences, skills, existing_roles):
     """Use Gemini to generate and score target roles based on profile data"""
-    prompt = f"""You are an expert career advisor with deep knowledge of tech industry roles.
+    roles_str = "\n".join([f"- {r['role_name']} (Priority: {r['priority']}, Match: {r['match_score']}%)" 
+                          for r in existing_roles]) if existing_roles else "No existing roles"
+    
+    # Initialize StructuredPrompt
+    structured_prompt = StructuredPrompt()
+
+    # Define expected structure
+    expected_structure = [{
+        "role_name": str,
+        "priority": int,
+        "match_score": float,
+        "reasoning": str,
+        "source": str,
+        "requirements": [str],
+        "next_steps": [str]
+    }]
+
+    # Example data
+    example_data = [{
+        "role_name": "Senior Cloud Architect",
+        "priority": 1,
+        "match_score": 85.5,
+        "reasoning": "Strong match for cloud infrastructure and system design experience",
+        "source": "AI generated",
+        "requirements": [
+            "Experience with major cloud platforms",
+            "Strong system design skills"
+        ],
+        "next_steps": [
+            "Highlight cloud migration projects",
+            "Showcase architecture decisions"
+        ]
+    }]
+
+    # Get structured response
+    roles = structured_prompt.get_structured_response(
+        prompt=f"""You are an expert career advisor with deep knowledge of tech industry roles.
 Analyze this professional's background and generate appropriate target roles.
-Return ONLY a JSON array with no additional text or formatting.
+
+Current target roles being considered:
+{roles_str}
 
 Experience:
 {format_experiences(experiences)}
 
 Skills: {', '.join(skills)}
 
-Return this format:
-[
-    {{
-        "role_name": "exact job title",
-        "priority": 1,
-        "match_score": 95.0,
-        "reasoning": "detailed explanation of fit",
-        "source": "derived from current experience"
-    }},
-    // ... more roles ...
-]
+Focus on senior/principal level roles in cloud, DevOps, and platform engineering.
+Generate 3-5 role recommendations.
 
-Notes:
-1. priority should be 1-5 (1 is highest)
-2. match_score should be 0-100
-3. Be specific with role names
-4. Focus on senior/principal level roles
-5. Consider cloud, DevOps, and platform engineering roles"""
+Each role should have:
+1. Clear job title that matches real job postings
+2. Priority (1-5, where 1 is highest)
+3. Match score (0-100)
+4. Brief reasoning for the recommendation
+5. Key requirements needed
+6. Next steps to strengthen candidacy""",
+        expected_structure=expected_structure,
+        example_data=example_data
+    )
 
-    try:
-        model = genai.GenerativeModel('gemini-1.5-pro')
-        response = model.generate_content(
-            prompt,
-            generation_config={
-                "max_output_tokens": 1000,
-                "temperature": 0.2,
-            }
-        )
-        
-        json_str = response.text.strip()
-        json_str = json_str.replace('```json', '').replace('```', '')
-        
-        # Try to extract just the JSON array
-        match = re.search(r'(\[[\s\S]*\])', json_str)
-        if match:
-            json_str = match.group(1)
-        
-        roles = json.loads(json_str)
-        
-        # Validate and normalize
-        for role in roles:
-            role['priority'] = max(1, min(5, int(role.get('priority', 5))))
-            role['match_score'] = max(0, min(100, float(role.get('match_score', 0))))
-            role['role_name'] = str(role.get('role_name', '')).strip()
-            role['reasoning'] = str(role.get('reasoning', '')).strip()
-            role['source'] = str(role.get('source', 'AI generated')).strip()
-        
-        return roles
-    except Exception as e:
-        logger.error(f"Error generating target roles: {str(e)}")
+    if not roles:
+        logger.error("Failed to generate target roles")
         return []
+
+    # Validate and normalize each role
+    for role in roles:
+        # Required fields
+        role['role_name'] = str(role.get('role_name', '')).strip()
+        role['priority'] = max(1, min(5, int(role.get('priority', 5))))
+        role['match_score'] = max(0, min(100, float(role.get('match_score', 0))))
+        role['reasoning'] = str(role.get('reasoning', '')).strip()
+        role['source'] = str(role.get('source', 'AI generated')).strip()
+        
+        # Optional fields with defaults
+        if 'requirements' not in role:
+            role['requirements'] = []
+        if 'next_steps' not in role:
+            role['next_steps'] = []
+            
+        # Ensure lists contain strings
+        role['requirements'] = [str(req).strip() for req in role['requirements']]
+        role['next_steps'] = [str(step).strip() for step in role['next_steps']]
+    
+    return roles
 
 def update_target_roles(roles):
     """Update target roles in the database"""
@@ -123,8 +160,8 @@ def update_target_roles(roles):
 def main():
     try:
         logger.info("Generating target roles from profile data")
-        experiences, skills = fetch_data()
-        roles = generate_target_roles(experiences, skills)
+        experiences, skills, existing_roles = fetch_data()
+        roles = generate_target_roles(experiences, skills, existing_roles)
         logger.info("Updating target roles in database")
         update_target_roles(roles)
         logger.info("Successfully updated target roles")

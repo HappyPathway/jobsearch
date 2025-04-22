@@ -1,7 +1,10 @@
+import sys
 from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent))
+
+from scripts.gcs_utils import GCSManager as gcs
+from scripts.models import Base, get_engine
 from logging_utils import setup_logging
-from models import Base, engine, get_engine
-from gcs_utils import gcs
 
 logger = setup_logging('init_db')
 
@@ -10,10 +13,11 @@ def init_database():
     logger.info("Initializing/updating database schema")
     try:
         # Create all tables defined in models.py
-        Base.metadata.create_all(engine)
+        Base.metadata.create_all(get_engine())
         
         # Upload fresh database to GCS
-        if gcs.upload_db():
+        gcs_manager = gcs()
+        if gcs_manager.upload_db():
             logger.info("Successfully uploaded initial database to GCS")
         else:
             logger.warning("Failed to upload initial database to GCS")

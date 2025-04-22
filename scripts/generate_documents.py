@@ -14,6 +14,7 @@ from models import (
 from slugify import slugify
 from pdf_generator import create_resume_pdf, create_cover_letter_pdf, setup_pdf_environment
 from logging_utils import setup_logging
+from structured_prompt import StructuredPrompt
 
 # Import Slack notifier
 try:
@@ -28,6 +29,9 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 # Check if Slack notifications are enabled by default
 DEFAULT_SLACK_NOTIFICATIONS = os.getenv("ENABLE_SLACK_NOTIFICATIONS", "false").lower() in ["true", "1", "yes"]
+
+# Initialize StructuredPrompt
+structured_prompt = StructuredPrompt()
 
 def get_profile_data():
     """Get all profile data from database using SQLAlchemy"""
@@ -143,13 +147,14 @@ Follow these rules:
 1. Use clear, action-oriented language
 2. Quantify achievements where possible
 3. Maintain professional tone
-4. Keep formatting minimal - no special characters or styling
+4. Keep formatting minimal
 5. Focus on relevance to the target role
 
 Content to write:
 {json.dumps(resume_content, indent=2)}
 
-Format the output as a plain text document with sections clearly marked."""
+Write a complete, properly formatted resume. Use standard section headers and bullet points.
+Do not return JSON or any other structured format - just return the formatted text of the resume."""
 
     try:
         model = genai.GenerativeModel('gemini-1.5-pro')
@@ -160,7 +165,9 @@ Format the output as a plain text document with sections clearly marked."""
                 "temperature": 0.2,
             }
         )
+        
         return response.text.strip()
+            
     except Exception as e:
         logger.error(f"Error in resume writing pass: {str(e)}")
         return None
@@ -175,7 +182,7 @@ Follow these rules:
 4. Connect experience to job requirements
 5. Keep paragraphs focused and concise
 6. End with a clear call to action
-7. Include a proper signature line that says "Sincerely," followed by the applicant's name if provided
+7. Include a proper signature line
 
 Job Details:
 {json.dumps(job_info, indent=2)}
@@ -183,7 +190,8 @@ Job Details:
 Content to write:
 {json.dumps(cover_letter_content, indent=2)}
 
-Format the output as a plain text letter."""
+Write a complete, properly formatted cover letter, including greeting, body, and signature.
+Do not return JSON or any other structured format - just return the formatted text of the letter."""
 
     try:
         model = genai.GenerativeModel('gemini-1.5-pro')
@@ -194,6 +202,7 @@ Format the output as a plain text letter."""
                 "temperature": 0.3,
             }
         )
+        
         return response.text.strip()
     except Exception as e:
         logger.error(f"Error in cover letter writing pass: {str(e)}")
@@ -236,9 +245,50 @@ def format_cover_letter(content, job_info):
 def generate_tailored_resume(job_info, experiences, skills, sections):
     """Generate tailored resume content based on job requirements"""
     try:
-        model = genai.GenerativeModel('gemini-1.5-pro')
-        
-        prompt = f"""You are an expert resume tailoring system. Using the provided experiences and skills, create a resume optimized for this job.
+        # Define expected structure
+        expected_structure = {
+            "summary": str,
+            "selected_experiences": [{
+                "company": str,
+                "title": str,
+                "start_date": str,
+                "end_date": str,
+                "description": str,
+                "achievements": [str]
+            }],
+            "highlighted_skills": [str],
+            "additional_sections": {
+                "certifications": [str],
+                "education": [str],
+                "projects": [str]
+            }
+        }
+
+        # Example data
+        example_data = {
+            "summary": "Senior technology leader with expertise in cloud architecture and DevOps transformation...",
+            "selected_experiences": [{
+                "company": "Tech Corp",
+                "title": "Senior Software Engineer",
+                "start_date": "2020-01",
+                "end_date": "Present",
+                "description": "Led development of cloud infrastructure",
+                "achievements": [
+                    "Reduced deployment time by 75%",
+                    "Implemented CI/CD pipeline"
+                ]
+            }],
+            "highlighted_skills": ["Python", "AWS", "Kubernetes"],
+            "additional_sections": {
+                "certifications": ["AWS Solutions Architect"],
+                "education": ["BS Computer Science"],
+                "projects": ["Cloud Migration"]
+            }
+        }
+
+        # Get structured response
+        resume_content = structured_prompt.get_structured_response(
+            prompt=f"""Using the provided experiences and skills, create a resume optimized for this job.
 
 Job Information:
 {json.dumps(job_info, indent=2)}
@@ -254,70 +304,51 @@ Instructions:
 2. Highlight skills that match job requirements
 3. Maintain chronological order
 4. Include key achievements
-5. Keep descriptions concise and impactful
-
-Return a JSON object with:
-- summary: Professional summary paragraph
-- selected_experiences: Array of chosen experiences with tailored descriptions
-- highlighted_skills: Array of most relevant skills
-- additional_sections: Object with any other relevant sections from the input"""
-
-        response = model.generate_content(
-            prompt,
-            generation_config={
-                "max_output_tokens": 2000,
-                "temperature": 0.2,
-            }
+5. Keep descriptions concise and impactful""",
+            expected_structure=expected_structure,
+            example_data=example_data
         )
-        
-        # Check if response is empty
-        if not response or not response.text or response.text.strip() == "":
-            logger.error("Empty response received from Gemini API")
-            return None
-            
-        # Clean up response text
-        json_str = response.text.strip()
-        
-        # Add debug logging for the response
-        logger.debug(f"API response first 100 chars: {json_str[:100]}...")
-        
-        # Clean up any markdown code block formatting
-        json_str = re.sub(r'^```.*?\n', '', json_str)  # Remove opening ```json
-        json_str = re.sub(r'\n```$', '', json_str)     # Remove closing ```
-        
-        # Try to extract just a JSON object if there's other text
-        match = re.search(r'({[\s\S]*})', json_str)
-        if match:
-            json_str = match.group(1)
-            
-        try:
-            content = json.loads(json_str)
-            
-            # Add any custom sections from the database
-            content['additional_sections'] = {
-                name: text for name, text in sections.items()
-                if name.lower() not in ['summary', 'experience', 'skills', 'contact information']
-            }
-            
-            return content
-            
-        except json.JSONDecodeError as je:
-            logger.error(f"JSON parsing error: {str(je)}")
-            logger.debug(f"Invalid JSON content: {json_str}")
-            return None
-        
+
+        if resume_content:
+            logger.info("Successfully generated tailored resume content")
+            return resume_content
+
+        logger.error("Failed to generate resume content")
+        return None
+
     except Exception as e:
-        logger.error(f"Error generating tailored resume: {str(e)}")
+        logger.error(f"Error generating resume content: {str(e)}")
         return None
 
 def generate_cover_letter(job_info, resume_content, skills, full_name=""):
     """Generate cover letter content matching the resume"""
     try:
-        model = genai.GenerativeModel('gemini-1.5-pro')
-        
-        prompt = f"""You are an expert cover letter writer. Create a compelling cover letter FROM the job applicant TO the hiring manager for this specific job.
+        # Define expected structure
+        expected_structure = {
+            "greeting": str,
+            "opening": str,
+            "body_paragraphs": [str],
+            "closing": str,
+            "signature": str
+        }
 
-Job Information:
+        # Example data
+        example_data = {
+            "greeting": "Dear Hiring Manager,",
+            "opening": "I am writing to express my strong interest in the Senior Software Engineer position...",
+            "body_paragraphs": [
+                "With over 8 years of experience in cloud infrastructure...",
+                "In my current role at Tech Corp, I have successfully..."
+            ],
+            "closing": "I am excited about the opportunity to contribute...",
+            "signature": "Sincerely,\nJohn Doe"
+        }
+
+        # Get structured response
+        cover_letter_content = structured_prompt.get_structured_response(
+            prompt=f"""Create a compelling cover letter that matches the resume and targets this specific job.
+
+Job Details:
 {json.dumps(job_info, indent=2)}
 
 Resume Content:
@@ -326,63 +357,27 @@ Resume Content:
 Skills:
 {json.dumps(skills, indent=2)}
 
-Applicant's Full Name:
-{full_name}
-
 Instructions:
-1. Write a letter FROM the applicant perspective (not addressed to the applicant)
-2. Use professional greeting like "Dear Hiring Manager," (never address the letter to the applicant)
-3. Write an engaging opening paragraph in the applicant's voice
-4. Develop 2-3 body paragraphs highlighting the applicant's relevant experience
-5. Include a strong closing paragraph
-6. Add a professional signature block that says "Sincerely," followed by the applicant's name (use "{full_name}" if provided, otherwise use "Sincerely," only)
-
-Return a JSON object with:
-- greeting: Professional salutation (e.g., "Dear Hiring Manager,")
-- opening: Introduction paragraph
-- body_paragraphs: Array of body paragraphs
-- closing: Closing paragraph
-- signature: Signature block with the applicant's name"""
-
-        response = model.generate_content(
-            prompt,
-            generation_config={
-                "max_output_tokens": 1500,
-                "temperature": 0.3,
-            }
+1. Write FROM the applicant's perspective
+2. Maintain professional but engaging tone
+3. Show enthusiasm and personality
+4. Connect experience to job requirements
+5. Keep paragraphs focused and concise
+6. End with a clear call to action
+7. Add a professional signature block that says "Sincerely," followed by the applicant's name (use "{full_name}" if provided, otherwise use "Sincerely," only)""",
+            expected_structure=expected_structure,
+            example_data=example_data
         )
-        
-        # Check if response is empty
-        if not response or not response.text or response.text.strip() == "":
-            logger.error("Empty response received from Gemini API for cover letter")
-            return None
-            
-        # Clean up response text
-        json_str = response.text.strip()
-        
-        # Add debug logging for the response
-        logger.debug(f"Cover letter API response first 100 chars: {json_str[:100]}...")
-        
-        # Clean up any markdown code block formatting
-        json_str = re.sub(r'^```.*?\n', '', json_str)  # Remove opening ```json
-        json_str = re.sub(r'\n```$', '', json_str)     # Remove closing ```
-        
-        # Try to extract just a JSON object if there's other text
-        match = re.search(r'({[\s\S]*})', json_str)
-        if match:
-            json_str = match.group(1)
-            
-        try:
-            content = json.loads(json_str)
-            return content
-            
-        except json.JSONDecodeError as je:
-            logger.error(f"Cover letter JSON parsing error: {str(je)}")
-            logger.debug(f"Invalid cover letter JSON content: {json_str}")
-            return None
-        
+
+        if cover_letter_content:
+            logger.info("Successfully generated cover letter content")
+            return cover_letter_content
+
+        logger.error("Failed to generate cover letter content")
+        return None
+
     except Exception as e:
-        logger.error(f"Error generating cover letter: {str(e)}")
+        logger.error(f"Error generating cover letter content: {str(e)}")
         return None
 
 def track_job_application(job_info, resume_path, cover_letter_path):
@@ -452,7 +447,7 @@ def generate_job_documents(job_info, use_writing_pass=True, use_visual_resume=Tr
         # Get profile data using our improved function
         exp_list, skills, sections, full_name = get_profile_data()
         
-        # First pass: Generate structured content with Gemini
+        # First pass: Generate structured content with StructuredPrompt
         resume_content = generate_tailored_resume(job_info, exp_list, skills, sections)
         if not resume_content:
             logger.error("Failed to generate resume content")
@@ -575,7 +570,7 @@ def main():
     """Main entry point for document generation"""
     import argparse
     parser = argparse.ArgumentParser(description='Generate tailored resume and cover letter')
-    parser.add_argument('job_info_path', help='Path to job details JSON file')
+    parser.add_argument('job_info_path', help='Path to job details JSON file or GCS path (e.g. jobs/2025-04-22/job.json)')
     parser.add_argument('--no-writing-pass', action='store_true', 
                       help='Skip the writing enhancement pass')
     parser.add_argument('--no-visual-resume', action='store_false', dest='use_visual_resume',
@@ -588,9 +583,21 @@ def main():
     args = parser.parse_args()
 
     try:
-        # Load job info from file
-        with open(args.job_info_path, 'r') as f:
-            job_info = json.load(f)
+        # Check if path is a GCS path or local file
+        if '/' in args.job_info_path and not os.path.exists(args.job_info_path):
+            # Try to get from GCS
+            content = gcs.safe_download(args.job_info_path)
+            if not content:
+                logger.error(f"Could not find job info in GCS at {args.job_info_path}")
+                return 1
+            job_info = json.loads(content)
+        else:
+            # Load from local file
+            if not os.path.exists(args.job_info_path):
+                logger.error(f"Job info file not found: {args.job_info_path}")
+                return 1
+            with open(args.job_info_path, 'r') as f:
+                job_info = json.load(f)
         
         # Generate documents
         resume_path, cover_letter_path = generate_job_documents(
@@ -614,7 +621,7 @@ def main():
             print("Failed to generate documents")
             return 1
     except Exception as e:
-        print(f"Error: {str(e)}")
+        logger.error(f"Error generating documents: {str(e)}", exc_info=True)
         return 1
 
 if __name__ == "__main__":

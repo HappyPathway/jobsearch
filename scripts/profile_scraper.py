@@ -1,19 +1,21 @@
 import pdfplumber
 from pathlib import Path
-import google.generativeai as genai
-from dotenv import load_dotenv
 import os
 import json
 import re
 import tempfile
+from dotenv import load_dotenv
 from logging_utils import setup_logging
 from models import Experience, Skill, get_session
 from gcs_utils import gcs
+from structured_prompt import StructuredPrompt
 
 logger = setup_logging('profile_scraper')
 
 load_dotenv()
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+# Initialize StructuredPrompt
+structured_prompt = StructuredPrompt()
 
 def extract_text_from_pdf(pdf_path):
     """Extract text from PDF file"""
@@ -32,84 +34,71 @@ def extract_text_from_pdf(pdf_path):
 def parse_profile_text(text):
     """Use Gemini to parse LinkedIn profile text into structured data"""
     try:
-        prompt = f"""You are a JSON data extraction system. Extract structured data from this LinkedIn profile text and return it as a JSON object. The response must be a valid JSON object and nothing else - no markdown, no explanations, no other text.
+        # Define expected structure
+        expected_structure = {
+            "experiences": [{
+                "company": str,
+                "title": str,
+                "start_date": str,
+                "end_date": str,
+                "description": str
+            }],
+            "skills": [str],
+            "education": [{
+                "institution": str,
+                "degree": str,
+                "field": str,
+                "graduation_date": str
+            }],
+            "certifications": [{
+                "name": str,
+                "issuer": str,
+                "date": str
+            }]
+        }
+
+        # Example data structure
+        example_data = {
+            "experiences": [{
+                "company": "Tech Corp",
+                "title": "Senior Software Engineer",
+                "start_date": "2020-01",
+                "end_date": "Present",
+                "description": "Led development of cloud infrastructure"
+            }],
+            "skills": ["Python", "Cloud Architecture", "DevOps"],
+            "education": [{
+                "institution": "Example University",
+                "degree": "Bachelor of Science",
+                "field": "Computer Science",
+                "graduation_date": "2015-05"
+            }],
+            "certifications": [{
+                "name": "AWS Solutions Architect",
+                "issuer": "Amazon Web Services",
+                "date": "2021-06"
+            }]
+        }
+
+        # Get structured response
+        profile_data = structured_prompt.get_structured_response(
+            prompt=f"""Extract structured data from this LinkedIn profile text.
+Focus on work experience, skills, education, and certifications.
 
 Profile text to process:
-{text}
-
-Required JSON structure:
-{{
-    "experiences": [
-        {{
-            "company": "string",
-            "title": "string",
-            "start_date": "string",
-            "end_date": "string",
-            "description": "string"
-        }}
-    ],
-    "skills": ["string"],
-    "education": [
-        {{
-            "institution": "string",
-            "degree": "string",
-            "field": "string",
-            "graduation_date": "string"
-        }}
-    ],
-    "certifications": [
-        {{
-            "name": "string",
-            "issuer": "string",
-            "date": "string"
-        }}
-    ]
-}}"""
-        
-        logger.info("Sending profile text to Gemini for parsing")
-        
-        model = genai.GenerativeModel('gemini-1.5-pro')
-        response = model.generate_content(
-            prompt,
-            generation_config={
-                "max_output_tokens": 2000,
-                "temperature": 0.1,
-            }
+{text}""",
+            expected_structure=expected_structure,
+            example_data=example_data
         )
-        
-        # Clean the response text to ensure it's valid JSON
-        response_text = response.text.strip()
-        # Remove any markdown code block indicators
-        response_text = re.sub(r'^```json\s*|\s*```$', '', response_text)
-        response_text = re.sub(r'^```\s*|\s*```$', '', response_text)
-        
-        # Validate and parse JSON
-        try:
-            data = json.loads(response_text)
-        except json.JSONDecodeError as e:
-            logger.error(f"Invalid JSON received from Gemini: {response_text}")
-            logger.error(f"JSON parse error: {str(e)}")
-            raise ValueError("Gemini returned invalid JSON format")
-        
-        # Store raw data in GCS
-        with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
-            temp_path = Path(temp_file.name)
-            json.dump(data, temp_file, indent=2)
 
-        # Upload to GCS using the global gcs instance
-        gcs_path = 'profile/linkedin_raw.json'
-        gcs.upload_file(temp_path, gcs_path)
+        if not profile_data:
+            logger.error("Failed to parse profile data")
+            return None
 
-        # Clean up temp file
-        temp_path.unlink()
-        
-        logger.info(f"Stored raw LinkedIn data in GCS at {gcs_path}")
-        return data
+        return profile_data
 
     except Exception as e:
         logger.error(f"Error parsing profile text: {str(e)}")
-        if 'response' in locals():
-            logger.error(response.text)
         return None
 
 def save_to_database(parsed_data):

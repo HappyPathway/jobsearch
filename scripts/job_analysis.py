@@ -3,7 +3,13 @@ import json
 import re
 from dotenv import load_dotenv
 import google.generativeai as genai
-from logging_utils import setup_logging
+from scripts.logging_utils import setup_logging
+from scripts.models import Experience, Skill, TargetRole, JobCache
+from scripts.utils import session_scope
+import requests
+from bs4 import BeautifulSoup
+import urllib.parse
+from structured_prompt import StructuredPrompt
 
 logger = setup_logging('job_analysis')
 
@@ -14,11 +20,14 @@ if not GEMINI_API_KEY:
     raise ValueError("Please set GEMINI_API_KEY environment variable")
 genai.configure(api_key=GEMINI_API_KEY)
 
+# Initialize StructuredPrompt
+structured_prompt = StructuredPrompt()
+
 def analyze_job_with_gemini(job_info):
     """Use Gemini to analyze job posting and provide insights"""
     logger.info(f"Analyzing job with Gemini: {job_info['title']} at {job_info['company']}")
     
-    # Check if we've already analyzed this job in this session
+    # Check cache first
     cache_key = f"{job_info['title']}::{job_info['company']}"
     if hasattr(analyze_job_with_gemini, 'analysis_cache'):
         if cache_key in analyze_job_with_gemini.analysis_cache:
@@ -27,11 +36,11 @@ def analyze_job_with_gemini(job_info):
     else:
         analyze_job_with_gemini.analysis_cache = {}
 
+    # Get Glassdoor data first
+    glassdoor_info = get_glassdoor_info(job_info['company'])
+
     # Get candidate profile data from the database
     try:
-        from utils import session_scope
-        from models import Experience, Skill, TargetRole
-        
         # Get skills and experience from database
         skill_list = []
         experience_summary = ""
@@ -57,149 +66,195 @@ def analyze_job_with_gemini(job_info):
             target_roles = [role.role_name for role in roles]
     except Exception as e:
         logger.error(f"Error fetching candidate profile: {str(e)}")
-        
-        # Instead of extracting skills directly from the job description (which would be circular),
-        # we'll ask Gemini to evaluate the job directly in the fallback case
-        logger.info("Using direct job evaluation approach since profile data is unavailable")
-        
-        job_title = job_info.get('title', '')
-        job_company = job_info.get('company', '')
-        job_description = job_info.get('description', '')
-        
-        # Set minimal placeholder values that won't affect evaluation
         skill_list = ["Technical Professional"]
         target_roles = ["Technical Role"]
         experience_summary = "Professional with relevant experience"
 
-    # Create a formatted skills section, grouping if possible
-    skill_text = ""
-    if len(skill_list) > 15:
-        # If we have many skills, just list top ones
-        skill_text = "- " + "\n- ".join(skill_list[:15])
-    else:
-        skill_text = "- " + "\n- ".join(skill_list)
-    
-    # Build dynamic prompt with candidate data
-    prompt = f"""You are a job analysis expert. Analyze this job posting and evaluate how well it matches the candidate's profile. Return ONLY a valid JSON object with no additional text or formatting.
+    # Create a formatted skills section
+    skill_text = "- " + "\n- ".join(skill_list[:15]) if len(skill_list) > 15 else "- " + "\n- ".join(skill_list)
+
+    # Build Glassdoor context
+    glassdoor_context = ""
+    if glassdoor_info:
+        glassdoor_context = f"""
+Company Information from Glassdoor:
+- Size: {glassdoor_info['company_size']}
+- Industry: {glassdoor_info['industry']}
+- Founded: {glassdoor_info['year_founded']}
+- Revenue: {glassdoor_info['revenue']}
+- Rating: {glassdoor_info['glassdoor_rating']}
+- Employees: {glassdoor_info['employee_count']}
+- Type: {glassdoor_info['company_type']}
+- Growth Indicators: {', '.join(glassdoor_info['growth_indicators'])}"""
+
+    # Define expected structure
+    expected_structure = {
+        "match_score": float,
+        "key_requirements": [str],
+        "culture_indicators": [str],
+        "career_growth_potential": str,
+        "application_priority": str,
+        "location_type": str,
+        "total_years_experience": int,
+        "candidate_gaps": [str],
+        "company_overview": {
+            "industry": str,
+            "size": str,
+            "stability": str,
+            "glassdoor_rating": str,
+            "employee_count": str,
+            "year_founded": str,
+            "growth_stage": str,
+            "market_position": str,
+            "development_opportunities": [str]
+        }
+    }
+
+    # Example data structure
+    example_data = {
+        "match_score": 85.5,
+        "key_requirements": ["Python", "Cloud Infrastructure", "DevOps"],
+        "culture_indicators": ["Remote-friendly", "Collaborative"],
+        "career_growth_potential": "high - clear path to technical leadership",
+        "application_priority": "high",
+        "location_type": "remote",
+        "total_years_experience": 5,
+        "candidate_gaps": ["Kubernetes experience"],
+        "company_overview": {
+            "industry": "Technology",
+            "size": "midsize",
+            "stability": "high",
+            "glassdoor_rating": "4.2",
+            "employee_count": "500-1000",
+            "year_founded": "2015",
+            "growth_stage": "growth",
+            "market_position": "challenger",
+            "development_opportunities": ["Technical leadership", "Cloud architecture"]
+        }
+    }
+
+    # Get structured response
+    analysis = structured_prompt.get_structured_response(
+        prompt=f"""Analyze this job posting and evaluate how well it matches the candidate's profile.
+Use the provided Glassdoor company information to enhance your analysis.
 
 Job Details:
 Title: {job_info['title']}
 Company: {job_info['company']}
 Description: {job_info['description']}
+{glassdoor_context}
 
 Candidate Profile:
 Target Roles: {', '.join(target_roles)}
+
 Recent Experience:
 {experience_summary}
 
 Candidate Skills:
-{skill_text}
+{skill_text}""",
+        expected_structure=expected_structure,
+        example_data=example_data
+    )
 
-Analyze this job based on the following criteria:
-1. Match Score: Rate 0-100 how well the candidate's skills and experience match this job
-2. Key Requirements: Identify the top 3-5 technical requirements from the job description  
-3. Culture Indicators: Find signals of company culture/work environment
-4. Career Growth: Assess potential for career advancement
-5. Application Priority: Determine if this is a high/medium/low priority application based on match and growth potential
+    if analysis:
+        analyze_job_with_gemini.analysis_cache[cache_key] = analysis
+        logger.info(f"Successfully analyzed job: {job_info['title']} at {job_info['company']}")
+        return analysis
 
-Required JSON format (replace with actual values, keep structure exactly as shown):
-{{
-    "match_score": 75,
-    "key_requirements": [
-        "requirement 1",
-        "requirement 2",
-        "requirement 3"
-    ],
-    "culture_indicators": [
-        "indicator 1",
-        "indicator 2"
-    ],
-    "career_growth_potential": "high - explanation here",
-    "application_priority": "high"
-}}"""
-
-    try:
-        model = genai.GenerativeModel('gemini-1.5-pro')
-        response = model.generate_content(
-            prompt,
-            generation_config={
-                "max_output_tokens": 1000,
-                "temperature": 0.1,
-            }
-        )
-        
-        # Clean up the response
-        json_str = response.text.strip()
-        json_str = re.sub(r'^```.*?\n', '', json_str)  # Remove opening ```json
-        json_str = re.sub(r'\n```$', '', json_str)     # Remove closing ```
-        
-        # Try to extract just the JSON object if there's other text
-        match = re.search(r'({[\s\S]*})', json_str)
-        if match:
-            json_str = match.group(1)
-        
-        try:
-            # Parse and validate the JSON
-            analysis = json.loads(json_str)
-            
-            # Ensure required fields exist with correct types
-            required_fields = {
-                'match_score': 0,  # Default values
-                'key_requirements': [],
-                'culture_indicators': [],
-                'career_growth_potential': 'unknown',
-                'application_priority': 'low'
-            }
-            
-            for field, default in required_fields.items():
-                if field not in analysis:
-                    analysis[field] = default
-            
-            # Normalize match_score to 0-100
-            try:
-                analysis['match_score'] = max(0, min(100, float(analysis['match_score'])))
-            except (ValueError, TypeError):
-                analysis['match_score'] = 0
-            
-            # Ensure lists are lists and have reasonable lengths
-            if not isinstance(analysis['key_requirements'], list):
-                analysis['key_requirements'] = []
-            analysis['key_requirements'] = [str(req) for req in analysis['key_requirements'][:5]]  # Max 5 requirements, ensure strings
-            
-            if not isinstance(analysis['culture_indicators'], list):
-                analysis['culture_indicators'] = []
-            analysis['culture_indicators'] = [str(ind) for ind in analysis['culture_indicators'][:3]]  # Max 3 indicators, ensure strings
-            
-            # Normalize strings
-            analysis['career_growth_potential'] = str(analysis['career_growth_potential']).lower()
-            analysis['application_priority'] = str(analysis['application_priority']).lower()
-            
-            # Validate application priority
-            if analysis['application_priority'] not in ['high', 'medium', 'low']:
-                analysis['application_priority'] = 'low'
-            
-            # Cache the analysis for this session
-            analyze_job_with_gemini.analysis_cache[cache_key] = analysis
-            
-            logger.info(f"Successfully analyzed job: {job_info['title']} at {job_info['company']}")
-            return analysis
-            
-        except json.JSONDecodeError as je:
-            logger.error(f"JSON parsing error: {str(je)}")
-            logger.debug(f"Problematic JSON string: {json_str}")
-    except Exception as e:
-        logger.error(f"Error analyzing job with Gemini: {str(e)}")
-    
     # Return default analysis on any error
     default_analysis = {
         "match_score": 0,
         "key_requirements": [],
         "culture_indicators": [],
         "career_growth_potential": "unknown",
-        "application_priority": "low"
+        "application_priority": "low",
+        "location_type": "unknown",
+        "total_years_experience": 0,
+        "candidate_gaps": [],
+        "company_overview": {
+            "industry": "unknown",
+            "size": "unknown",
+            "stability": "unknown",
+            "glassdoor_rating": "unknown",
+            "employee_count": "unknown",
+            "year_founded": "unknown",
+            "growth_stage": "unknown",
+            "market_position": "unknown",
+            "development_opportunities": []
+        }
     }
     analyze_job_with_gemini.analysis_cache[cache_key] = default_analysis
     return default_analysis
+
+def get_glassdoor_info(company_name):
+    """Search Glassdoor for company information"""
+    logger.info(f"Searching Glassdoor for company: {company_name}")
+    try:
+        # Construct search URL
+        search_url = f"https://www.glassdoor.com/Search/results.htm?keyword={urllib.parse.quote(company_name)}"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+        }
+        
+        # Get search results page
+        response = requests.get(search_url, headers=headers)
+        if response.status_code != 200:
+            logger.error(f"Failed to search Glassdoor: {response.status_code}")
+            return None
+
+        # Define expected structure
+        expected_structure = {
+            "company_size": str,
+            "industry": str,
+            "year_founded": str,
+            "headquarters": str,
+            "revenue": str,
+            "glassdoor_rating": str,
+            "employee_count": str,
+            "company_type": str,
+            "growth_indicators": [str]
+        }
+
+        # Example data structure
+        example_data = {
+            "company_size": "large",
+            "industry": "Technology",
+            "year_founded": "2004",
+            "headquarters": "Mountain View, CA",
+            "revenue": "$100B+",
+            "glassdoor_rating": "4.5",
+            "employee_count": "50000+",
+            "company_type": "public",
+            "growth_indicators": [
+                "15% revenue growth",
+                "aggressive hiring",
+                "market expansion"
+            ]
+        }
+
+        # Get structured response
+        glassdoor_data = structured_prompt.get_structured_response(
+            prompt=f"""Extract company information from this Glassdoor search results page HTML.
+Parse the company details into a structured format.
+
+If you can't find specific information, use "unknown" as the value.
+
+HTML content:
+{response.text}""",
+            expected_structure=expected_structure,
+            example_data=example_data
+        )
+
+        if glassdoor_data:
+            logger.info(f"Successfully retrieved Glassdoor data for {company_name}")
+            return glassdoor_data
+            
+        logger.error("Failed to parse Glassdoor data")
+        return None
+            
+    except Exception as e:
+        logger.error(f"Error getting Glassdoor info: {str(e)}")
+        return None
 
 def analyze_jobs_batch(jobs):
     """Analyze a batch of jobs and return the analysis results"""

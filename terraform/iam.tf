@@ -1,30 +1,43 @@
 # Required permissions for Cloud Functions runtime and build
-resource "google_project_iam_member" "cloudfunctions_developer" {
+locals {
+  function_roles = [
+    "roles/cloudfunctions.developer",
+    "roles/cloudbuild.builds.builder",
+    "roles/artifactregistry.reader",
+    "roles/run.invoker",
+    "roles/logging.logWriter",
+    "roles/secretmanager.secretAccessor",
+    "roles/storage.admin",
+    "roles/serviceusage.serviceUsageConsumer",
+    "roles/iam.serviceAccountUser"
+  ]
+}
+
+# Service account for Cloud Functions
+resource "google_service_account" "function_account" {
+  account_id   = "job-search-functions"
+  display_name = "Service Account for Job Search Functions"
+}
+
+resource "google_project_iam_member" "function_roles" {
+  for_each = toset(local.function_roles)
+  
   project = var.project_id
-  role    = "roles/cloudfunctions.developer"
+  role    = each.value
   member  = "serviceAccount:${google_service_account.function_account.email}"
 }
 
-resource "google_project_iam_member" "cloudbuild_builder" {
-  project = var.project_id
-  role    = "roles/cloudbuild.builds.builder"
-  member  = "serviceAccount:${google_service_account.function_account.email}"
-}
+# Cloud Function IAM policy
+resource "google_cloudfunctions_function_iam_member" "invoker" {
+  for_each = local.cloud_functions
 
-resource "google_project_iam_member" "artifactregistry_reader" {
-  project = var.project_id
-  role    = "roles/artifactregistry.reader"
-  member  = "serviceAccount:${google_service_account.function_account.email}"
-}
+  project        = var.project_id
+  region         = var.region
+  cloud_function = each.value.name
 
-resource "google_project_iam_member" "run_invoker" {
-  project = var.project_id
-  role    = "roles/run.invoker"
-  member  = "serviceAccount:${google_service_account.function_account.email}"
-}
-
-resource "google_project_iam_member" "logging_logwriter" {
-  project = var.project_id
-  role    = "roles/logging.logWriter"
-  member  = "serviceAccount:${google_service_account.function_account.email}"
+  role   = "roles/cloudfunctions.invoker"
+  member = "serviceAccount:${google_service_account.function_account.email}"
+  depends_on = [
+    google_cloudfunctions_function.functions
+  ]
 }

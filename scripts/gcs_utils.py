@@ -2,8 +2,9 @@ from google.cloud import storage
 from pathlib import Path
 import os
 import json
-from logging_utils import setup_logging
+from scripts.logging_utils import setup_logging  # Use local package path
 import shutil
+import time
 
 logger = setup_logging('gcs_utils')
 
@@ -43,14 +44,21 @@ class GCSManager:
         try:
             blob = self.bucket.blob(self.db_blob_name)
             if not blob.exists():
-                logger.info("No existing database in GCS, will create new one")
+                logger.info("No existing database in GCS")
+                # Create empty database file if it doesn't exist locally
+                if not self.local_db_path.exists():
+                    self.local_db_path.touch()
                 return False
                 
             logger.info("Downloading database from GCS")
+            self._ensure_local_dir(self.local_db_path)
             blob.download_to_filename(self.local_db_path)
             return True
         except Exception as e:
             logger.error(f"Error downloading database: {str(e)}")
+            # Create empty database file on error
+            if not self.local_db_path.exists():
+                self.local_db_path.touch()
             return False
     
     def upload_db(self):
@@ -74,7 +82,6 @@ class GCSManager:
         Returns:
             bool: True if lock was acquired, False otherwise
         """
-        import time
         import socket
         from datetime import datetime
 
@@ -149,16 +156,39 @@ class GCSManager:
             return False
 
     def sync_db(self):
-        """Ensure local and GCS databases are in sync"""
+        """Download database from GCS without lock management"""
+        try:
+            blob = self.bucket.blob(self.db_blob_name)
+            if not blob.exists():
+                logger.info("No existing database in GCS")
+                # Create empty database file if it doesn't exist locally
+                if not self.local_db_path.exists():
+                    self.local_db_path.touch()
+                return False
+                
+            logger.info("Downloading database from GCS")
+            self._ensure_local_dir(self.local_db_path)
+            blob.download_to_filename(self.local_db_path)
+            return True
+        except Exception as e:
+            logger.error(f"Error downloading database: {str(e)}")
+            # Create empty database file on error
+            if not self.local_db_path.exists():
+                self.local_db_path.touch()
+            return False
+
+    def sync_and_upload_db(self):
+        """Sync local DB with GCS and upload changes"""
         if not self.acquire_lock():
             raise Exception("Could not acquire database lock")
         try:
-            result = self.download_db()
+            self.sync_db()
+            if self.local_db_path.exists():
+                logger.info("Uploading database to GCS")
+                blob = self.bucket.blob(self.db_blob_name)
+                blob.upload_from_filename(self.local_db_path)
+        finally:
             self.release_lock()
-            return result
-        except:
-            self.release_lock()
-            raise
 
     def upload_file(self, local_path, gcs_path):
         """Upload a file to GCS

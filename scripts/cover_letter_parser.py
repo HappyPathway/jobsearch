@@ -1,18 +1,18 @@
 import pdfplumber
 from pathlib import Path
-import google.generativeai as genai
-from dotenv import load_dotenv
 import os
 import json
 import tempfile
+import re
 from logging_utils import setup_logging
-from models import CoverLetterSection, session_scope
+from models import CoverLetterSection, get_session
 from gcs_utils import gcs
+from structured_prompt import StructuredPrompt
 
 logger = setup_logging('cover_letter_parser')
 
-load_dotenv()
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+# Initialize StructuredPrompt
+structured_prompt = StructuredPrompt()
 
 def extract_text_from_pdf(file_path):
     """Extract text from PDF file in docs directory"""
@@ -29,32 +29,66 @@ def extract_text_from_pdf(file_path):
 def parse_cover_letter_text(text):
     """Use Gemini to parse cover letter text into structured data"""
     try:
-        prompt = """Parse this cover letter text into sections and analyze the writing style.
-Extract:
-1. Greeting style
-2. Opening paragraph approach
-3. Body content themes
-4. Closing style
-5. Overall tone and formality level
-
-Return a JSON object with the analysis."""
-
-        model = genai.GenerativeModel('gemini-1.5-pro')
-        response = model.generate_content(
-            prompt,
-            generation_config={
-                "max_output_tokens": 2000,
-                "temperature": 0.1,
+        # Define expected structure
+        expected_structure = {
+            "structure": {
+                "greeting": str,
+                "opening_approach": str,
+                "body_sections": [{
+                    "theme": str,
+                    "content": str,
+                    "writing_style": str
+                }],
+                "closing_style": str
+            },
+            "analysis": {
+                "tone": str,
+                "formality_level": int,
+                "personalization_level": int,
+                "strengths": [str],
+                "areas_for_improvement": [str]
             }
+        }
+
+        # Example data structure
+        example_data = {
+            "structure": {
+                "greeting": "Dear Hiring Manager,",
+                "opening_approach": "Enthusiastic introduction referencing company mission",
+                "body_sections": [{
+                    "theme": "Technical Leadership",
+                    "content": "Cloud infrastructure and team leadership experience",
+                    "writing_style": "Professional and confident"
+                }],
+                "closing_style": "Strong call to action with enthusiasm"
+            },
+            "analysis": {
+                "tone": "formal",
+                "formality_level": 4,
+                "personalization_level": 3,
+                "strengths": ["Clear value proposition", "Strong relevant examples"],
+                "areas_for_improvement": ["Could be more concise"]
+            }
+        }
+
+        # Get structured response
+        analysis = structured_prompt.get_structured_response(
+            prompt=f"""Parse this cover letter text into sections and analyze the writing style.
+
+Parse this cover letter:
+{text}""",
+            expected_structure=expected_structure,
+            example_data=example_data
         )
-        
-        # Parse response into structured data
-        data = json.loads(response.text)
-        
+
+        if not analysis:
+            logger.error("Failed to parse cover letter")
+            return None
+
         # Store analysis in GCS
         with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
             temp_path = Path(temp_file.name)
-            json.dump(data, temp_file, indent=2)
+            json.dump(analysis, temp_file, indent=2)
 
         # Upload to GCS
         gcs_path = 'analysis/cover_letter_style.json'
@@ -62,10 +96,9 @@ Return a JSON object with the analysis."""
 
         # Clean up temp file
         temp_path.unlink()
-        
-        logger.info(f"Stored cover letter style analysis in GCS at {gcs_path}")
-        return data
-        
+
+        return analysis
+
     except Exception as e:
         logger.error(f"Error parsing cover letter text: {str(e)}")
         return None
@@ -77,7 +110,7 @@ def save_cover_letter_data(data):
         return
         
     try:
-        with session_scope() as session:
+        with get_session() as session:
             # Store each section in the database
             for section_name, content in data.items():
                 section = CoverLetterSection(

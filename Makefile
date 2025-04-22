@@ -1,12 +1,16 @@
-.PHONY: venv install clean init-db combine-summary parse-resume parse-cover-letter run help all generate-github-pages mark-applied test-integration gh-strategy-cleanup gh-generate-docs gh-pages gh-test gh-init gh-job-strategy gh-profile-update slack-list-channels search-jobs generate-strategy generate-docs-for-jobs generate-strategy-from-file job-workflow daily-workflow full-workflow job-search-and-docs sync-and-publish force-unlock terraform-init terraform-plan terraform-apply terraform-destroy
+.PHONY: venv install clean init-db combine-summary parse-resume parse-cover-letter run help all generate-github-pages mark-applied test-integration gh-strategy-cleanup gh-generate-docs gh-pages gh-test gh-init gh-job-strategy gh-profile-update slack-list-channels search-jobs generate-strategy generate-docs-for-jobs generate-strategy-from-file job-workflow daily-workflow full-workflow job-search-and-docs sync-and-publish force-unlock terraform-init terraform-plan terraform-apply terraform-destroy migrate-db clean-db
+
+PYTHON_VERSION ?= 3.12
 VENV_NAME=venv
 PYTHON=$(VENV_NAME)/bin/python
 PIP=$(VENV_NAME)/bin/pip
+PYTHONPATH=PYTHONPATH="$(shell pwd)"
 
 help:
 	@echo "Available commands:"
 	@echo "  make install         - Set up virtual environment and install dependencies"
 	@echo "  make clean          - Remove virtual environment and cache files"
+	@echo "  make clean-db       - Remove database files locally and from GCS"
 	@echo "  make init-db        - Initialize the database schema"
 	@echo "  make force-unlock   - Force remove GCS database lock (use --force to skip confirmation)"
 	@echo "  make scrape-profile - Scrape LinkedIn profile data"
@@ -19,6 +23,10 @@ help:
 	@echo "  make run           - Run full application (scrape data and start UI)"
 	@echo "  make all           - Collect all data (profile, resume, summary)"
 	@echo "  make test-integration - Run integration tests"
+	@echo ""
+	@echo "Environment options:"
+	@echo "  PYTHON_VERSION      - Python version to use (default: 3.12)"
+	@echo "                        Example: make install PYTHON_VERSION=3.11"
 	@echo ""
 	@echo "Job Strategy commands:"
 	@echo "  make search-jobs    - Only search for jobs (no strategy generation)"
@@ -49,7 +57,7 @@ help:
 	@echo "  make terraform-destroy - Destroy cloud functions infrastructure"
 
 venv:
-	python3 -m venv $(VENV_NAME)
+	python$(PYTHON_VERSION) -m venv $(VENV_NAME)
 
 install: venv
 	$(PIP) install --upgrade pip
@@ -61,8 +69,21 @@ clean:
 	find . -type d -name '__pycache__' -delete
 	find . -type f -name 'career_data.db' -delete
 
-init-db: install
-	$(PYTHON) scripts/init_db.py
+clean-db: install
+	@echo "Warning: This will completely remove the database file locally and from GCS"
+	@read -p "Are you sure? [y/N] " -n 1 -r; \
+	echo ""; \
+	if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
+		rm -f career_data.db; \
+		$(PYTHONPATH) $(PYTHON) -c "from scripts.gcs_utils import GCSManager; GCSManager().bucket.blob('career_data.db').delete()"; \
+		echo "✅ Database files removed"; \
+	fi
+
+migrate-db: install
+	$(PYTHONPATH) $(PYTHON) -c "from scripts.models import get_engine; get_engine()"
+
+init-db: install migrate-db
+	$(PYTHONPATH) $(PYTHON) scripts/init_db.py
 
 force-unlock: install
 	$(PYTHON) scripts/force_unlock.py $(if $(FORCE),--force)

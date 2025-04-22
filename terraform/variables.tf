@@ -18,6 +18,7 @@ variable "cloud_functions" {
     "update_profile_data",
     "deploy_github_pages",
     "cleanup_strategy_files",
-    "retrieve_file"
+    "retrieve_file",
+    "generate_documents"
   ]
 }

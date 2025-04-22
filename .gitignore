@@ -45,3 +45,9 @@ terraform.rc
 .terraform.lock.hcl
 crash.log
 .venv
+
+# Application and strategy files (now stored in GCS)
+applications/*
+!applications/.gitkeep
+strategies/*
+!strategies/.gitkeepcredentials.json

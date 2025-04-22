@@ -9,6 +9,7 @@ from logging_utils import setup_logging
 import tempfile
 from datetime import datetime
 from gcs_utils import gcs
+from structured_prompt import StructuredPrompt
 
 logger = setup_logging('profile_parser')
 
@@ -19,94 +20,126 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 def extract_profile_with_gemini(text):
     """Use Gemini to extract structured profile information from resume text"""
     try:
-        model = genai.GenerativeModel('gemini-1.5-pro')
-        prompt = """Extract structured profile information from this resume text.
-Include:
-1. Contact information (name, email, phone, location, LinkedIn)
-2. Core skills organized by category
-3. Experience entries with achievements
-4. Education history
+        # Initialize StructuredPrompt
+        structured_prompt = StructuredPrompt()
 
-Return as a clean JSON object with consistent formatting."""
-
-        response = model.generate_content(
-            prompt,
-            generation_config={
-                "max_output_tokens": 2500,
-                "temperature": 0.1,
-            }
-        )
-        
-        # Clean up response and extract JSON
-        json_str = response.text.strip()
-        
-        # Remove markdown formatting
-        json_str = re.sub(r'^```.*?\n', '', json_str)  # Remove opening ```json
-        json_str = re.sub(r'\n```$', '', json_str)     # Remove closing ```
-        json_str = re.sub(r'//.*$', '', json_str, flags=re.MULTILINE)  # Remove comments
-        
-        # Fix common JSON issues
-        json_str = re.sub(r':\s*null\b', ': ""', json_str)  # Replace null with empty string
-        json_str = re.sub(r':\s*undefined\b', ': ""', json_str)  # Replace undefined with empty string
-        
-        # Fix URL formatting
-        json_str = re.sub(r'"linkedin":\s*"?(http[^"}\s]+)"?', r'"linkedin": "\1"', json_str)
-        
-        # Try to extract just the JSON object if there's other text
-        match = re.search(r'({[\s\S]*})', json_str)
-        if match:
-            json_str = match.group(1)
-        
-        try:
-            # Parse and validate JSON structure
-            profile = json.loads(json_str)
-        except json.JSONDecodeError as e:
-            logger.error(f"Invalid JSON from Gemini: {str(e)}")
-            logger.error(f"JSON content: {json_str}")
-            return None
-        
-        # Ensure all required fields exist
-        required_fields = {
-            'contact_info': {
-                'name': '', 'email': '', 'phone': '', 
-                'location': '', 'linkedin': ''
+        # Define expected structure
+        expected_structure = {
+            "contact_info": {
+                "name": str,
+                "email": str,
+                "phone": str,
+                "location": str,
+                "linkedin": str
             },
-            'core_skills': {
-                'infrastructure_and_cloud': [],
-                'development_and_automation': [],
-                'platforms_and_tools': [],
-                'methodologies': []
+            "core_skills": {
+                "infrastructure_and_cloud": [{
+                    "name": str,
+                    "proficiency": str,
+                    "years": int
+                }],
+                "development_and_automation": [{
+                    "name": str,
+                    "proficiency": str,
+                    "years": int
+                }],
+                "platforms_and_tools": [{
+                    "name": str,
+                    "proficiency": str,
+                    "years": int
+                }],
+                "methodologies": [{
+                    "name": str,
+                    "proficiency": str,
+                    "years": int
+                }]
             },
-            'experience': [],
-            'education': []
+            "experience": [{
+                "company": str,
+                "title": str,
+                "start_date": str,
+                "end_date": str,
+                "description": str,
+                "achievements": [str],
+                "technologies": [str]
+            }],
+            "education": [{
+                "school": str,
+                "degree": str,
+                "field": str,
+                "graduation_date": str
+            }]
         }
-        
-        # Validate and set defaults for missing fields
-        for field, default in required_fields.items():
-            if field not in profile:
-                profile[field] = default
-                
-        # Validate contact info structure
-        for field, default in required_fields['contact_info'].items():
-            if field not in profile['contact_info']:
-                profile['contact_info'][field] = default
-        
-        # Validate core_skills structure
-        for category, default in required_fields['core_skills'].items():
-            if category not in profile['core_skills']:
-                profile['core_skills'][category] = default
-            
-            # Ensure each skill has all required fields
-            for skill in profile['core_skills'][category]:
-                if 'name' not in skill:
-                    continue
-                if 'proficiency' not in skill:
-                    skill['proficiency'] = 'intermediate'
-                if 'years' not in skill:
-                    skill['years'] = 1
-        
+
+        # Example data
+        example_data = {
+            "contact_info": {
+                "name": "John Doe",
+                "email": "john@example.com",
+                "phone": "(555) 123-4567",
+                "location": "San Francisco, CA",
+                "linkedin": "linkedin.com/in/johndoe"
+            },
+            "core_skills": {
+                "infrastructure_and_cloud": [
+                    {"name": "AWS", "proficiency": "expert", "years": 5}
+                ],
+                "development_and_automation": [
+                    {"name": "Python", "proficiency": "expert", "years": 8}
+                ],
+                "platforms_and_tools": [
+                    {"name": "Kubernetes", "proficiency": "advanced", "years": 3}
+                ],
+                "methodologies": [
+                    {"name": "DevOps", "proficiency": "expert", "years": 5}
+                ]
+            },
+            "experience": [{
+                "company": "Tech Corp",
+                "title": "Senior Cloud Architect",
+                "start_date": "2020-01",
+                "end_date": "Present",
+                "description": "Led cloud transformation initiatives",
+                "achievements": ["Reduced costs by 40%"],
+                "technologies": ["AWS", "Terraform", "Kubernetes"]
+            }],
+            "education": [{
+                "school": "University of Example",
+                "degree": "Bachelor of Science",
+                "field": "Computer Science",
+                "graduation_date": "2010-05"
+            }]
+        }
+
+        # Get structured response
+        profile = structured_prompt.get_structured_response(
+            prompt=f"""Extract structured profile information from this resume text.
+Focus on organizing skills into appropriate categories and capturing all relevant details.
+
+Profile text to parse:
+{text}""",
+            expected_structure=expected_structure,
+            example_data=example_data
+        )
+
+        if not profile:
+            logger.error("Failed to extract profile information")
+            return None
+
+        # Store in GCS
+        with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
+            temp_path = Path(temp_file.name)
+            json.dump(profile, temp_file, indent=2)
+
+        # Upload to GCS
+        gcs_path = 'parsed/profile.json'
+        gcs.upload_file(temp_path, gcs_path)
+
+        # Clean up temp file
+        temp_path.unlink()
+
         return profile
-        
+
     except Exception as e:
         logger.error(f"Error extracting profile information: {str(e)}")
         return None

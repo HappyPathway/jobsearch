@@ -32,6 +32,7 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 from scripts.logging_utils import setup_logging
 from scripts.gcs_utils import GCSUtils
+from scripts.structured_prompt import StructuredPrompt
 
 # Set up logging
 logger = setup_logging('medium_publisher')
@@ -53,10 +54,10 @@ MEDIUM_POST_URL = f"{MEDIUM_API_BASE}/users/{{user_id}}/posts"
 
 class MediumPublisher:
     """Class to generate and publish articles to Medium"""
-    
-    def __init__(self, api_token=None):
-        """Initialize the Medium Publisher"""
-        self.api_token = api_token or MEDIUM_API_TOKEN
+    def __init__(self, client=None):
+        self.client = client or medium.Client()
+        self.structured_prompt = StructuredPrompt()
+        self.api_token = MEDIUM_API_TOKEN
         self.headers = {
             "Authorization": f"Bearer {self.api_token}",
             "Content-Type": "application/json",
@@ -279,99 +280,108 @@ Your response should be a single domain name, no extra text."""
             # Determine professional domain from the skills
             domain = self._determine_professional_domain(all_skills)
             
-            # First, get an outline for the article
-            outline_prompt = f"""You are an expert writer specializing in {skill} as it relates to the field of {domain}.
-Create a detailed outline for a professional blog post about {skill}. 
-The article should demonstrate expertise and provide value to other professionals in this or related fields.
-Include sections for introduction, key concepts, practical applications, examples if relevant, and conclusion.
-Format as a JSON object like this:
-{{
-    "title": "Suggested title for the article",
-    "subtitle": "Compelling subtitle to engage readers",
-    "sections": [
-        {{
-            "heading": "Introduction",
-            "bullet_points": [
-                "Key point 1",
-                "Key point 2"
-            ]
-        }},
-        {{
-            "heading": "Section name",
-            "bullet_points": [
-                "Detail 1",
-                "Detail 2"
-            ]
-        }}
-    ],
-    "tags": ["suggested", "tags", "for", "medium"]
-}}"""
-            
-            model = genai.GenerativeModel('gemini-1.5-pro')
-            outline_response = model.generate_content(
-                outline_prompt,
-                generation_config={
-                    "max_output_tokens": 2000,
-                    "temperature": 0.2,
-                }
-            )
-            
-            # Clean up the response and extract JSON
-            outline_text = outline_response.text.strip()
-            outline_text = outline_text.replace('```json', '').replace('```', '')
-            
-            try:
-                outline = json.loads(outline_text)
-                logger.info(f"Generated outline with {len(outline['sections'])} sections")
-            except json.JSONDecodeError:
-                logger.error(f"Failed to parse outline JSON: {outline_text[:100]}...")
-                return None
-            
-            # Now, generate the full article based on the outline
-            article_prompt = f"""You are an expert writer specializing in {skill} as it relates to the field of {domain}.
-Write a comprehensive, engaging, and well-informed blog post about {skill} using this outline:
-{json.dumps(outline, indent=2)}
+            # Define expected structure for outline
+            outline_structure = {
+                "title": str,
+                "subtitle": str,
+                "sections": [{
+                    "heading": str,
+                    "bullet_points": [str]
+                }],
+                "tags": [str]
+            }
+
+            # Example outline data
+            example_outline = {
+                "title": "Mastering Cloud Architecture: Essential Skills for Modern Tech Leaders",
+                "subtitle": "A comprehensive guide to cloud infrastructure design and implementation",
+                "sections": [
+                    {
+                        "heading": "Introduction",
+                        "bullet_points": [
+                            "The evolution of cloud computing",
+                            "Why cloud architecture matters today"
+                        ]
+                    },
+                    {
+                        "heading": "Core Concepts",
+                        "bullet_points": [
+                            "Distributed systems fundamentals",
+                            "Scalability patterns and practices"
+                        ]
+                    }
+                ],
+                "tags": ["Cloud Computing", "Architecture", "Technology", "Professional Development"]
+            }
+
+            # Get structured outline
+            outline = self.structured_prompt.get_structured_response(
+                prompt=f"""You are an expert writer specializing in {skill} as it relates to the field of {domain}.
+Create a detailed outline for a professional blog post about {skill}.
 
 The article should:
 1. Show deep expertise (this will be published on Medium to demonstrate professional knowledge)
+2. Include practical examples relevant to the {domain} field
+3. Be well-structured and comprehensive
+4. Target a professional audience
+
+Create an outline with clear sections and key points to cover.""",
+                expected_structure=outline_structure,
+                example_data=example_outline
+            )
+
+            if not outline:
+                logger.error("Failed to generate article outline")
+                return None
+
+            # Define expected structure for full article
+            article_structure = {
+                "title": str,
+                "subtitle": str,
+                "content": str,
+                "tags": [str],
+                "generated_at": str,
+                "skill": str,
+                "domain": str
+            }
+
+            # Example article data
+            example_article = {
+                "title": "Mastering Cloud Architecture: Essential Skills for Modern Tech Leaders",
+                "subtitle": "A comprehensive guide to cloud infrastructure design and implementation",
+                "content": "# Mastering Cloud Architecture\n\nCloud architecture has become...",
+                "tags": ["Cloud Computing", "Architecture", "Technology", "Professional Development"],
+                "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "skill": "Cloud Architecture",
+                "domain": "Technology"
+            }
+
+            # Generate full article based on outline
+            article_data = self.structured_prompt.get_structured_response(
+                prompt=f"""You are an expert writer specializing in {skill} as it relates to the field of {domain}.
+Write a comprehensive, engaging, and well-informed blog post about {skill} using this outline:
+
+{json.dumps(outline, indent=2)}
+
+The article should:
+1. Show deep expertise
 2. Include practical examples relevant to the {domain} field
 3. Use Markdown formatting
 4. Have a professional but engaging tone
 5. Be well-structured with clear headings (use # for main heading, ## for section headings)
 6. Be between 1000-1500 words
-7. Include a brief author bio at the end that mentions you're a {domain} professional seeking new opportunities
-
-Title your post using the suggested title from the outline."""
-            
-            article_response = model.generate_content(
-                article_prompt,
-                generation_config={
-                    "max_output_tokens": 8000,
-                    "temperature": 0.3,
-                }
+7. Include a brief author bio at the end that mentions you're a {domain} professional seeking new opportunities""",
+                expected_structure=article_structure,
+                example_data=example_article
             )
-            
-            article_content = article_response.text.strip()
-            
-            # Extract title for return value
-            title = outline.get('title', f"Professional Guide to {skill}")
-            
-            # Generate appropriate tags based on the domain and skill
-            default_tags = [skill, domain, "Career Development", "Professional Growth"]
-            
-            # Create the complete article data
-            article_data = {
-                'title': title,
-                'subtitle': outline.get('subtitle', f"Essential insights into {skill} for professionals in {domain}"),
-                'content': article_content,
-                'tags': outline.get('tags', default_tags),
-                'generated_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                'skill': skill,
-                'domain': domain
-            }
-            
-            logger.info(f"Generated article: {article_data['title']} ({len(article_content)} chars)")
-            return article_data
+
+            if article_data:
+                logger.info(f"Generated article: {article_data['title']} ({len(article_data['content'])} chars)")
+                return article_data
+
+            logger.error("Failed to generate article content")
+            return None
+
         except Exception as e:
             logger.error(f"Error generating article: {str(e)}")
             return None

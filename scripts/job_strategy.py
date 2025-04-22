@@ -17,7 +17,10 @@ from logging_utils import setup_logging
 from job_search import search_linkedin_jobs
 from document_generator import generate_documents_for_jobs
 from strategy_generator import generate_daily_strategy, generate_weekly_focus
-from strategy_formatter import format_strategy_output, format_strategy_output_plain
+from strategy_formatter import (
+    format_strategy_output_markdown as format_strategy_output,
+    format_strategy_output_plain
+)
 from recruiter_finder import get_recruiter_finder
 from gcs_utils import gcs
 

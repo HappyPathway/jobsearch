@@ -7,11 +7,39 @@ from bs4 import BeautifulSoup
 import re
 import time
 import random
+import google.generativeai as genai
+from dotenv import load_dotenv
 from logging_utils import setup_logging
-from models import JobCache, JobApplication
+from models import JobCache, JobApplication, Base, get_engine
 from utils import session_scope
+from structured_prompt import StructuredPrompt
 
 logger = setup_logging('job_search')
+
+# Configure Gemini
+load_dotenv()
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if not GEMINI_API_KEY:
+    raise ValueError("Please set GEMINI_API_KEY environment variable")
+genai.configure(api_key=GEMINI_API_KEY)
+
+# Initialize StructuredPrompt
+structured_prompt = StructuredPrompt()
+
+def ensure_database():
+    """Ensure database exists and has correct schema"""
+    try:
+        # This will create tables if they don't exist
+        Base.metadata.create_all(get_engine())
+        logger.info("Database schema verified")
+        return True
+    except Exception as e:
+        logger.error(f"Error ensuring database schema: {str(e)}")
+        return False
+
+# Ensure database is initialized before running job search
+if not ensure_database():
+    raise RuntimeError("Failed to initialize database")
 
 def normalize_linkedin_url(url):
     """Normalize LinkedIn job URLs to ensure consistent matching"""
@@ -90,12 +118,31 @@ def get_cached_jobs():
                     'description': job.description,
                     'first_seen_date': job.first_seen_date,
                     'last_seen_date': job.last_seen_date,
+                    'location': job.location,
+                    'post_date': job.post_date,
+                    'search_query': job.search_query,
+                    
+                    # Core analysis fields
                     'match_score': job.match_score,
                     'application_priority': job.application_priority,
                     'key_requirements': json.loads(job.key_requirements) if job.key_requirements else [],
                     'culture_indicators': json.loads(job.culture_indicators) if job.culture_indicators else [],
                     'career_growth_potential': job.career_growth_potential,
-                    'search_query': job.search_query
+                    
+                    # Enhanced analysis fields
+                    'total_years_experience': job.total_years_experience,
+                    'candidate_gaps': json.loads(job.candidate_gaps) if job.candidate_gaps else [],
+                    'location_type': job.location_type,
+                    
+                    # Company overview fields
+                    'company_size': job.company_size,
+                    'company_stability': job.company_stability,
+                    'glassdoor_rating': job.glassdoor_rating,
+                    'employee_count': job.employee_count,
+                    'year_founded': job.year_founded,
+                    'growth_stage': job.growth_stage,
+                    'market_position': job.market_position,
+                    'development_opportunities': json.loads(job.development_opportunities) if job.development_opportunities else []
                 } for job in jobs
             }
             logger.info(f"Retrieved {len(cached_jobs)} cached jobs")
@@ -123,7 +170,7 @@ def get_applied_jobs():
         return {}
 
 def collect_job_links(query, location="United States", limit=5):
-    """Just collect job links and basic info without analysis"""
+    """Collect job links and basic info using Gemini for parsing"""
     logger.info(f"Collecting job links for query: {query}")
     try:
         base_url = "https://www.linkedin.com/jobs/search"
@@ -141,43 +188,67 @@ def collect_job_links(query, location="United States", limit=5):
         }
         
         response = requests.get(base_url, params=params, headers=headers)
-        soup = BeautifulSoup(response.text, 'html.parser')
         
-        jobs = []
-        seen_urls = set()  # Track URLs within this query
-        job_cards = soup.find_all("div", class_="base-card")
+        # Define expected structure
+        expected_structure = [{
+            "url": str,
+            "title": str,
+            "company": str,
+            "location": str,
+            "post_date": str,
+            "description": str
+        }]
+
+        # Example data
+        example_data = [{
+            "url": "https://www.linkedin.com/jobs/view/123456",
+            "title": "Senior Cloud Architect",
+            "company": "Tech Corp",
+            "location": "Remote",
+            "post_date": "2 days ago",
+            "description": "Looking for an experienced architect..."
+        }]
+
+        # Initialize StructuredPrompt
+        structured_prompt = StructuredPrompt()
+
+        # Get structured response
+        jobs = structured_prompt.get_structured_response(
+            prompt=f"""Extract job listings from this LinkedIn search results page HTML.
+Each job listing should have a URL, title, company name, location, posting date, and description.
+Ensure location and post_date are separate fields, not combined in the description.
+
+HTML content:
+{response.text}""",
+            expected_structure=expected_structure,
+            example_data=example_data
+        )
+
+        if not jobs:
+            logger.error("Failed to parse job listings")
+            return []
+
+        # Clean up and deduplicate jobs
+        cleaned_jobs = []
+        seen_urls = set()
         
-        for card in job_cards:
-            try:
-                title_elem = card.find("h3", class_="base-search-card__title")
-                company_elem = card.find("h4", class_="base-search-card__subtitle")
-                link_elem = card.find("a", class_="base-card__full-link")
-                description_elem = card.find("div", class_="base-search-card__metadata")
+        for job in jobs:
+            # Normalize URL
+            url = job['url']
+            if not url.startswith('http'):
+                url = f"https://www.linkedin.com{url}"
+            
+            if url not in seen_urls:
+                seen_urls.add(url)
+                job['url'] = url
+                cleaned_jobs.append(job)
                 
-                if title_elem and company_elem and link_elem:
-                    url = normalize_linkedin_url(link_elem.get("href"))
-                    
-                    # Skip if we've seen this URL in this query
-                    if url in seen_urls:
-                        continue
-                        
-                    seen_urls.add(url)
-                    jobs.append({
-                        "url": url,
-                        "title": title_elem.get_text(strip=True),
-                        "company": company_elem.get_text(strip=True),
-                        "description": description_elem.get_text(strip=True) if description_elem else "",
-                        "search_query": query
-                    })
-                    
-                    if len(jobs) >= limit:
-                        break
-            except Exception as e:
-                logger.error(f"Error parsing job card: {str(e)}")
-                continue
-        
-        logger.info(f"Collected {len(jobs)} unique job links for query: {query}")
-        return jobs
+                if len(cleaned_jobs) >= limit:
+                    break
+
+        logger.info(f"Found {len(cleaned_jobs)} unique jobs")
+        return cleaned_jobs
+
     except Exception as e:
         logger.error(f"Error collecting job links: {str(e)}")
         return []
@@ -214,25 +285,7 @@ def search_linkedin_jobs(query, location="United States", limit=2):
 
     # Limit to requested number after deduplication
     jobs = jobs[:limit]
-
-    # Load profile data for personalization
-    profile_path = os.path.join(root_dir, 'inputs', 'profile.json')
-    try:
-        with open(profile_path) as f:
-            profile_data = json.load(f)
-        contact_info = profile_data.get('contact_info', {})
-    except FileNotFoundError:
-        logger.error(f"Profile data not found at {profile_path}")
-        contact_info = {}
-    except json.JSONDecodeError as e:
-        logger.error(f"Error parsing profile data: {str(e)}")
-        contact_info = {}
     
-    # Add contact info to all jobs
-    for job in jobs:
-        job['contact_info'] = contact_info
-    
-    # Return filtered jobs (analysis will be done separately)
     logger.info(f"Returning {len(jobs)} filtered jobs for query: {query}")
     return jobs
 
@@ -247,6 +300,7 @@ def update_job_cache(jobs, analyzed_jobs):
             for job in jobs:
                 url = job['url']
                 analysis = analyzed_jobs.get(url, {})
+                company_overview = analysis.get('company_overview', {})
                 
                 # Check if job exists
                 cached_job = session.query(JobCache).filter_by(url=url).first()
@@ -254,11 +308,32 @@ def update_job_cache(jobs, analyzed_jobs):
                 if cached_job:
                     # Update existing job
                     cached_job.last_seen_date = datetime.now().strftime("%Y-%m-%d")
+                    cached_job.location = job.get('location', '')
+                    cached_job.post_date = job.get('post_date', '')
+                    cached_job.description = job.get('description', '')
+                    
+                    # Core analysis fields
                     cached_job.match_score = analysis.get('match_score', 0)
                     cached_job.application_priority = analysis.get('application_priority', 'low')
                     cached_job.key_requirements = json.dumps(analysis.get('key_requirements', []))
                     cached_job.culture_indicators = json.dumps(analysis.get('culture_indicators', []))
                     cached_job.career_growth_potential = analysis.get('career_growth_potential', 'unknown')
+                    
+                    # Enhanced analysis fields
+                    cached_job.total_years_experience = analysis.get('total_years_experience', 0)
+                    cached_job.candidate_gaps = json.dumps(analysis.get('candidate_gaps', []))
+                    cached_job.location_type = analysis.get('location_type', 'unknown')
+                    
+                    # Company overview fields from Glassdoor/analysis
+                    cached_job.company_size = company_overview.get('size', 'unknown')
+                    cached_job.company_stability = company_overview.get('stability', 'unknown')
+                    cached_job.glassdoor_rating = company_overview.get('glassdoor_rating', 'unknown')
+                    cached_job.employee_count = company_overview.get('employee_count', 'unknown')
+                    cached_job.year_founded = company_overview.get('year_founded', 'unknown')
+                    cached_job.growth_stage = company_overview.get('growth_stage', 'unknown')
+                    cached_job.market_position = company_overview.get('market_position', 'unknown')
+                    cached_job.development_opportunities = json.dumps(company_overview.get('development_opportunities', []))
+                    
                     updated_count += 1
                 else:
                     # Insert new job
@@ -266,15 +341,34 @@ def update_job_cache(jobs, analyzed_jobs):
                         url=url,
                         title=job['title'],
                         company=job['company'],
-                        description=job['description'],
+                        location=job.get('location', ''),
+                        post_date=job.get('post_date', ''),
+                        description=job.get('description', ''),
                         first_seen_date=datetime.now().strftime("%Y-%m-%d"),
                         last_seen_date=datetime.now().strftime("%Y-%m-%d"),
+                        search_query=job['search_query'],
+                        
+                        # Core analysis fields
                         match_score=analysis.get('match_score', 0),
                         application_priority=analysis.get('application_priority', 'low'),
                         key_requirements=json.dumps(analysis.get('key_requirements', [])),
                         culture_indicators=json.dumps(analysis.get('culture_indicators', [])),
                         career_growth_potential=analysis.get('career_growth_potential', 'unknown'),
-                        search_query=job['search_query']
+                        
+                        # Enhanced analysis fields
+                        total_years_experience=analysis.get('total_years_experience', 0),
+                        candidate_gaps=json.dumps(analysis.get('candidate_gaps', [])),
+                        location_type=analysis.get('location_type', 'unknown'),
+                        
+                        # Company overview fields from Glassdoor/analysis
+                        company_size=company_overview.get('size', 'unknown'),
+                        company_stability=company_overview.get('stability', 'unknown'),
+                        glassdoor_rating=company_overview.get('glassdoor_rating', 'unknown'),
+                        employee_count=company_overview.get('employee_count', 'unknown'),
+                        year_founded=company_overview.get('year_founded', 'unknown'),
+                        growth_stage=company_overview.get('growth_stage', 'unknown'),
+                        market_position=company_overview.get('market_position', 'unknown'),
+                        development_opportunities=json.dumps(company_overview.get('development_opportunities', []))
                     )
                     session.add(new_job)
                     new_count += 1

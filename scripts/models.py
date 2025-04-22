@@ -1,37 +1,104 @@
-from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, Table, Text, event
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent))
+
+from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, Table, Text, event, inspect, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker, Session
-from pathlib import Path
 from contextlib import contextmanager
-from gcs_utils import gcs
-from logging_utils import setup_logging
+from scripts.gcs_utils import GCSManager
+from scripts.logging_utils import setup_logging
 
 logger = setup_logging('models')
+gcs = GCSManager()
 
 Base = declarative_base()
 
+def create_tables_if_missing(engine):
+    """Create missing tables in the database"""
+    inspector = inspect(engine)
+    existing_tables = inspector.get_table_names()
+    
+    with engine.begin() as conn:
+        for table in Base.metadata.sorted_tables:
+            if table.name not in existing_tables:
+                logger.info(f"Creating missing table: {table.name}")
+                table.create(conn)
+
+def check_and_update_schema(engine):
+    """Check if all columns exist and add missing ones"""
+    inspector = inspect(engine)
+    create_tables_if_missing(engine)
+    
+    with engine.begin() as conn:
+        for table in Base.metadata.sorted_tables:
+            existing_columns = {col['name'] for col in inspector.get_columns(table.name)}
+            for column in table.columns:
+                if column.name not in existing_columns:
+                    # SQLite doesn't support ALTER TABLE ADD COLUMN with constraints
+                    # So we need to handle defaults and nullable differently
+                    column_type = column.type.compile(engine.dialect)
+                    
+                    # Handle default values for existing rows
+                    default_value = "NULL"
+                    if column.default is not None:
+                        if isinstance(column.default.arg, str):
+                            default_value = f"'{column.default.arg}'"
+                        else:
+                            default_value = str(column.default.arg)
+                    elif not column.nullable:
+                        if isinstance(column.type, String):
+                            default_value = "''"
+                        elif isinstance(column.type, (Integer, Float)):
+                            default_value = "0"
+                        else:
+                            default_value = "NULL"
+                    
+                    # SQLite specific ALTER TABLE
+                    sql = text(f"ALTER TABLE {table.name} ADD COLUMN {column.name} {column_type} DEFAULT {default_value}")
+                    
+                    try:
+                        conn.execute(sql)
+                        # Remove the default constraint if it wasn't originally specified
+                        if column.default is None and not column.nullable:
+                            update_sql = text(f"UPDATE {table.name} SET {column.name} = {default_value}")
+                            conn.execute(update_sql)
+                        logger.info(f"Added column {column.name} to table {table.name}")
+                    except Exception as e:
+                        logger.error(f"Error adding column {column.name} to {table.name}: {str(e)}")
+                        raise
+
 def get_engine():
     """Get SQLAlchemy engine with latest database from GCS"""
-    gcs.sync_db()
-    return create_engine(f'sqlite:///{gcs.local_db_path}')
+    gcs.sync_db()  # Just sync, don't handle locks
+    engine = create_engine(f'sqlite:///{gcs.local_db_path}')
+    check_and_update_schema(engine)
+    return engine
 
 engine = get_engine()
 SessionFactory = sessionmaker(bind=engine)
 
 @contextmanager
 def get_session():
-    """Session context manager that syncs with GCS"""
-    session = SessionFactory()
+    """Session context manager that handles GCS sync and locking"""
+    if not gcs.acquire_lock():
+        raise Exception("Could not acquire database lock")
     try:
-        yield session
-        session.commit()
-        # Upload to GCS after successful commit
-        gcs.upload_db()
-    except:
-        session.rollback()
-        raise
+        gcs.sync_db()  # Sync after acquiring lock
+        session = SessionFactory()
+        try:
+            yield session
+            session.commit()
+            # Upload to GCS after successful commit
+            blob = gcs.bucket.blob(gcs.db_blob_name)
+            blob.upload_from_filename(gcs.local_db_path)
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
     finally:
-        session.close()
+        gcs.release_lock()  # Always release lock
 
 # Association table for experience-skill many-to-many relationship
 experience_skills = Table(
@@ -70,6 +137,8 @@ class TargetRole(Base):
     reasoning = Column(Text)
     source = Column(String)
     last_updated = Column(String)
+    requirements = Column(Text)  # JSON array of requirements
+    next_steps = Column(Text)  # JSON array of action items
 
 class ResumeSection(Base):
     __tablename__ = 'resume_sections'
@@ -114,14 +183,31 @@ class JobCache(Base):
     title = Column(String)
     company = Column(String)
     description = Column(Text)
+    location = Column(String)
+    post_date = Column(String)
     first_seen_date = Column(String)
     last_seen_date = Column(String)
     match_score = Column(Float)
     application_priority = Column(String)
-    key_requirements = Column(Text)
-    culture_indicators = Column(Text)
+    key_requirements = Column(Text)  # JSON array
+    culture_indicators = Column(Text)  # JSON array
     career_growth_potential = Column(String)
     search_query = Column(String)
+    
+    # New fields for enhanced analysis
+    total_years_experience = Column(Integer, default=0)
+    candidate_gaps = Column(Text)  # JSON array
+    location_type = Column(String, default='unknown')  # remote|hybrid|onsite
+    
+    # Company overview fields
+    company_size = Column(String)  # startup|midsize|large|enterprise
+    company_stability = Column(String)  # high|medium|low
+    glassdoor_rating = Column(String)
+    employee_count = Column(String)
+    year_founded = Column(String)
+    growth_stage = Column(String)  # early|growth|mature|declining
+    market_position = Column(String)  # leader|challenger|follower
+    development_opportunities = Column(Text)  # JSON array
     
     applications = relationship('JobApplication', back_populates='job')
 

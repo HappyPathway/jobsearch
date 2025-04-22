@@ -2,6 +2,7 @@
 from pathlib import Path
 import shutil
 import json
+import re
 from datetime import datetime
 from jinja2 import Environment, FileSystemLoader
 from logging_utils import setup_logging
@@ -11,6 +12,7 @@ from dotenv import load_dotenv
 import os
 import tempfile
 from gcs_utils import gcs
+from structured_prompt import StructuredPrompt
 
 logger = setup_logging('github_pages')
 load_dotenv()
@@ -19,14 +21,27 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 def generate_tagline(experiences, skills, target_roles):
     """Generate a professional tagline using Gemini"""
     try:
-        model = genai.GenerativeModel('gemini-1.5-pro')
-        
+        # Initialize StructuredPrompt
+        structured_prompt = StructuredPrompt()
+
         # Prepare context for Gemini
         recent_exp = experiences[0] if experiences else None
         top_skills = [skill.skill_name for skill in skills[:5]]
         top_role = target_roles[0] if target_roles else None
-        
-        prompt = f"""Create a short, impactful professional tagline (one line, no more than 10 words).
+
+        # Define expected structure
+        expected_structure = {
+            "tagline": str
+        }
+
+        # Example data
+        example_data = {
+            "tagline": "Senior Cloud Architect Specializing in Enterprise Digital Transformation"
+        }
+
+        # Get structured response
+        response = structured_prompt.get_structured_response(
+            prompt=f"""Create a short, impactful professional tagline (one line, no more than 10 words).
 Focus on my core expertise and career level.
 
 Current Role: {recent_exp.title if recent_exp else ""}
@@ -38,20 +53,18 @@ The tagline should:
 2. Reflect senior/principal level
 3. Emphasize technical leadership
 4. Avoid buzzwords
-5. Sound natural, not marketing-speak"""
-
-        response = model.generate_content(
-            prompt,
-            generation_config={
-                "max_output_tokens": 50,
-                "temperature": 0.2,
-            }
+5. Sound natural, not marketing-speak""",
+            expected_structure=expected_structure,
+            example_data=example_data
         )
-        
-        # Clean up response - remove quotes if present
-        tagline = response.text.strip().strip('"').strip("'")
-        return tagline
-        
+
+        if response:
+            tagline = response.get('tagline', '').strip().strip('"').strip("'")
+            return tagline
+
+        logger.error("Failed to generate tagline")
+        return "Senior Technology Leader & Cloud Architecture Expert"
+
     except Exception as e:
         logger.error(f"Error generating tagline: {str(e)}")
         return "Senior Technology Leader & Cloud Architecture Expert"
@@ -59,8 +72,9 @@ The tagline should:
 def generate_professional_summary(experiences, skills, target_roles):
     """Generate a professional summary using Gemini"""
     try:
-        model = genai.GenerativeModel('gemini-1.5-pro')
-        
+        # Initialize StructuredPrompt
+        structured_prompt = StructuredPrompt()
+
         # Prepare context for Gemini
         exp_context = "\n".join([
             f"- {exp.title} at {exp.company} ({exp.start_date} - {exp.end_date}): {exp.description}"
@@ -73,12 +87,40 @@ def generate_professional_summary(experiences, skills, target_roles):
             f"- {role.role_name} (Match Score: {role.match_score}): {role.reasoning}"
             for role in target_roles[:3]
         ])
-        
-        prompt = f"""As an expert career advisor, create a concise 2-3 paragraph professional summary.
-Focus on high-level career narrative, key strengths, and target roles.
-Write in first person. Be specific but concise.
 
-Recent Experience:
+        # Define expected structure
+        expected_structure = {
+            "headline": str,
+            "summary": [str],
+            "key_points": [str],
+            "target_roles": [str]
+        }
+
+        # Example data
+        example_data = {
+            "headline": "Results-driven technology leader with 15+ years of cloud and infrastructure expertise",
+            "summary": [
+                "Experienced architect specializing in cloud transformation and DevOps practices",
+                "Proven track record of leading complex technical initiatives and high-performing teams",
+                "Passionate about implementing innovative solutions that drive business value"
+            ],
+            "key_points": [
+                "Led enterprise-wide cloud migration initiatives",
+                "Implemented modern DevOps practices and tooling",
+                "Reduced infrastructure costs by 40%"
+            ],
+            "target_roles": [
+                "Senior Cloud Architect",
+                "Platform Engineering Leader",
+                "DevOps Director"
+            ]
+        }
+
+        # Get structured response
+        response = structured_prompt.get_structured_response(
+            prompt=f"""Create a structured professional summary that showcases expertise and career goals.
+
+Experience:
 {exp_context}
 
 Key Skills:
@@ -87,22 +129,32 @@ Key Skills:
 Target Roles:
 {roles_context}
 
-Write a compelling summary that:
-1. Highlights my expertise and impact
-2. Shows progression and growth
-3. Indicates what roles I'm targeting
-4. Emphasizes unique value proposition"""
-
-        response = model.generate_content(
-            prompt,
-            generation_config={
-                "max_output_tokens": 500,
-                "temperature": 0.2,
-            }
+Create a compelling summary that:
+1. Opens with an attention-grabbing headline
+2. Provides 2-3 paragraphs of career narrative
+3. Highlights key achievements and impact
+4. Aligns with target roles
+5. Uses strong, active language
+6. Maintains professional tone""",
+            expected_structure=expected_structure,
+            example_data=example_data
         )
-        
-        return response.text.strip()
-        
+
+        if response:
+            # Format the summary sections
+            formatted_summary = "\n\n".join([
+                response['headline'],
+                *response['summary'],
+                "\nKey Points:",
+                *[f"• {point}" for point in response['key_points']],
+                "\nTarget Roles:",
+                *[f"• {role}" for role in response['target_roles']]
+            ])
+            return formatted_summary
+
+        logger.error("Failed to generate professional summary")
+        return ""
+
     except Exception as e:
         logger.error(f"Error generating professional summary: {str(e)}")
         return ""

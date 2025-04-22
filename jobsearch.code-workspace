@@ -2,6 +2,9 @@
 	"folders": [
 		{
 			"path": "."
+		},
+		{
+			"path": "../Clover/terraform-google-http_cloudfunction"
 		}
 	],
 	"settings": {}
