@@ -4,6 +4,7 @@ from google.cloud import storage
 from pathlib import Path
 import json
 import time
+import os
 from .logging import logger
 
 class GCSManager:

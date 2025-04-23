@@ -1,7 +1,7 @@
 import os
-from logging_utils import setup_logging
-import generate_documents
-from gcs_utils import gcs
+from jobsearch.core.logging_utils import setup_logging
+from scripts import generate_documents
+from jobsearch.core.storage import gcs
 
 logger = setup_logging('document_generator')
 

@@ -2,8 +2,8 @@ import os
 import json
 from pathlib import Path
 from datetime import datetime
-from logging_utils import setup_logging
-from gcs_utils import gcs
+from jobsearch.core.logging_utils import setup_logging
+from jobsearch.core.storage import gcs
 
 logger = setup_logging('strategy_formatter')
 

@@ -2,13 +2,14 @@
 from google.cloud import storage
 from google.cloud.exceptions import Conflict
 import os
-from logging_utils import setup_logging
+from ..core.logging import setup_logging
 from pathlib import Path
 import json
 import time
 import random
 import string
 import subprocess
+import sys
 
 logger = setup_logging('setup_gcs')
 
@@ -23,8 +24,19 @@ def get_repo_identifier():
             check=True
         )
         url = result.stdout.strip()
-        # Extract org/repo from URL and create a slug
-        parts = url.rstrip('.git').split('/')
+        
+        # Handle SSH and HTTPS URLs
+        if '@' in url:  # SSH URL format
+            # Convert git@github.com:org/repo.git to org-repo
+            path = url.split('@')[1].split(':')[1]
+        else:  # HTTPS URL format
+            # Extract path after hostname
+            path = url.split('/')[-2:]
+            path = '/'.join(path)
+            
+        # Clean up the path
+        path = path.rstrip('.git')
+        parts = path.split('/')
         return f"{parts[-2]}-{parts[-1]}".lower()
     except Exception as e:
         logger.warning(f"Could not get git remote URL: {e}")
@@ -135,4 +147,8 @@ def setup_gcs_infrastructure():
         raise
 
 if __name__ == "__main__":
-    setup_gcs_infrastructure()
+    if len(sys.argv) > 1 and sys.argv[1] == "init":
+        setup_gcs_infrastructure()
+    else:
+        print("Usage: python -m jobsearch.core.setup_storage init")
+        sys.exit(1)

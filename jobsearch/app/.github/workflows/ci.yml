@@ -1,0 +1,84 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'jobsearch/app/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'jobsearch/app/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.10]
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ..  # Install jobsearch package
+        pip install -e .[dev]  # Install API with dev dependencies
+        
+    - name: Run linting
+      run: |
+        black . --check
+        isort . --check
+        mypy .
+        
+    - name: Run tests
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS: tests/data/mock_credentials.json
+        GEMINI_API_KEY: mock-key
+        SLACK_API_TOKEN: mock-token
+        SLACK_CHANNEL_ID: mock-channel
+        MEDIUM_API_KEY: mock-key
+      run: |
+        pytest --cov=app --cov-report=xml
+        
+    - name: Upload coverage
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: true
+
+  build:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Build and push
+      uses: docker/build-push-action@v5
+      with:
+        context: ../..  # Root of jobsearch package
+        file: ./Dockerfile
+        push: true
+        tags: |
+          ghcr.io/${{ github.repository_owner }}/jobsearch-api:latest
+          ghcr.io/${{ github.repository_owner }}/jobsearch-api:${{ github.sha }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max

@@ -6,8 +6,8 @@ from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker, Session
 from contextlib import contextmanager
-from scripts.gcs_utils import GCSManager
-from scripts.logging_utils import setup_logging
+from jobsearch.core.storage import GCSManager
+from jobsearch.core.logging_utils import setup_logging
 
 logger = setup_logging('models')
 gcs = GCSManager()

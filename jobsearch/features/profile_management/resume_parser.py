@@ -6,10 +6,10 @@ import os
 import json
 import re
 import tempfile
-from logging_utils import setup_logging
-from models import Session, ResumeSection, ResumeExperience, ResumeEducation
-from gcs_utils import gcs
-from structured_prompt import StructuredPrompt
+from jobsearch.core.logging import setup_logging
+from jobsearch.core.database import Session, ResumeSection, ResumeExperience, ResumeEducation
+from jobsearch.core.storage import gcs
+from jobsearch.core.ai import StructuredPrompt
 
 logger = setup_logging('resume_parser')
 

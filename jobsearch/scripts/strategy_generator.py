@@ -277,3 +277,74 @@ def generate_strategy() -> Dict:
     except Exception as e:
         logger.error(f"Error in strategy generation: {str(e)}")
         return {'success': False, 'error': str(e)}
+
+def generate_weekly_focus(job_listings=None) -> str:
+    """Generate weekly focus for job search strategy
+    
+    Args:
+        job_listings: Optional list of job listings to consider
+        
+    Returns:
+        str: Weekly focus statement
+    """
+    try:
+        logger.info("Generating weekly focus")
+        
+        prompt = StructuredPrompt()
+        
+        # If no job listings provided, check database
+        if not job_listings or len(job_listings) == 0:
+            try:
+                with get_session() as session:
+                    # Get application status metrics
+                    total_applications = session.query(JobApplication).count()
+                    open_applications = session.query(JobApplication).filter(
+                        JobApplication.status.in_(['applied', 'submitted', 'pending'])
+                    ).count()
+                    interview_applications = session.query(JobApplication).filter(
+                        JobApplication.status.in_(['interview', 'technical', 'final'])
+                    ).count()
+                    
+                    # Get high priority jobs
+                    high_priority_count = session.query(JobCache).filter(
+                        JobCache.application_priority == 'high'
+                    ).count()
+            except Exception as e:
+                logger.warning(f"Error getting application metrics: {str(e)}")
+                # Set defaults if database access fails
+                total_applications = 0
+                open_applications = 0
+                interview_applications = 0
+                high_priority_count = 0
+        else:
+            # Use provided job listings
+            total_applications = len(job_listings)
+            high_priority_count = len([j for j in job_listings if j.get('application_priority') == 'high'])
+            open_applications = 0
+            interview_applications = 0
+            
+        # Generate weekly focus with AI
+        result = prompt.get_structured_response(
+            prompt=f"""Generate a weekly focus statement for a job search strategy.
+Consider the following metrics:
+- Total applications: {total_applications}
+- Open applications: {open_applications}
+- Interview stage: {interview_applications}
+- High-priority job opportunities: {high_priority_count}
+
+The weekly focus should be a concise paragraph (3-5 sentences) that provides strategic direction 
+for the week's job search activities.""",
+            expected_structure=str,
+            temperature=0.3
+        )
+        
+        if result:
+            logger.info("Successfully generated weekly focus")
+            return result
+        else:
+            logger.warning("Failed to generate weekly focus, using default")
+            return "This week's focus is on targeting high-quality opportunities that align with your career goals. Prioritize applications for roles with strong skills match and growth potential. Allocate time to follow up on existing applications and prepare for potential interviews. Continue networking with industry professionals to discover hidden opportunities."
+            
+    except Exception as e:
+        logger.error(f"Error generating weekly focus: {str(e)}")
+        return "This week's focus is on applying to high-priority opportunities while continuing to develop relevant skills. Follow up on existing applications and expand your professional network. Review and refine your application materials based on feedback."

@@ -9,10 +9,10 @@ import time
 import random
 import google.generativeai as genai
 from dotenv import load_dotenv
-from logging_utils import setup_logging
-from models import JobCache, JobApplication, Base, get_engine
-from utils import session_scope
-from structured_prompt import StructuredPrompt
+from jobsearch.core.logging_utils import setup_logging
+from jobsearch.core.models import JobCache, JobApplication, Base, get_engine
+from jobsearch.features.common.utils import session_scope
+from jobsearch.core.ai import StructuredPrompt
 
 logger = setup_logging('job_search')
 

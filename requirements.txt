@@ -11,6 +11,10 @@ google-cloud-storage>=2.14.0
 slack-sdk>=3.23.0
 google-cloud-secret-manager
 mcp>=0.1.0
+fastapi>=0.110.0
+uvicorn>=0.27.0
+python-multipart>=0.0.7
+pydantic>=2.6.0
 
 -e .
 

@@ -4,10 +4,10 @@ import os
 import json
 import tempfile
 import re
-from logging_utils import setup_logging
-from models import CoverLetterSection, get_session
-from gcs_utils import gcs
-from structured_prompt import StructuredPrompt
+from jobsearch.core.logging import setup_logging
+from jobsearch.core.database import CoverLetterSection, get_session
+from jobsearch.core.storage import gcs
+from jobsearch.core.ai import StructuredPrompt
 
 logger = setup_logging('cover_letter_parser')
 

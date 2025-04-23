@@ -1,0 +1,30 @@
+{
+  "documents": [
+    {
+      "id": 1,
+      "title": "Resume - TechCorp",
+      "doc_type": "resume",
+      "job_id": 1,
+      "template_name": "default",
+      "gcs_path": "resumes/techcorp_resume.pdf",
+      "created_at": "2025-04-20T14:30:00Z",
+      "modified_at": "2025-04-20T14:30:00Z"
+    },
+    {
+      "id": 2,
+      "title": "Cover Letter - TechCorp",
+      "doc_type": "cover_letter",
+      "job_id": 1,
+      "template_name": "default",
+      "gcs_path": "cover_letters/techcorp_cover.pdf",
+      "created_at": "2025-04-20T14:30:00Z",
+      "modified_at": "2025-04-20T14:30:00Z"
+    }
+  ],
+  "generation_options": {
+    "template_name": "modern",
+    "use_visual_resume": true,
+    "include_projects": true,
+    "writing_enhancement": true
+  }
+}

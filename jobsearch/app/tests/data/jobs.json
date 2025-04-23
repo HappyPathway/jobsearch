@@ -1,0 +1,47 @@
+{
+  "jobs": [
+    {
+      "id": 1,
+      "title": "Senior Software Engineer",
+      "company": "TechCorp",
+      "description": "Looking for an experienced software engineer...",
+      "url": "https://example.com/jobs/1",
+      "location": "San Francisco, CA",
+      "match_score": 0.85,
+      "application_priority": "high",
+      "key_requirements": [
+        "Python",
+        "Cloud Infrastructure",
+        "CI/CD"
+      ],
+      "career_growth_potential": "Excellent opportunity for technical leadership"
+    },
+    {
+      "id": 2,
+      "title": "DevOps Engineer",
+      "company": "CloudTech",
+      "description": "Seeking a DevOps engineer to manage cloud infrastructure...",
+      "url": "https://example.com/jobs/2",
+      "location": "Remote",
+      "match_score": 0.75,
+      "application_priority": "medium",
+      "key_requirements": [
+        "AWS",
+        "Kubernetes",
+        "Terraform"
+      ],
+      "career_growth_potential": "Growing team with opportunities for cloud architecture"
+    }
+  ],
+  "applications": [
+    {
+      "id": 1,
+      "job_id": 1,
+      "status": "applied",
+      "notes": "Had a great initial call",
+      "resume_path": "resumes/techcorp_resume.pdf",
+      "cover_letter_path": "cover_letters/techcorp_cover.pdf",
+      "application_date": "2025-04-20T14:30:00Z"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "github_pages": {
+    "portfolio_url": "https://username.github.io",
+    "repo_path": "/path/to/github/pages/repo",
+    "last_build": "2025-04-20T14:30:00Z"
+  },
+  "medium_articles": [
+    {
+      "title": "My Journey in Cloud Architecture",
+      "content": "This week, I explored several interesting cloud architecture positions...",
+      "job_ids": [1, 2],
+      "published": true,
+      "url": "https://medium.com/@username/my-journey-in-cloud-architecture",
+      "published_at": "2025-04-20T14:30:00Z"
+    }
+  ],
+  "selected_jobs": [
+    {
+      "id": 1,
+      "title": "Senior Software Engineer",
+      "company": "TechCorp",
+      "key_points": [
+        "Cloud-native architecture",
+        "Team leadership opportunity",
+        "Modern tech stack"
+      ]
+    },
+    {
+      "id": 2,
+      "title": "DevOps Engineer",
+      "company": "CloudTech",
+      "key_points": [
+        "Kubernetes expertise",
+        "Infrastructure automation",
+        "DevOps best practices"
+      ]
+    }
+  ]
+}

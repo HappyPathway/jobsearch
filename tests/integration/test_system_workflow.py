@@ -10,7 +10,6 @@ logger = logging.getLogger("integration-test")
 logger.info("[MODULE] test_system_workflow.py loaded.")
 
 WORKSPACE_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
-SCRIPTS_DIR = os.path.join(WORKSPACE_ROOT, 'scripts')
 DB_PATH = os.path.join(WORKSPACE_ROOT, 'career_data.db')
 LOGS_DIR = os.path.join(WORKSPACE_ROOT, 'logs')
 
@@ -23,36 +22,41 @@ def cleanup_generated_files():
         if log_file.endswith('.log'):
             os.remove(os.path.join(LOGS_DIR, log_file))
 
-
 def test_full_system_workflow():
     logger.info("1. Initializing the database...")
-    result = subprocess.run(['python3', 'init_db.py'], cwd=SCRIPTS_DIR, capture_output=True)
-    assert result.returncode == 0, f"init_db.py failed: {result.stderr.decode()}"
+    result = subprocess.run(['python3', '-m', 'jobsearch.core.setup_storage', 'init'], 
+                          cwd=WORKSPACE_ROOT, capture_output=True)
+    assert result.returncode == 0, f"Database initialization failed: {result.stderr.decode()}"
     assert os.path.exists(DB_PATH), "Database was not created."
     logger.info("Database initialized.")
 
     logger.info("2. Parsing LinkedIn profile...")
-    result = subprocess.run(['python3', 'profile_scraper.py'], cwd=SCRIPTS_DIR, capture_output=True)
-    assert result.returncode == 0, f"profile_scraper.py failed: {result.stderr.decode()}"
+    result = subprocess.run(['python3', '-m', 'jobsearch.features.profile_management.scraper'], 
+                          cwd=WORKSPACE_ROOT, capture_output=True)
+    assert result.returncode == 0, f"Profile scraper failed: {result.stderr.decode()}"
     logger.info("LinkedIn profile parsed.")
 
     logger.info("3. Parsing resume...")
-    result = subprocess.run(['python3', 'resume_parser.py'], cwd=SCRIPTS_DIR, capture_output=True)
-    assert result.returncode == 0, f"resume_parser.py failed: {result.stderr.decode()}"
+    result = subprocess.run(['python3', '-m', 'jobsearch.features.profile_management.resume_parser'], 
+                          cwd=WORKSPACE_ROOT, capture_output=True)
+    assert result.returncode == 0, f"Resume parser failed: {result.stderr.decode()}"
     logger.info("Resume parsed.")
 
     logger.info("4. Parsing cover letter...")
-    result = subprocess.run(['python3', 'cover_letter_parser.py'], cwd=SCRIPTS_DIR, capture_output=True)
-    assert result.returncode == 0, f"cover_letter_parser.py failed: {result.stderr.decode()}"
+    result = subprocess.run(['python3', '-m', 'jobsearch.features.profile_management.cover_letter_parser'], 
+                          cwd=WORKSPACE_ROOT, capture_output=True)
+    assert result.returncode == 0, f"Cover letter parser failed: {result.stderr.decode()}"
     logger.info("Cover letter parsed.")
 
     logger.info("5. Combining and summarizing profile data...")
-    result = subprocess.run(['python3', 'combine_and_summarize.py'], cwd=SCRIPTS_DIR, capture_output=True)
-    assert result.returncode == 0, f"combine_and_summarize.py failed: {result.stderr.decode()}"
+    result = subprocess.run(['python3', '-m', 'jobsearch.features.profile_management.summarizer'], 
+                          cwd=WORKSPACE_ROOT, capture_output=True)
+    assert result.returncode == 0, f"Profile summarizer failed: {result.stderr.decode()}"
     logger.info("Profile data combined and summarized.")
 
     logger.info("6. Running job strategy (generates documents)...")
-    result = subprocess.run(['python3', 'job_strategy.py'], cwd=SCRIPTS_DIR, capture_output=True)
+    result = subprocess.run(['python3', '-m', 'jobsearch.features.job_search.strategy'], 
+                          cwd=WORKSPACE_ROOT, capture_output=True)
     
     # For CI environments, we might not have all PDF generation dependencies
     # So we check if this is a WeasyPrint dependency error and skip if needed
@@ -63,7 +67,7 @@ def test_full_system_workflow():
             logger.warning("This is expected in some CI environments without system libraries")
             pytest.skip("WeasyPrint dependencies not available")
         else:
-            assert result.returncode == 0, f"job_strategy.py failed: {stderr}"
+            assert result.returncode == 0, f"Job strategy failed: {stderr}"
     
     assert os.path.exists(os.path.join(LOGS_DIR, 'job_strategy.log'))
     logger.info("Job strategy executed.")

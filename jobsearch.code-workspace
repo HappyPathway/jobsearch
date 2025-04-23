@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "../Clover/terraform-google-http_cloudfunction"
+		},
+		{
+			"path": "../docs/python-sdk"
 		}
 	],
 	"settings": {}

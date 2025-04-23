@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 import os
 import json
 import google.generativeai as genai
-from models import Experience, Skill, TargetRole, get_session
-from structured_prompt import StructuredPrompt
+from jobsearch.core.database import Experience, Skill, TargetRole, get_session
+from jobsearch.core.ai import StructuredPrompt
 
 load_dotenv()
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))

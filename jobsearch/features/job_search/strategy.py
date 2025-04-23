@@ -13,16 +13,16 @@ from dotenv import load_dotenv
 import google.generativeai as genai
 
 # Local module imports
-from logging_utils import setup_logging
-from job_search import search_linkedin_jobs
-from document_generator import generate_documents_for_jobs
-from strategy_generator import generate_daily_strategy, generate_weekly_focus
-from strategy_formatter import (
+from jobsearch.core.logging_utils import setup_logging
+from jobsearch.features.job_search.search import search_linkedin_jobs
+from scripts.document_generator import generate_documents_for_jobs
+from jobsearch.scripts.strategy_generator import generate_daily_strategy, generate_weekly_focus
+from jobsearch.features.strategy_generation.formatter import (
     format_strategy_output_markdown as format_strategy_output,
     format_strategy_output_plain
 )
-from recruiter_finder import get_recruiter_finder
-from gcs_utils import gcs
+from jobsearch.features.job_search.recruiter import get_recruiter_finder
+from jobsearch.core.storage import gcs
 
 # Import Slack notifier
 try:

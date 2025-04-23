@@ -6,6 +6,10 @@ PYTHON=$(VENV_NAME)/bin/python
 PIP=$(VENV_NAME)/bin/pip
 PYTHONPATH=PYTHONPATH="$(shell pwd)"
 
+# Module paths
+JOBSEARCH_MODULE=jobsearch
+FEATURES_MODULE=$(JOBSEARCH_MODULE).features
+
 help:
 	@echo "Available commands:"
 	@echo "  make install         - Set up virtual environment and install dependencies"
@@ -38,26 +42,20 @@ help:
 	@echo "  make generate-docs-for-jobs - Generate documents for high-priority jobs"
 	@echo ""
 	@echo "GitHub Actions workflow commands:"
-	@echo "  make gh-strategy-cleanup  - Run strategy cleanup workflow"
+	@echo "  make gh-strategy-cleanup - Run strategy cleanup workflow"
 	@echo "  make gh-generate-docs    - Run document generation workflow"
-	@echo "  make gh-pages           - Run GitHub Pages workflow"
-	@echo "  make gh-test            - Run integration tests workflow"
-	@echo "  make gh-init            - Run system initialization workflow"
-	@echo "  make gh-job-strategy    - Run job strategy workflow"
-	@echo "  make gh-profile-update  - Run profile update workflow"
+	@echo "  make gh-pages            - Run GitHub Pages workflow"
+	@echo "  make gh-test             - Run integration tests workflow"
+	@echo "  make gh-init             - Run system initialization workflow"
+	@echo "  make gh-job-strategy     - Run job strategy workflow"
+	@echo "  make gh-profile-update   - Run profile update workflow"
+	@echo "  make gh-all              - Run all GitHub Actions workflows in sequence"
 	@echo ""
-	@echo "Orchestration commands:"
-	@echo "  make job-workflow       - Run combined job strategy and document generation workflow"
-	@echo "  make daily-workflow     - Run daily workflow (strategy, documents, GitHub Pages)"
-	@echo "  make full-workflow      - Run full workflow (strategy, documents, applied status, GitHub Pages)"
-	@echo "  make job-search-and-docs - Run job search and document generation"
-	@echo "  make sync-and-publish   - Sync database with GCS and publish GitHub Pages"
-	@echo ""
-	@echo "Terraform commands:"
-	@echo "  make terraform-init    - Initialize Terraform backend"
-	@echo "  make terraform-plan    - Plan Terraform changes"
-	@echo "  make terraform-apply  - Deploy cloud functions with Terraform"
-	@echo "  make terraform-destroy - Destroy cloud functions infrastructure"
+	@echo "Infrastructure management commands:"
+	@echo "  make terraform-init      - Initialize Terraform"
+	@echo "  make terraform-plan      - Generate Terraform plan"
+	@echo "  make terraform-apply     - Apply Terraform changes"
+	@echo "  make terraform-destroy   - Destroy Terraform resources"
 
 venv:
 	python$(PYTHON_VERSION) -m venv $(VENV_NAME)
@@ -65,18 +63,18 @@ venv:
 install: venv
 	$(PIP) install --upgrade pip
 	$(PIP) install -r requirements.txt
-	pip install -e .
+	$(PIP) install -e .
 
 install-dev:
-	pip install -e ".[dev]"
+	$(PIP) install -e ".[dev]"
 
 test:
 	pytest
 
 lint:
-	black jobsearch scripts tests
-	isort jobsearch scripts tests
-	mypy jobsearch scripts tests
+	black $(JOBSEARCH_MODULE) tests
+	isort $(JOBSEARCH_MODULE) tests
+	mypy $(JOBSEARCH_MODULE) tests
 
 clean:
 	rm -rf $(VENV_NAME)
@@ -93,51 +91,80 @@ clean-db: install
 	echo ""; \
 	if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
 		rm -f career_data.db; \
-		$(PYTHONPATH) $(PYTHON) -c "from scripts.gcs_utils import GCSManager; GCSManager().bucket.blob('career_data.db').delete()"; \
+		$(PYTHONPATH) $(PYTHON) -m $(JOBSEARCH_MODULE).core.storage clean-db; \
 		echo "✅ Database files removed"; \
 	fi
 
 migrate-db: install
-	$(PYTHONPATH) $(PYTHON) -c "from scripts.models import get_engine; get_engine()"
+	$(PYTHONPATH) $(PYTHON) -m $(JOBSEARCH_MODULE).core.database migrate
 
 init-db: install migrate-db
-	$(PYTHONPATH) $(PYTHON) scripts/init_db.py
+	$(PYTHONPATH) $(PYTHON) -m $(JOBSEARCH_MODULE).core.setup_storage init
 
 force-unlock: install
-	$(PYTHON) scripts/force_unlock.py $(if $(FORCE),--force)
+	$(PYTHON) -m $(JOBSEARCH_MODULE).core.storage unlock $(if $(FORCE),--force)
 
-scrape-profile:
-	$(PYTHON) scripts/profile_scraper.py
+scrape-profile: init-db
+	$(PYTHON) -m $(FEATURES_MODULE).profile_management.scraper
 
-parse-resume:
-	$(PYTHON) scripts/resume_parser.py
+parse-resume: init-db
+	$(PYTHON) -m $(FEATURES_MODULE).profile_management.resume_parser
 
-parse-cover-letter:
-	$(PYTHON) scripts/cover_letter_parser.py
+parse-cover-letter: init-db
+	$(PYTHON) -m $(FEATURES_MODULE).profile_management.cover_letter_parser
 
-combine-summary:
-	$(PYTHON) scripts/combine_and_summarize.py
+combine-summary: scrape-profile parse-resume parse-cover-letter
+	$(PYTHON) -m $(FEATURES_MODULE).profile_management.summarizer
 
 generate-github-pages:
-	$(PYTHON) scripts/generate_github_pages.py
+	$(PYTHON) -m $(FEATURES_MODULE).web_presence.github_pages
 
-generate-docs: install
-	$(PYTHON) scripts/generate_documents.py
+generate-docs: init-db
+	$(PYTHON) -m $(FEATURES_MODULE).document_generation.generator
 
-mark-applied:
+mark-applied: install
 	@if [ -z "$(URL)" ]; then \
 		echo "Error: URL parameter required. Usage: make mark-applied URL=<job_url> [STATUS=<status>] [NOTES='notes']"; \
 		exit 1; \
 	fi
-	$(PYTHON) scripts/mark_job_applied.py "$(URL)" $(if $(STATUS),--status $(STATUS)) $(if $(NOTES),--notes "$(NOTES)")
-
-slack-list-channels: install
-	$(PYTHON) scripts/slack_notifier.py list-channels
+	$(PYTHON) -m $(FEATURES_MODULE).job_search.tracker "$(URL)" $(if $(STATUS),--status $(STATUS)) $(if $(NOTES),--notes "$(NOTES)")
+	$(MAKE) sync-and-publish
 
 test-integration:
 	pytest tests/integration/
 
 all: scrape-profile parse-resume combine-summary
+
+# Job Strategy targets
+search-jobs: init-db
+	$(PYTHONPATH) $(PYTHON) -m $(FEATURES_MODULE).job_search.search --search-only $(if $(JOB_LIMIT),--job-limit $(JOB_LIMIT))
+
+generate-strategy: search-jobs
+	$(PYTHONPATH) $(PYTHON) -m $(FEATURES_MODULE).job_search.strategy $(if $(JOB_LIMIT),--job-limit $(JOB_LIMIT)) $(if $(NO_SLACK),--no-slack)
+
+generate-strategy-from-file: install
+	$(PYTHONPATH) $(PYTHON) -m $(FEATURES_MODULE).job_search.strategy --strategy-only $(if $(JOB_FILE),--job-file $(JOB_FILE)) $(if $(NO_SLACK),--no-slack)
+
+generate-docs-for-jobs: generate-strategy
+	$(PYTHONPATH) $(PYTHON) -m $(FEATURES_MODULE).job_search.strategy --strategy-only --generate-documents $(if $(JOB_FILE),--job-file $(JOB_FILE))
+
+# Orchestration targets (combined workflows)
+job-workflow: sync-and-publish generate-strategy generate-docs-for-jobs
+	@echo "✅ Completed job workflow: Generated strategy and documents for high-priority jobs"
+
+daily-workflow: sync-and-publish job-workflow generate-github-pages
+	@echo "✅ Completed daily workflow: Generated strategy, documents, and updated GitHub Pages"
+
+full-workflow: job-workflow mark-applied generate-github-pages
+	@echo "✅ Completed full workflow: Generated strategy, documents, updated applied status, and GitHub Pages"
+	@echo "Note: Applied jobs must be specified via URL parameter"
+
+job-search-and-docs: search-jobs generate-docs-for-jobs
+	@echo "✅ Completed job search and document generation"
+
+sync-and-publish: init-db generate-github-pages
+	$(PYTHON) -m $(JOBSEARCH_MODULE).core.storage sync
+	@echo "✅ Synced database with GCS and published GitHub Pages"
 
 # GitHub Actions workflow targets
 gh-strategy-cleanup:
@@ -164,37 +191,7 @@ gh-profile-update:
 # Run all GitHub Actions workflows in sequence
 gh-all: gh-init gh-profile-update gh-job-strategy gh-generate-docs gh-pages gh-test gh-strategy-cleanup
 
-# Job Strategy targets
-search-jobs: install
-	$(PYTHON) scripts/job_strategy.py --search-only $(if $(JOB_LIMIT),--job-limit $(JOB_LIMIT))
-
-generate-strategy: install
-	$(PYTHON) scripts/job_strategy.py $(if $(JOB_LIMIT),--job-limit $(JOB_LIMIT)) $(if $(NO_SLACK),--no-slack)
-
-generate-strategy-from-file: install
-	$(PYTHON) scripts/job_strategy.py --strategy-only $(if $(JOB_FILE),--job-file $(JOB_FILE)) $(if $(NO_SLACK),--no-slack)
-
-generate-docs-for-jobs: install
-	$(PYTHON) scripts/job_strategy.py --strategy-only --generate-documents $(if $(JOB_FILE),--job-file $(JOB_FILE))
-
-# Orchestration targets (combined workflows)
-job-workflow: generate-strategy generate-docs-for-jobs
-	@echo "✅ Completed job workflow: Generated strategy and documents for high-priority jobs"
-
-daily-workflow: job-workflow generate-github-pages
-	@echo "✅ Completed daily workflow: Generated strategy, documents, and updated GitHub Pages"
-
-full-workflow: job-workflow mark-applied generate-github-pages
-	@echo "✅ Completed full workflow: Generated strategy, documents, updated applied status, and GitHub Pages"
-	@echo "Note: Applied jobs must be specified via URL parameter"
-
-job-search-and-docs: search-jobs generate-docs-for-jobs
-	@echo "✅ Completed job search and document generation"
-
-sync-and-publish: generate-github-pages
-	$(PYTHON) scripts/gcs_utils.py sync-db
-	@echo "✅ Synced database with GCS and published GitHub Pages"
-
+# Infrastructure management targets
 terraform-init:
 	cd terraform && terraform init -upgrade
 

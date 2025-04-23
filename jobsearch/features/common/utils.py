@@ -3,8 +3,8 @@ import logging
 from contextlib import contextmanager
 from sqlalchemy.orm import Session
 from pathlib import Path
-from models import SessionFactory
-from gcs_utils import gcs
+from jobsearch.core.models import SessionFactory
+from jobsearch.core.storage import gcs
 
 logger = logging.getLogger(__name__)
 
