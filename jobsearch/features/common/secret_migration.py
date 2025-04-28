@@ -3,7 +3,7 @@
 import os
 from pathlib import Path
 from secrets_manager import secrets
-from logging_utils import setup_logging
+from jobsearch.core.logging import setup_logging
 import json
 import sys
 

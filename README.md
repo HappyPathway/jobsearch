@@ -28,6 +28,19 @@ Job searching traditionally feels like throwing résumés into a void and hoping
 - Google Gemini API key
 - Google Cloud Project access
 
+### Environment Setup
+1. Copy the environment template: `cp .env.example .env`
+2. Update the `.env` file with your configuration
+3. For production, use Google Secret Manager for sensitive values:
+   ```bash
+   # Store a secret
+   gcloud secrets create SECRET_NAME --data-file=/path/to/secret
+
+   # Access in code
+   from jobsearch.core.secrets import secret_manager
+   value = secret_manager.get_secret('SECRET_NAME')
+   ```
+
 ### Setup in 6 Easy Steps
 1. **Clone your repo:** Use this template and clone it locally
 2. **Set up Google Cloud:** Ensure you have proper credentials (the system creates a bucket automatically)

@@ -1,241 +1,153 @@
-#!/usr/bin/env python3
+"""Generate and manage GitHub Pages for professional portfolio."""
 from pathlib import Path
-import shutil
-import json
-import re
+import tempfile
 from datetime import datetime
 from jinja2 import Environment, FileSystemLoader
-from logging_utils import setup_logging
-from models import Experience, Skill, ResumeSection, TargetRole, get_session
-import google.generativeai as genai
-from dotenv import load_dotenv
-import os
-import tempfile
-from gcs_utils import gcs
-from structured_prompt import StructuredPrompt
 
+from jobsearch.core.logging import setup_logging
+from jobsearch.core.database import get_session
+from jobsearch.core.models import Experience, Skill, ResumeSection, TargetRole
+from jobsearch.core.storage import GCSManager
+from jobsearch.core.ai import AIEngine
+from jobsearch.core.markdown import MarkdownGenerator
+from jobsearch.core.schemas import WebPresenceContent, GithubPagesSummary
+
+# Initialize core components
 logger = setup_logging('github_pages')
-load_dotenv()
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+storage = GCSManager()
+ai_engine = AIEngine(feature_name='web_presence')
+markdown = MarkdownGenerator()
 
-def generate_tagline(experiences, skills, target_roles):
-    """Generate a professional tagline using Gemini"""
+async def generate_tagline(experiences: list, skills: list, target_roles: list) -> str:
+    """Generate a professional tagline using core AI Engine."""
     try:
-        # Initialize StructuredPrompt
-        structured_prompt = StructuredPrompt()
+        result = await ai_engine.generate(
+            prompt=f"""Create a professional tagline based on:
+            
+Experience Highlights:
+{markdown.format_experiences(experiences[:3])}
 
-        # Prepare context for Gemini
-        recent_exp = experiences[0] if experiences else None
-        top_skills = [skill.skill_name for skill in skills[:5]]
-        top_role = target_roles[0] if target_roles else None
-
-        # Define expected structure
-        expected_structure = {
-            "tagline": str
-        }
-
-        # Example data
-        example_data = {
-            "tagline": "Senior Cloud Architect Specializing in Enterprise Digital Transformation"
-        }
-
-        # Get structured response
-        response = structured_prompt.get_structured_response(
-            prompt=f"""Create a short, impactful professional tagline (one line, no more than 10 words).
-Focus on my core expertise and career level.
-
-Current Role: {recent_exp.title if recent_exp else ""}
-Top Skills: {', '.join(top_skills)}
-Target Role: {top_role.role_name if top_role else ""}
-
-The tagline should:
-1. Be concise and memorable
-2. Reflect senior/principal level
-3. Emphasize technical leadership
-4. Avoid buzzwords
-5. Sound natural, not marketing-speak""",
-            expected_structure=expected_structure,
-            example_data=example_data
-        )
-
-        if response:
-            tagline = response.get('tagline', '').strip().strip('"').strip("'")
-            return tagline
-
-        logger.error("Failed to generate tagline")
-        return "Senior Technology Leader & Cloud Architecture Expert"
-
-    except Exception as e:
-        logger.error(f"Error generating tagline: {str(e)}")
-        return "Senior Technology Leader & Cloud Architecture Expert"
-
-def generate_professional_summary(experiences, skills, target_roles):
-    """Generate a professional summary using Gemini"""
-    try:
-        # Initialize StructuredPrompt
-        structured_prompt = StructuredPrompt()
-
-        # Prepare context for Gemini
-        exp_context = "\n".join([
-            f"- {exp.title} at {exp.company} ({exp.start_date} - {exp.end_date}): {exp.description}"
-            for exp in experiences[:3]  # Most recent 3 experiences
-        ])
-        
-        top_skills = ", ".join([skill.skill_name for skill in skills[:10]])
-        
-        roles_context = "\n".join([
-            f"- {role.role_name} (Match Score: {role.match_score}): {role.reasoning}"
-            for role in target_roles[:3]
-        ])
-
-        # Define expected structure
-        expected_structure = {
-            "headline": str,
-            "summary": [str],
-            "key_points": [str],
-            "target_roles": [str]
-        }
-
-        # Example data
-        example_data = {
-            "headline": "Results-driven technology leader with 15+ years of cloud and infrastructure expertise",
-            "summary": [
-                "Experienced architect specializing in cloud transformation and DevOps practices",
-                "Proven track record of leading complex technical initiatives and high-performing teams",
-                "Passionate about implementing innovative solutions that drive business value"
-            ],
-            "key_points": [
-                "Led enterprise-wide cloud migration initiatives",
-                "Implemented modern DevOps practices and tooling",
-                "Reduced infrastructure costs by 40%"
-            ],
-            "target_roles": [
-                "Senior Cloud Architect",
-                "Platform Engineering Leader",
-                "DevOps Director"
-            ]
-        }
-
-        # Get structured response
-        response = structured_prompt.get_structured_response(
-            prompt=f"""Create a structured professional summary that showcases expertise and career goals.
-
-Experience:
-{exp_context}
-
-Key Skills:
-{top_skills}
+Core Skills:
+{markdown.format_skills(skills[:5])}
 
 Target Roles:
-{roles_context}
-
-Create a compelling summary that:
-1. Opens with an attention-grabbing headline
-2. Provides 2-3 paragraphs of career narrative
-3. Highlights key achievements and impact
-4. Aligns with target roles
-5. Uses strong, active language
-6. Maintains professional tone""",
-            expected_structure=expected_structure,
-            example_data=example_data
+{markdown.format_target_roles(target_roles[:3])}
+""",
+            output_type=WebPresenceContent
         )
-
-        if response:
-            # Format the summary sections
-            formatted_summary = "\n\n".join([
-                response['headline'],
-                *response['summary'],
-                "\nKey Points:",
-                *[f"• {point}" for point in response['key_points']],
-                "\nTarget Roles:",
-                *[f"• {role}" for role in response['target_roles']]
-            ])
-            return formatted_summary
-
-        logger.error("Failed to generate professional summary")
+        
+        if result:
+            logger.info(f"Generated tagline: {result.tagline}")
+            return result.tagline
+        
+        logger.error("Failed to generate tagline")
         return ""
-
+        
     except Exception as e:
-        logger.error(f"Error generating professional summary: {str(e)}")
+        logger.error(f"Error generating tagline: {str(e)}")
         return ""
 
-def generate_pages():
-    """Generate static GitHub Pages and store in GCS"""
+async def generate_professional_summary(experiences: list, skills: list, target_roles: list) -> str:
+    """Generate a professional summary using core AI Engine."""
     try:
-        # Create temporary directory for generation
+        result = await ai_engine.generate(
+            prompt=f"""Create a professional summary based on:
+
+Experience History:
+{markdown.format_experiences(experiences)}
+
+Skills and Expertise:
+{markdown.format_skills(skills)}
+
+Career Goals:
+{markdown.format_target_roles(target_roles)}
+""",
+            output_type=GithubPagesSummary
+        )
+        
+        if result:
+            summary = markdown.format_summary(
+                title=result.title,
+                highlights=result.highlights,
+                skills=result.skills,
+                goals=result.goals
+            )
+            storage.save_markdown('pages/summary.md', summary)
+            return summary
+            
+        logger.error("Failed to generate summary")
+        return ""
+        
+    except Exception as e:
+        logger.error(f"Error generating summary: {str(e)}")
+        return ""
+
+async def generate_pages() -> bool:
+    """Generate static GitHub Pages and store in GCS."""
+    try:
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_dir_path = Path(temp_dir)
             
-            # Get profile data from database
+            # Get profile data
             with get_session() as session:
                 experiences = session.query(Experience).order_by(Experience.end_date.desc()).all()
                 skills = session.query(Skill).all()
                 target_roles = session.query(TargetRole).order_by(TargetRole.match_score.desc()).all()
-                sections = dict(
-                    session.query(ResumeSection.section_name, ResumeSection.content)
-                    .all()
-                )
+                sections = dict(session.query(ResumeSection.section_name, ResumeSection.content).all())
             
-            # Generate profile/tagline
-            tagline = generate_tagline(experiences, skills, target_roles)
-            professional_summary = generate_professional_summary(experiences, skills, target_roles)
-            
-            # Prepare profile data
-            profile = {
-                'tagline': tagline,
-                'summary': professional_summary,
-                'sections': sections
-            }
-            
-            # Load and render template
-            env = Environment(loader=FileSystemLoader(Path(__file__).parent))
-            template = env.get_template('templates/github_pages.html')
+            # Generate content
+            tagline = await generate_tagline(experiences, skills, target_roles)
+            summary = await generate_professional_summary(experiences, skills, target_roles)
             
             # Prepare template data
-            template_data = {
-                'profile': profile,
-                'current_date': datetime.now().strftime('%B %d, %Y'),
-                'profile_image': 'assets/profile.jpg'
+            profile = {
+                'tagline': tagline,
+                'summary': summary,
+                'sections': sections,
+                'experiences': experiences,
+                'skills': skills,
+                'target_roles': target_roles,
+                'current_date': datetime.now().strftime('%B %d, %Y')
             }
             
-            # Generate HTML
-            html = template.render(**template_data)
+            # Render template
+            env = Environment(loader=FileSystemLoader(Path(__file__).parent / 'templates'))
+            template = env.get_template('github_pages.html')
+            html = template.render(**profile)
             
-            # Write HTML file to temp directory
+            # Save to GCS
             temp_index = temp_dir_path / 'index.html'
             temp_index.write_text(html)
-
-            # Store in GCS under pages/
-            gcs.upload_file(temp_index, 'pages/index.html')
+            storage.save_file('pages/index.html', temp_index)
             
-            # Copy static assets to GCS if they exist
-            static_src = Path(__file__).parent / 'static'
-            if static_src.exists():
-                for file in static_src.rglob('*'):
+            # Copy static assets if they exist
+            static_dir = Path(__file__).parent / 'static'
+            if static_dir.exists():
+                for file in static_dir.rglob('*'):
                     if file.is_file():
-                        rel_path = file.relative_to(static_src)
-                        gcs_path = f'pages/static/{rel_path}'
-                        gcs.upload_file(file, gcs_path)
+                        rel_path = file.relative_to(static_dir)
+                        storage.save_file(f'pages/static/{rel_path}', file)
             
-            # Copy profile picture from /docs directory to GCS pages/assets
-            profile_src = Path(__file__).parent.parent / 'inputs' / 'Profile.jpeg'
-            if profile_src.exists():
-                gcs.upload_file(profile_src, 'pages/assets/profile.jpg')
-            
-            logger.info("Successfully generated GitHub Pages and stored in GCS")
+            logger.info("Successfully generated GitHub Pages")
             return True
             
     except Exception as e:
         logger.error(f"Error generating GitHub Pages: {str(e)}")
         return False
 
-def main():
-    """Main entry point"""
-    if generate_pages():
-        print("Successfully generated GitHub Pages")
-    else:
-        print("Failed to generate GitHub Pages")
-        exit(1)
+async def main() -> int:
+    """Main entry point for GitHub Pages generation."""
+    try:
+        if await generate_pages():
+            logger.info("Successfully published GitHub Pages")
+            return 0
+        else:
+            logger.error("Failed to generate GitHub Pages")
+            return 1
+    except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}")
+        return 1
 
 if __name__ == "__main__":
-    main()
+    import asyncio
+    exit(asyncio.run(main()))

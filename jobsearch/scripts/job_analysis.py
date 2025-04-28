@@ -1,202 +1,157 @@
 """Job analysis and scoring functionality."""
-
-import os
 from typing import Dict, List, Optional
-import requests
-from bs4 import BeautifulSoup
-import google.generativeai as genai
-from dotenv import load_dotenv
+from pathlib import Path
 
-from ..core.ai import StructuredPrompt
-from ..core.logging import setup_logging
-from ..core.database import JobCache, get_session
-from .common import JobInfo
+from jobsearch.core.logging import setup_logging
+from jobsearch.core.database import get_session
+from jobsearch.core.storage import GCSManager
+from jobsearch.core.models import JobCache, Experience, Skill
+from jobsearch.core.ai import AIEngine
+from jobsearch.core.monitoring import setup_monitoring
+from jobsearch.core.web_scraper import WebScraper
+from jobsearch.core.schemas import (
+    JobAnalysis,
+    GlassdoorInfo,
+    CompanyAnalysis,
+    LocationType,
+    CompanySize, 
+    StabilityLevel
+)
 
+# Initialize core components
 logger = setup_logging('job_analysis')
+storage = GCSManager()
+ai_engine = AIEngine(feature_name='job_analysis')
+web_scraper = WebScraper(rate_limit=2.0)
+monitoring = setup_monitoring('job_analysis')
 
-# Configure Google Generative AI
-load_dotenv()
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
-if not GEMINI_API_KEY:
-    raise ValueError("Please set GEMINI_API_KEY environment variable")
-genai.configure(api_key=GEMINI_API_KEY)
-
-def analyze_job_with_gemini(job_info: JobInfo) -> Optional[Dict]:
-    """Use Gemini to analyze job posting and provide insights"""
+async def analyze_job_with_gemini(job_info: Dict) -> Optional[JobAnalysis]:
+    """Use AI to analyze job posting and provide insights."""
     try:
-        structured_prompt = StructuredPrompt()
+        monitoring.increment('job_analysis')
+        logger.info(f"Analyzing job: {job_info.get('title')} at {job_info.get('company')}")
+        
+        # Get profile data for context
+        with get_session() as session:
+            experiences = session.query(Experience).all()
+            skills = session.query(Skill).all()
+            
+            exp_data = []
+            for exp in experiences:
+                exp_data.append({
+                    'title': exp.title,
+                    'company': exp.company,
+                    'description': exp.description,
+                    'skills': [skill.skill_name for skill in exp.skills]
+                })
+                
+            skill_names = [skill.skill_name for skill in skills]
+            
+        # Generate analysis using AI
+        analysis = await ai_engine.generate(
+            prompt=f"""Analyze this job posting based on the candidate's profile:
 
-        expected_structure = {
-            "match_score": float,
-            "key_requirements": [str],
-            "culture_indicators": [str],
-            "career_growth_potential": str,
-            "total_years_experience": int,
-            "candidate_gaps": [str],
-            "location_type": str,
-            "company_size": str,
-            "company_stability": str,
-            "development_opportunities": [str],
-            "reasoning": str
-        }
+Job Details:
+Title: {job_info.get('title')}
+Company: {job_info.get('company')}
+Description: {job_info.get('description')}
 
-        example_data = {
-            "match_score": 0.85,
-            "key_requirements": [
-                "5+ years cloud infrastructure experience",
-                "Expert level Terraform knowledge",
-                "CI/CD pipeline development"
-            ],
-            "culture_indicators": [
-                "Strong emphasis on collaboration",
-                "Focus on continuous learning",
-                "Remote-friendly environment"
-            ],
-            "career_growth_potential": "high",
-            "total_years_experience": 5,
-            "candidate_gaps": [
-                "Limited experience with specific cloud provider",
-                "No direct experience with required industry"
-            ],
-            "location_type": "hybrid",
-            "company_size": "midsize",
-            "company_stability": "high",
-            "development_opportunities": [
-                "Leadership track available",
-                "Training budget provided",
-                "Mentorship program"
-            ],
-            "reasoning": "Strong match based on technical skills and culture fit..."
-        }
+Candidate Experience:
+{exp_data[:3]}  # Most recent experiences
 
-        analysis = structured_prompt.get_structured_response(
-            prompt=f"""Analyze this job posting. Consider both explicit requirements and implicit indicators.
-Focus on technical requirements, company culture, growth potential, and potential skill gaps.
+Skills: {', '.join(skill_names[:10])}
 
-Job Title: {job_info.title}
-Company: {job_info.company}
-Description: {job_info.description}
-
-Analyze the posting and return a structured analysis including:
-1. Overall match score (0.0-1.0)
-2. Key technical and non-technical requirements
-3. Culture indicators from the job description
-4. Career growth potential (high/medium/low)
-5. Total years experience required
-6. Any potential gaps in candidate qualifications
-7. Location type (remote/hybrid/onsite)
-8. Company size indication (startup/midsize/large/enterprise)
-9. Company stability assessment (high/medium/low)
-10. Development and growth opportunities
-11. Reasoning for the assessment
-
-Return only the structured JSON response.""",
-            expected_structure=expected_structure,
-            example_data=example_data,
-            temperature=0.2
+Analyze:
+1. Key requirements and qualifications
+2. Culture and work environment indicators
+3. Career growth potential
+4. Location/remote work requirements
+5. Company size/maturity
+6. Expected years of experience
+7. Potential skill gaps""",
+            output_type=JobAnalysis
         )
-
+        
         if analysis:
-            logger.info(f"Successfully analyzed job: {job_info.title} at {job_info.company}")
+            monitoring.track_success('job_analysis')
             return analysis
-        else:
-            logger.error(f"Failed to analyze job: {job_info.title}")
-            return None
-
+            
+        monitoring.track_failure('job_analysis')
+        logger.error("Failed to generate job analysis")
+        return None
+        
     except Exception as e:
+        monitoring.track_error('job_analysis', str(e))
         logger.error(f"Error analyzing job: {str(e)}")
         return None
 
-def get_glassdoor_info(company_name: str) -> Optional[Dict]:
-    """Search Glassdoor for company information"""
+async def get_glassdoor_info(company_name: str) -> Optional[GlassdoorInfo]:
+    """Get company information from Glassdoor."""
     try:
-        # Format search URL
-        search_url = f"https://www.glassdoor.com/Search/results.htm?keyword={company_name}"
+        monitoring.increment('glassdoor_lookup')
+        logger.info(f"Looking up company on Glassdoor: {company_name}")
         
-        # Set headers to mimic browser
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
+        # Search Glassdoor using web scraper
+        url = f"https://www.glassdoor.com/Search/results.htm?keyword={company_name}"
+        soup = await web_scraper.get_soup(url)
         
-        # Get search results
-        response = requests.get(search_url, headers=headers)
-        soup = BeautifulSoup(response.text, 'html.parser')
+        if not soup:
+            monitoring.track_failure('glassdoor_lookup')
+            return None
+            
+        # Extract company info
+        company_link = soup.find('a', {'class': 'company-tile'})
+        if not company_link:
+            monitoring.track_failure('glassdoor_lookup')
+            return None
+            
+        company_url = f"https://www.glassdoor.com{company_link['href']}"
+        company_soup = await web_scraper.get_soup(company_url)
         
-        # Extract company overview if found
-        company_info = {
-            'rating': None,
-            'employee_count': None,
-            'year_founded': None,
-            'industry': None,
-            'website': None
-        }
+        if not company_soup:
+            monitoring.track_failure('glassdoor_lookup')
+            return None
+            
+        # Parse company data
+        info = GlassdoorInfo(
+            rating=company_soup.find('div', {'class': 'rating'}).text.strip(),
+            size=company_soup.find('div', {'class': 'size'}).text.strip(),
+            industry=company_soup.find('div', {'class': 'industry'}).text.strip(),
+            founded=company_soup.find('div', {'class': 'founded'}).text.strip(),
+            benefits=company_soup.find('div', {'class': 'benefits'}).text.strip()
+        )
         
-        # Note: This is a simplified version. In practice, you'd need to handle
-        # rate limiting, different page structures, etc.
-        
-        return company_info if any(company_info.values()) else None
+        monitoring.track_success('glassdoor_lookup')
+        return info
         
     except Exception as e:
-        logger.error(f"Error getting Glassdoor info for {company_name}: {str(e)}")
+        monitoring.track_error('glassdoor_lookup', str(e))
+        logger.error(f"Error getting Glassdoor info: {str(e)}")
         return None
 
-def analyze_jobs_batch(jobs: List[JobInfo]) -> List[Dict]:
-    """Analyze a batch of jobs and return the analysis results"""
-    results = []
-    
-    for job in jobs:
-        # Get job analysis
-        analysis = analyze_job_with_gemini(job)
-        if not analysis:
-            continue
-            
-        # Enrich with Glassdoor data
-        glassdoor_info = get_glassdoor_info(job.company)
-        if glassdoor_info:
-            analysis.update(glassdoor_info)
-            
-        # Store result
-        results.append({
-            'url': job.url,
-            'title': job.title,
-            'company': job.company,
-            'analysis': analysis
-        })
-        
-    return results
-
-def save_job_analysis(job_url: str, analysis: Dict) -> bool:
-    """Save job analysis results to database"""
+async def analyze_jobs_batch(jobs: List[Dict]) -> Dict[str, JobAnalysis]:
+    """Analyze a batch of jobs and return analysis results."""
     try:
-        with get_session() as session:
-            job = session.query(JobCache).filter_by(url=job_url).first()
-            if not job:
-                logger.error(f"Job not found in cache: {job_url}")
-                return False
+        logger.info(f"Analyzing batch of {len(jobs)} jobs")
+        monitoring.increment('batch_analysis')
+        
+        results = {}
+        for job in jobs:
+            analysis = await analyze_job_with_gemini(job)
+            if analysis:
+                results[job['url']] = analysis
                 
-            # Update job with analysis
-            job.match_score = analysis.get('match_score')
-            job.key_requirements = analysis.get('key_requirements')
-            job.culture_indicators = analysis.get('culture_indicators')
-            job.career_growth_potential = analysis.get('career_growth_potential')
-            job.total_years_experience = analysis.get('total_years_experience')
-            job.candidate_gaps = analysis.get('candidate_gaps')
-            job.location_type = analysis.get('location_type')
-            job.company_size = analysis.get('company_size')
-            job.company_stability = analysis.get('company_stability')
-            job.development_opportunities = analysis.get('development_opportunities')
-            
-            # Update with Glassdoor info if available
-            if analysis.get('glassdoor_rating'):
-                job.glassdoor_rating = analysis['glassdoor_rating']
-            if analysis.get('employee_count'):
-                job.employee_count = analysis['employee_count']
-            if analysis.get('year_founded'):
-                job.year_founded = analysis['year_founded']
-                
-            logger.info(f"Saved analysis for job: {job_url}")
-            return True
-            
+                # Get additional company info
+                company_info = await get_glassdoor_info(job['company'])
+                if company_info:
+                    results[job['url']].company_analysis = CompanyAnalysis(
+                        glassdoor_info=company_info
+                    )
+                    
+        monitoring.track_success('batch_analysis')
+        return results
+        
     except Exception as e:
-        logger.error(f"Error saving job analysis: {str(e)}")
-        return False
+        monitoring.track_error('batch_analysis', str(e))
+        logger.error(f"Error in batch analysis: {str(e)}")
+        return {}

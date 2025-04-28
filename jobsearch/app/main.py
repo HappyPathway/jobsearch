@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 
 # Import from installed jobsearch package
 from jobsearch.core.storage import GCSManager
-from jobsearch.core.database import init_database
 from jobsearch.core.logging import setup_logging
 
 # Import routers
@@ -138,10 +137,6 @@ app.openapi = custom_openapi
 async def startup_event():
     """Initialize database and storage on startup."""
     try:
-        # Initialize database using jobsearch package
-        init_database()
-        logger.info("Database initialized successfully")
-        
         # Initialize GCS connection
         storage = GCSManager()
         # Verify GCS connection by syncing database

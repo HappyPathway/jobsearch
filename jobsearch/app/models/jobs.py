@@ -1,44 +1,41 @@
-from pydantic import BaseModel, HttpUrl
-from typing import List, Optional
+"""Job-related models."""
+from typing import Optional, List
 from datetime import datetime
+from pydantic import BaseModel
 
 class JobBase(BaseModel):
+    """Base job model."""
     title: str
     company: str
-    description: str
-    url: HttpUrl
-    
+    location: Optional[str] = None
+    description: Optional[str] = None
+    url: str
+
 class JobCreate(JobBase):
-    location: Optional[str] = None
-    post_date: Optional[datetime] = None
-    match_score: Optional[float] = None
-    application_priority: Optional[str] = "medium"
-    key_requirements: Optional[List[str]] = []
-    
+    """Job creation model."""
+    pass
+
 class JobResponse(JobBase):
+    """Job response model."""
     id: int
-    location: Optional[str] = None
-    match_score: float
-    application_priority: str
-    key_requirements: List[str]
-    career_growth_potential: Optional[str] = None
+    first_seen_date: Optional[str] = None
+    last_seen_date: Optional[str] = None
+    match_score: Optional[float] = None
+    application_status: Optional[str] = None
     
     class Config:
         from_attributes = True
 
 class JobSearchParams(BaseModel):
+    """Job search parameters."""
     keywords: str
     location: Optional[str] = None
     remote_only: Optional[bool] = False
-    min_match_score: Optional[float] = 0.0
-    limit: Optional[int] = 10
-    
+
 class JobApplicationStatus(BaseModel):
+    """Job application status response."""
+    application_id: int
     status: str
-    notes: Optional[str] = None
-    resume_path: Optional[str] = None
-    cover_letter_path: Optional[str] = None
-    application_date: Optional[datetime] = None
-    
-    class Config:
-        from_attributes = True
+    submitted_at: str
+    resume_url: Optional[str] = None
+    cover_letter_url: Optional[str] = None

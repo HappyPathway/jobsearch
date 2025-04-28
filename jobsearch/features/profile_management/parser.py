@@ -35,59 +35,48 @@ def extract_text_from_pdf(file_path):
 def parse_profile_text(text):
     """Use Gemini to parse LinkedIn profile text into structured data"""
     try:
+        from jobsearch.core.schemas import ProfileData, LinkedInExperience
+        
         # Initialize StructuredPrompt
         structured_prompt = StructuredPrompt()
 
-        # Define expected structure
-        expected_structure = {
-            "experiences": [{
-                "company": str,
-                "title": str,
-                "start_date": str,
-                "end_date": str,
-                "description": str,
-                "skills": [str]
-            }],
-            "additional_skills": [str]
-        }
+        # Create example data using Pydantic models
+        example_data = ProfileData(
+            experiences=[LinkedInExperience(
+                company="Tech Corp",
+                title="Senior Software Engineer",
+                start_date="2020-01",
+                end_date="Present",
+                description="Led development of cloud infrastructure",
+                skills=["Python", "AWS", "Terraform"]
+            )],
+            additional_skills=["Docker", "Kubernetes"]
+        ).model_dump()
 
-        example_data = {
-            "experiences": [{
-                "company": "Example Corp",
-                "title": "Senior Engineer",
-                "start_date": "2020-01",
-                "end_date": "Present",
-                "description": "Led development of cloud infrastructure",
-                "skills": ["AWS", "Terraform", "Python"]
-            }],
-            "additional_skills": ["Docker", "Kubernetes", "CI/CD"]
-        }
+        response = structured_prompt.get_structured_response(
+            prompt=f"""Extract structured profile data from this text:
 
-        # Get structured response
-        profile_data = structured_prompt.get_structured_response(
-            prompt=f"""Extract work experience and skills from this profile text.
-Format dates as YYYY-MM.
-Use 'Present' for current positions.
-Include both explicitly mentioned skills and those implied by the experience.
+{text}
 
-Profile text:
-{text}""",
-            expected_structure=expected_structure,
+Format the data to show:
+1. List of work experiences with company, title, dates, and skills used
+2. Additional skills mentioned but not tied to specific roles""",
+            expected_structure=ProfileData,
             example_data=example_data
         )
 
-        if profile_data:
+        if response:
             logger.info("Successfully parsed profile text")
-            return profile_data
-        else:
-            logger.error("Failed to parse profile text")
-            return None
+            return response
+
+        logger.error("Failed to parse profile text")
+        return None
 
     except Exception as e:
         logger.error(f"Error parsing profile text: {str(e)}")
         return None
 
-def save_to_database(parsed_data):
+def save_profile_data(parsed_data):
     """Save parsed profile data to database using SQLAlchemy"""
     if not parsed_data:
         return False
@@ -121,6 +110,7 @@ def save_to_database(parsed_data):
                     skill = Skill(skill_name=skill_name)
                     session.add(skill)
 
+            session.commit()
             logger.info("Successfully saved profile data to database")
             return True
 
@@ -147,7 +137,7 @@ def main():
             return False
 
         # Save to database
-        return save_to_database(parsed_data)
+        return save_profile_data(parsed_data)
 
     except Exception as e:
         logger.error(f"Error in profile parsing: {str(e)}")

@@ -1,106 +1,158 @@
-# Database Module
+# Database Architecture
 
-The Database module provides SQLAlchemy database models and configuration for the JobSearch application. It defines the core schema for storing job search-related data and handles database sessions with GCS synchronization.
+## Current Schema
 
-## Database Models
+### Core Tables
 
-### Experience
-Stores professional experience information:
-- Company name
-- Job title
-- Start and end dates
-- Description
-- Many-to-many relationship with Skills
-
-### Skill
-Represents professional skills:
-- Skill name
-- Many-to-many relationship with Experiences
-
-### TargetRole
-Defines target job roles for career planning:
-- Role name
-- Priority level
-- Match score
-- Requirements (stored as JSON)
-- Next steps (stored as JSON)
-
-### JobCache
-Stores job listings with detailed information:
-- URL, title, company, description
-- Location and post date
-- First and last seen dates
-- Match score and application priority
-- Key requirements (JSON array)
-- Culture indicators (JSON array)
-- Company information (size, stability, Glassdoor rating)
-
-### JobApplication
-Tracks job applications:
-- Relationship to JobCache
-- Application date
-- Status
-- Paths to resume and cover letter
-- Notes
-
-### RecruiterContact
-Stores information about recruiters:
-- Name, title, company
-- URL (LinkedIn profile)
-- Contact status and dates
-- Notes
-
-### Resume and Cover Letter Models
-Additional models for storing resume and cover letter sections.
-
-## Database Operations
-
-### get_engine()
-Returns SQLAlchemy engine with latest database from GCS. This function:
-- Locates the SQLite database file
-- Creates an engine connection
-- Ensures the latest version is synced from GCS
-- Returns the configured engine
-
-### get_session()
-Context manager for database sessions that handles:
-- GCS locking to prevent concurrent access
-- Session creation
-- Automatic commits
-- Database upload to GCS after changes
-- Error handling with rollback
-- Proper session cleanup
-
-## Usage Example
-
-```python
-from jobsearch.core.database import get_session, JobCache, Skill
-
-# Using the session context manager
-with get_session() as session:
-    # Query example
-    high_priority_jobs = session.query(JobCache).filter(
-        JobCache.application_priority == 'high'
-    ).all()
-    
-    # Create example
-    new_skill = Skill(skill_name="Terraform")
-    session.add(new_skill)
-    
-    # Changes are automatically committed and
-    # uploaded to GCS when the context manager exits
+1. **Experiences**
+```sql
+CREATE TABLE experiences (
+    id INTEGER PRIMARY KEY,
+    company TEXT,
+    title TEXT,
+    start_date TEXT,
+    end_date TEXT,
+    description TEXT
+);
 ```
 
-## Integration with Storage
+2. **Skills**
+```sql
+CREATE TABLE skills (
+    id INTEGER PRIMARY KEY,
+    skill_name TEXT UNIQUE
+);
+```
 
-This module integrates closely with the Storage module to:
-- Download the latest database from GCS before operations
-- Upload changes to GCS after commits
-- Implement a locking mechanism to prevent conflicts
+3. **Experience Skills (Junction)**
+```sql
+CREATE TABLE experience_skills (
+    experience_id INTEGER,
+    skill_id INTEGER,
+    FOREIGN KEY (experience_id) REFERENCES experiences(id),
+    FOREIGN KEY (skill_id) REFERENCES skills(id)
+);
+```
 
-## Important Notes
+4. **Target Roles**
+```sql
+CREATE TABLE target_roles (
+    id INTEGER PRIMARY KEY,
+    role_name TEXT UNIQUE,
+    priority INTEGER,
+    match_score FLOAT,
+    reasoning TEXT,
+    source TEXT,
+    last_updated TEXT,
+    requirements TEXT,  -- JSON array
+    next_steps TEXT    -- JSON array
+);
+```
 
-- All database operations should use the `get_session()` context manager to ensure proper GCS synchronization
-- The database is automatically created if it doesn't exist
-- Tables are created on first run with `create_tables_if_missing()`
-- JSON data is stored as text and needs to be parsed in application code
+### Document Tables
+
+1. **Resume Sections**
+```sql
+CREATE TABLE resume_sections (
+    id INTEGER PRIMARY KEY,
+    section_name TEXT,
+    content TEXT
+);
+```
+
+2. **Cover Letter Sections**
+```sql
+CREATE TABLE cover_letter_sections (
+    id INTEGER PRIMARY KEY,
+    section_name TEXT,
+    content TEXT
+);
+```
+
+### Job Management
+
+1. **Job Cache**
+```sql
+CREATE TABLE job_cache (
+    id INTEGER PRIMARY KEY,
+    url TEXT UNIQUE,
+    title TEXT,
+    company TEXT,
+    description TEXT,
+    location TEXT,
+    post_date TEXT,
+    first_seen_date TEXT,
+    last_seen_date TEXT,
+    match_score FLOAT,
+    priority TEXT,
+    requirements TEXT,  -- JSON array
+    analysis TEXT      -- JSON object
+);
+```
+
+2. **Job Applications**
+```sql
+CREATE TABLE job_applications (
+    id INTEGER PRIMARY KEY,
+    job_cache_id INTEGER,
+    application_date TEXT,
+    status TEXT,
+    resume_path TEXT,
+    cover_letter_path TEXT,
+    notes TEXT,
+    FOREIGN KEY (job_cache_id) REFERENCES job_cache(id)
+);
+```
+
+## Data Flow
+
+1. **Profile Data Flow**
+   - LinkedIn PDF -> Profile Parser -> Experiences/Skills Tables
+   - Resume PDF -> Resume Parser -> Resume Sections Table
+   - Cover Letter PDF -> Cover Letter Parser -> Cover Letter Sections Table
+
+2. **Job Data Flow**
+   - Job Sources -> Job Search -> Job Cache Table
+   - Job Analysis -> Job Cache Updates
+   - Applications -> Job Applications Table
+
+3. **Document Generation Flow**
+   - Profile Data + Job Data -> Document Generator
+   - Generated Documents -> Google Cloud Storage
+   - Application Records -> Job Applications Table
+
+## Sync Mechanism
+
+1. **Local Operations**
+   - SQLite for local CRUD operations
+   - File-based transactions
+   - Immediate consistency
+
+2. **Cloud Sync**
+   - Periodic uploads to GCS
+   - Download on startup
+   - Conflict resolution (latest wins)
+
+## Known Limitations
+
+1. **Concurrency**
+   - Single writer at a time
+   - No distributed transactions
+   - File-level locking
+
+2. **Scaling**
+   - Limited by file size
+   - No horizontal scaling
+   - Sync overhead increases with size
+
+## Monitoring
+
+1. **Health Metrics**
+   - Database size
+   - Sync frequency
+   - Error rates
+
+2. **Performance Metrics**
+   - Query times
+   - Sync duration
+   - Cache hit rates

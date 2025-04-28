@@ -47,5 +47,23 @@
 - **Environment Variables**: Secures local development with `.env` files.
 
 ### Testing and Validation
-- **Integration Tests**: Validates end-to-end workflows.
-- **Unit Tests**: Ensures reliability of individual components.
+- **Integration Tests**: Validates end-to-end workflows (⚠️ Some failures in strategy generation)
+- **Unit Tests**: Ensures reliability of individual components
+- **Error Tracking**: Monitors and categorizes system failures
+
+# Error Categories
+
+## Critical Workflow Errors
+- **Strategy Generation Failure**: No strategy files generated during workflow execution
+  - Impact: Blocks daily workflow and job analysis
+  - Status: Under Investigation
+  - Related Components: 
+    - Job Strategy Generator
+    - File System Integration
+    - Integration Tests
+
+## Test Coverage Gaps
+- **Strategy File Generation**: Missing validation for strategy file creation
+  - Required: Add pre-condition checks
+  - Required: Improve error handling
+  - Required: Add detailed logging

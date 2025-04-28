@@ -1,10 +1,10 @@
-.PHONY: venv install install-dev test lint clean init-db combine-summary parse-resume parse-cover-letter run help all generate-github-pages mark-applied test-integration gh-strategy-cleanup gh-generate-docs gh-pages gh-test gh-init gh-job-strategy gh-profile-update slack-list-channels search-jobs generate-strategy generate-docs-for-jobs generate-strategy-from-file job-workflow daily-workflow full-workflow job-search-and-docs sync-and-publish force-unlock terraform-init terraform-plan terraform-apply terraform-destroy migrate-db clean-db
+.PHONY: venv install install-dev test lint clean init-db combine-summary parse-resume parse-cover-letter run help all generate-github-pages mark-applied test-integration gh-strategy-cleanup gh-generate-docs gh-pages gh-test gh-init gh-job-strategy gh-profile-update slack-list-channels search-jobs generate-strategy generate-docs-for-jobs generate-strategy-from-file job-workflow daily-workflow full-workflow job-search-and-docs sync-and-publish force-unlock terraform-init terraform-plan terraform-apply terraform-destroy migrate-db clean-db setup-storage
 
 PYTHON_VERSION ?= 3.12
 VENV_NAME=venv
 PYTHON=$(VENV_NAME)/bin/python
 PIP=$(VENV_NAME)/bin/pip
-PYTHONPATH=PYTHONPATH="$(shell pwd)"
+PYTHONPATH=PYTHONPATH="$(shell pwd):$(shell pwd)/jobsearch"
 
 # Module paths
 JOBSEARCH_MODULE=jobsearch
@@ -19,43 +19,10 @@ help:
 	@echo "  make clean          - Remove virtual environment and cache files"
 	@echo "  make clean-db       - Remove database files locally and from GCS"
 	@echo "  make init-db        - Initialize the database schema"
-	@echo "  make force-unlock   - Force remove GCS database lock (use --force to skip confirmation)"
-	@echo "  make scrape-profile - Scrape LinkedIn profile data"
-	@echo "  make parse-resume   - Parse resume PDF"
-	@echo "  make parse-cover-letter - Parse cover letter PDF"
-	@echo "  make combine-summary- Generate combined profile summary"
-	@echo "  make generate-github-pages - Generate GitHub Pages"
-	@echo "  make generate-docs  - Generate documents for a specific job"
-	@echo "  make mark-applied   - Mark a job as applied (requires URL)"
-	@echo "  make run           - Run full application (scrape data and start UI)"
-	@echo "  make all           - Collect all data (profile, resume, summary)"
-	@echo "  make test-integration - Run integration tests"
-	@echo ""
-	@echo "Environment options:"
-	@echo "  PYTHON_VERSION      - Python version to use (default: 3.12)"
-	@echo "                        Example: make install PYTHON_VERSION=3.11"
-	@echo ""
-	@echo "Job Strategy commands:"
-	@echo "  make search-jobs    - Only search for jobs (no strategy generation)"
-	@echo "  make generate-strategy - Generate job search strategy"
-	@echo "  make generate-strategy-from-file - Generate strategy from existing job data"
-	@echo "  make generate-docs-for-jobs - Generate documents for high-priority jobs"
-	@echo ""
-	@echo "GitHub Actions workflow commands:"
-	@echo "  make gh-strategy-cleanup - Run strategy cleanup workflow"
-	@echo "  make gh-generate-docs    - Run document generation workflow"
-	@echo "  make gh-pages            - Run GitHub Pages workflow"
-	@echo "  make gh-test             - Run integration tests workflow"
-	@echo "  make gh-init             - Run system initialization workflow"
-	@echo "  make gh-job-strategy     - Run job strategy workflow"
-	@echo "  make gh-profile-update   - Run profile update workflow"
-	@echo "  make gh-all              - Run all GitHub Actions workflows in sequence"
-	@echo ""
-	@echo "Infrastructure management commands:"
-	@echo "  make terraform-init      - Initialize Terraform"
-	@echo "  make terraform-plan      - Generate Terraform plan"
-	@echo "  make terraform-apply     - Apply Terraform changes"
-	@echo "  make terraform-destroy   - Destroy Terraform resources"
+	@echo "  make setup-storage  - Initialize storage and database"
+
+setup-storage:
+	$(PYTHONPATH) python -m jobsearch.core.setup_storage init
 
 venv:
 	python$(PYTHON_VERSION) -m venv $(VENV_NAME)
@@ -131,7 +98,7 @@ mark-applied: install
 	$(MAKE) sync-and-publish
 
 test-integration:
-	pytest tests/integration/
+	PYTHONPATH="$(shell pwd):$(shell pwd)/jobsearch" pytest tests/integration/
 
 all: scrape-profile parse-resume combine-summary
 

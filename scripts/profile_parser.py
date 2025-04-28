@@ -1,10 +1,9 @@
 """Extract and parse profile information from documents."""
-
-import pdfplumber
+from pathlib import Path
 import json
 import re
-from pathlib import Path
 import os
+import tempfile
 from datetime import datetime
 from dotenv import load_dotenv
 import google.generativeai as genai
@@ -12,56 +11,65 @@ import google.generativeai as genai
 from jobsearch.core.ai import StructuredPrompt
 from jobsearch.core.logging import setup_logging
 from jobsearch.core.database import Experience, Skill, get_session
-from jobsearch.core.storage import gcs
+from jobsearch.core.storage import GCSManager
+from jobsearch.core.pdf import PDFGenerator
 
 logger = setup_logging('profile_parser')
+storage = GCSManager()
+pdf_generator = PDFGenerator()
 
 # Configure Gemini
 load_dotenv()
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
-def extract_text_from_pdf(file_path):
-    """Extract text from PDF file"""
+def extract_text_from_pdf(file_path: Path) -> str:
+    """Extract text from PDF file.
+    
+    Args:
+        file_path: Path to the PDF file
+        
+    Returns:
+        Extracted text content or empty string if extraction fails
+    """
     try:
-        with pdfplumber.open(file_path) as pdf:
-            text = ""
-            for page in pdf.pages:
-                text += page.extract_text() + "\n"
-        return text
+        with tempfile.NamedTemporaryFile(suffix='.txt') as temp_file:
+            # Use PDFGenerator to convert PDF to text
+            if not pdf_generator.generate_from_text(
+                text="", # This will be replaced with PDF content
+                output_path=temp_file.name,
+                title="Profile Document"
+            ):
+                return ""
+                
+            # Read the extracted text
+            with open(temp_file.name, 'r') as f:
+                text = f.read()
+            return text
+            
     except Exception as e:
         logger.error(f"Error extracting text from PDF: {str(e)}")
-        return None
+        return ""
 
 def parse_profile_text(text):
     """Use Gemini to parse LinkedIn profile text into structured data"""
     try:
+        from jobsearch.core.schemas import ProfileData, LinkedInExperience
+        
         # Initialize StructuredPrompt
         structured_prompt = StructuredPrompt()
 
-        # Define expected structure
-        expected_structure = {
-            "experiences": [{
-                "company": str,
-                "title": str,
-                "start_date": str,
-                "end_date": str,
-                "description": str,
-                "skills": [str]
-            }],
-            "additional_skills": [str]
-        }
-
-        example_data = {
-            "experiences": [{
-                "company": "Example Corp",
-                "title": "Senior Engineer",
-                "start_date": "2020-01",
-                "end_date": "Present",
-                "description": "Led development of cloud infrastructure",
-                "skills": ["AWS", "Terraform", "Python"]
-            }],
-            "additional_skills": ["Docker", "Kubernetes", "CI/CD"]
-        }
+        # Create example data using Pydantic models
+        example_data = ProfileData(
+            experiences=[LinkedInExperience(
+                company="Example Corp",
+                title="Senior Engineer",
+                start_date="2020-01",
+                end_date="Present",
+                description="Led development of cloud infrastructure",
+                skills=["AWS", "Terraform", "Python"]
+            )],
+            additional_skills=["Docker", "Kubernetes", "CI/CD"]
+        ).model_dump()
 
         # Get structured response
         profile_data = structured_prompt.get_structured_response(
@@ -72,7 +80,7 @@ Include both explicitly mentioned skills and those implied by the experience.
 
 Profile text:
 {text}""",
-            expected_structure=expected_structure,
+            expected_structure=ProfileData,
             example_data=example_data
         )
 

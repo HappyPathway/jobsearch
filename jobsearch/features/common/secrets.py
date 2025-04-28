@@ -4,7 +4,7 @@ from google.cloud import secretmanager
 from google.api_core import retry
 from pathlib import Path
 import json
-from logging_utils import setup_logging
+from jobsearch.core.logging import setup_logging
 
 logger = setup_logging('secrets_manager')
 

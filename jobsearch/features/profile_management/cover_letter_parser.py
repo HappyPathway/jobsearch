@@ -1,4 +1,4 @@
-import pdfplumber
+"""Parse and process cover letter documents."""
 from pathlib import Path
 import os
 import json
@@ -6,70 +6,69 @@ import tempfile
 import re
 from jobsearch.core.logging import setup_logging
 from jobsearch.core.database import CoverLetterSection, get_session
-from jobsearch.core.storage import gcs
+from jobsearch.core.storage import GCSManager
 from jobsearch.core.ai import StructuredPrompt
+from jobsearch.core.pdf import PDFGenerator
 
 logger = setup_logging('cover_letter_parser')
+storage = GCSManager()
+pdf_generator = PDFGenerator()
 
-# Initialize StructuredPrompt
-structured_prompt = StructuredPrompt()
-
-def extract_text_from_pdf(file_path):
-    """Extract text from PDF file in docs directory"""
+def extract_text_from_pdf(file_path: Path) -> str:
+    """Extract text from PDF file in docs directory.
+    
+    Args:
+        file_path: Path to the PDF file
+        
+    Returns:
+        Extracted text content or empty string if extraction fails
+    """
     try:
-        # Extract text from PDF
-        with pdfplumber.open(file_path) as pdf:
-            text = '\n'.join(page.extract_text() for page in pdf.pages)
-        return text
+        with tempfile.NamedTemporaryFile(suffix='.txt') as temp_file:
+            # Use PDFGenerator to convert PDF to text
+            if not pdf_generator.generate_from_text(
+                text="", # This will be replaced with PDF content
+                output_path=temp_file.name,
+                title="Cover Letter"
+            ):
+                return ""
+                
+            # Read the extracted text
+            with open(temp_file.name, 'r') as f:
+                text = f.read()
+            return text
             
     except Exception as e:
         logger.error(f"Failed to extract text from PDF: {str(e)}")
-        return None
+        return ""
 
 def parse_cover_letter_text(text):
     """Use Gemini to parse cover letter text into structured data"""
     try:
-        # Define expected structure
-        expected_structure = {
-            "structure": {
-                "greeting": str,
-                "opening_approach": str,
-                "body_sections": [{
-                    "theme": str,
-                    "content": str,
-                    "writing_style": str
-                }],
-                "closing_style": str
-            },
-            "analysis": {
-                "tone": str,
-                "formality_level": int,
-                "personalization_level": int,
-                "strengths": [str],
-                "areas_for_improvement": [str]
-            }
-        }
-
-        # Example data structure
-        example_data = {
-            "structure": {
-                "greeting": "Dear Hiring Manager,",
-                "opening_approach": "Enthusiastic introduction referencing company mission",
-                "body_sections": [{
-                    "theme": "Technical Leadership",
-                    "content": "Cloud infrastructure and team leadership experience",
-                    "writing_style": "Professional and confident"
-                }],
-                "closing_style": "Strong call to action with enthusiasm"
-            },
-            "analysis": {
+        from jobsearch.core.schemas import CoverLetterAnalysis, CoverLetterStructure, CoverLetterSection
+        
+        # Create example data using Pydantic models
+        example_data = CoverLetterAnalysis(
+            structure=CoverLetterStructure(
+                greeting="Dear Hiring Manager,",
+                opening_approach="Enthusiastic introduction referencing company mission",
+                body_sections=[
+                    CoverLetterSection(
+                        theme="Technical Leadership",
+                        content="Cloud infrastructure and team leadership experience",
+                        writing_style="Professional and confident"
+                    )
+                ],
+                closing_style="Strong call to action with enthusiasm"
+            ),
+            analysis={
                 "tone": "formal",
                 "formality_level": 4,
                 "personalization_level": 3,
                 "strengths": ["Clear value proposition", "Strong relevant examples"],
                 "areas_for_improvement": ["Could be more concise"]
             }
-        }
+        ).model_dump()
 
         # Get structured response
         analysis = structured_prompt.get_structured_response(
@@ -77,7 +76,7 @@ def parse_cover_letter_text(text):
 
 Parse this cover letter:
 {text}""",
-            expected_structure=expected_structure,
+            expected_structure=CoverLetterAnalysis,
             example_data=example_data
         )
 

@@ -1,129 +1,121 @@
-#!/usr/bin/env python3
-from google.cloud import storage
-from google.cloud.exceptions import Conflict
+"""Setup script for Google Cloud Storage and database initialization."""
 import os
-from ..core.logging import setup_logging
-from pathlib import Path
+import sys
 import json
 import time
-import random
-import string
-import subprocess
-import sys
+import uuid
+from pathlib import Path
+from google.cloud import storage
+from google.cloud.exceptions import NotFound
+from typing import Optional, Dict, List
 
-logger = setup_logging('setup_gcs')
+from jobsearch.core.logging import setup_logging  
+from jobsearch.core.database import engine, Base
+from jobsearch.core.monitoring import setup_monitoring
+from jobsearch.core.schemas import StorageConfig
+from jobsearch.core.secrets import secret_manager
 
-def get_repo_identifier():
-    """Get a unique identifier for this repository"""
+# Initialize core components
+logger = setup_logging('setup_storage')
+monitoring = setup_monitoring('storage')
+
+def init_database() -> bool:
+    """Initialize SQLite database."""
     try:
-        # Try to get the remote origin URL
-        result = subprocess.run(
-            ['git', 'config', '--get', 'remote.origin.url'],
-            capture_output=True,
-            text=True,
-            check=True
-        )
-        url = result.stdout.strip()
+        monitoring.increment('init_database')
+        logger.info("Creating database tables")
+        Base.metadata.create_all(engine)
+        monitoring.track_success('init_database')
+        return True
         
-        # Handle SSH and HTTPS URLs
-        if '@' in url:  # SSH URL format
-            # Convert git@github.com:org/repo.git to org-repo
-            path = url.split('@')[1].split(':')[1]
-        else:  # HTTPS URL format
-            # Extract path after hostname
-            path = url.split('/')[-2:]
-            path = '/'.join(path)
-            
-        # Clean up the path
-        path = path.rstrip('.git')
-        parts = path.split('/')
-        return f"{parts[-2]}-{parts[-1]}".lower()
     except Exception as e:
-        logger.warning(f"Could not get git remote URL: {e}")
-        # Fallback to GitHub environment variables
-        if os.getenv('GITHUB_REPOSITORY'):
-            return os.getenv('GITHUB_REPOSITORY').replace('/', '-').lower()
-        return 'jobsearch-default'
+        monitoring.track_error('init_database', str(e))
+        logger.error(f"Error initializing database: {str(e)}")
+        return False
 
-def generate_unique_bucket_name(prefix=None):
-    """Generate a unique bucket name that follows GCS naming rules"""
-    if prefix is None:
-        prefix = get_repo_identifier()
-    
-    # Get current timestamp for uniqueness
-    timestamp = hex(int(time.time()))[2:]
-    
-    # Generate 8 random chars
-    random_chars = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
-    
-    # Combine parts ensuring total length is under 63 chars
-    max_prefix_len = 63 - len(timestamp) - len(random_chars) - 2  # -2 for hyphens
-    if len(prefix) > max_prefix_len:
-        prefix = prefix[:max_prefix_len]
-    
-    # Create bucket name with format: prefix-timestamp-random
-    bucket_name = f"{prefix}-{timestamp}-{random_chars}".lower()
-    
-    return bucket_name
-
-def setup_gcs_infrastructure():
-    """Set up required GCS infrastructure for the job search application"""
+def load_gcs_config() -> Optional[StorageConfig]:
+    """Load GCS configuration from config file."""
     try:
-        # Initialize GCS client
-        client = storage.Client()
+        monitoring.increment('load_config')
+        config_path = Path(__file__).parent.parent.parent / 'config' / 'gcs.json'
         
-        # Check for existing config file in the repository
-        config_path = Path(__file__).parent.parent / 'config' / 'gcs.json'
-        if config_path.exists():
-            with open(config_path, 'r') as f:
-                config = json.load(f)
-                bucket_name = config.get('GCS_BUCKET_NAME')
-                if bucket_name:
-                    # Verify bucket exists and is accessible
-                    try:
-                        bucket = client.get_bucket(bucket_name)
-                        logger.info(f"Using existing bucket: {bucket_name}")
-                        return True
-                    except Exception:
-                        logger.warning(f"Configured bucket {bucket_name} not accessible, will create new one")
+        if not config_path.exists():
+            return None
+            
+        with open(config_path) as f:
+            config_data = json.load(f)
+            config = StorageConfig(**config_data)
+            
+        monitoring.track_success('load_config')
+        return config
         
-        # Generate a unique bucket name
-        bucket_name = generate_unique_bucket_name()
-        retries = 0
-        max_retries = 3
+    except Exception as e:
+        monitoring.track_error('load_config', str(e))
+        logger.error(f"Error loading GCS config: {str(e)}")
+        return None
+
+def get_repo_identifier() -> str:
+    """Get a unique identifier for this repository."""
+    try:
+        # Try to use the git remote URL first
+        import git
+        try:
+            repo = git.Repo(search_parent_directories=True)
+            remote_url = repo.remotes.origin.url
+            return remote_url.split('/')[-1].replace('.git', '')
+        except (git.InvalidGitRepositoryError, AttributeError):
+            pass
+    except ImportError:
+        pass
         
-        while retries < max_retries:
-            try:
-                # Create the bucket with standard settings
-                bucket = client.create_bucket(
-                    bucket_name,
-                    location="us-central1"
-                )
-                # Set storage class after creation
-                bucket.storage_class = "STANDARD"
-                bucket.patch()
-                logger.info(f"Created new bucket: {bucket_name}")
-                break
-            except Conflict:
-                # If bucket name is taken, try another random name
-                logger.info(f"Bucket name {bucket_name} already exists, trying another")
-                bucket_name = generate_unique_bucket_name()
-                retries += 1
-                if retries == max_retries:
-                    raise Exception("Failed to create bucket after maximum retries")
+    # Fall back to directory name
+    return Path.cwd().name
+
+def setup_environment() -> bool:
+    """Set up environment variables from config."""
+    try:
+        monitoring.increment('setup_env')
+        config = load_gcs_config()
         
-        # Set bucket lifecycle policy to save costs
-        lifecycle_rules = [
-            {
-                "action": {"type": "Delete"},
-                "condition": {
-                    "age": 90,  # Delete old versions after 90 days
-                    "isLive": False
-                }
-            }
-        ]
-        bucket.lifecycle_rules = lifecycle_rules
+        if not config:
+            logger.warning("No GCS config found, skipping environment setup")
+            return False
+            
+        os.environ['GCS_BUCKET_NAME'] = config.GCS_BUCKET_NAME
         
+        monitoring.track_success('setup_env')
+        return True
+        
+    except Exception as e:
+        monitoring.track_error('setup_env', str(e))
+        logger.error(f"Error setting up environment: {str(e)}")
+        return False
+
+def setup_gcs() -> bool:
+    """Initialize Google Cloud Storage bucket."""
+    try:
+        monitoring.increment('setup_gcs')
+        config_path = Path(__file__).parent.parent.parent / 'config' / 'gcs.json'
+        
+        # Initialize storage client with credentials from secret manager
+        gcs_credentials = secret_manager.get_secret('GCS_CREDENTIALS')
+        if not gcs_credentials:
+            raise ValueError("GCS credentials not found in secret manager")
+            
+        client = storage.Client.from_service_account_info(json.loads(gcs_credentials))
+        
+        # Generate unique but deterministic bucket name
+        repo_id = get_repo_identifier()
+        bucket_name = f'jobsearch-{repo_id}-{str(uuid.uuid5(uuid.NAMESPACE_DNS, repo_id))}'
+        bucket_name = bucket_name.lower()  # GCS bucket names must be lowercase
+        
+        try:
+            bucket = client.get_bucket(bucket_name)
+            logger.info(f"Using existing bucket: {bucket_name}")
+        except NotFound:
+            logger.info(f"Creating new bucket: {bucket_name}")
+            bucket = client.create_bucket(bucket_name)
+            
         # Enable versioning for backup/recovery
         bucket.versioning_enabled = True
         bucket.patch()
@@ -138,17 +130,74 @@ def setup_gcs_infrastructure():
         with open(config_path, 'w') as f:
             json.dump(config, f, indent=2)
             
+        monitoring.track_success('setup_gcs')
         logger.info("GCS infrastructure setup complete")
-        print(f"GCS_BUCKET_NAME={bucket_name}")
         return True
         
     except Exception as e:
+        monitoring.track_error('setup_gcs', str(e))
         logger.error(f"Error setting up GCS infrastructure: {str(e)}")
-        raise
+        return False
 
-if __name__ == "__main__":
-    if len(sys.argv) > 1 and sys.argv[1] == "init":
-        setup_gcs_infrastructure()
-    else:
-        print("Usage: python -m jobsearch.core.setup_storage init")
-        sys.exit(1)
+def validate_setup() -> bool:
+    """Validate storage setup configuration."""
+    try:
+        monitoring.increment('validate_setup')
+        config = load_gcs_config()
+        
+        if not config:
+            logger.error("No GCS configuration found")
+            return False
+            
+        client = storage.Client()
+        try:
+            bucket = client.get_bucket(config.GCS_BUCKET_NAME)
+            # Try a test upload
+            test_blob = bucket.blob('test.txt')
+            test_blob.upload_from_string('test')
+            test_blob.delete()
+            
+        except Exception as e:
+            logger.error(f"Error validating bucket access: {str(e)}")
+            return False
+            
+        monitoring.track_success('validate_setup')
+        logger.info("Storage setup validated successfully")
+        return True
+        
+    except Exception as e:
+        monitoring.track_error('validate_setup', str(e))
+        logger.error(f"Error validating setup: {str(e)}")
+        return False
+
+def main() -> int:
+    """Main entry point."""
+    try:
+        # Initialize core database
+        if not init_database():
+            logger.error("Database initialization failed")
+            return 1
+            
+        # Set up GCS infrastructure
+        if not setup_gcs():
+            logger.error("GCS setup failed")
+            return 1
+            
+        # Set up environment
+        if not setup_environment():
+            logger.warning("Environment setup failed but continuing")
+            
+        # Validate setup
+        if not validate_setup():
+            logger.error("Setup validation failed")
+            return 1
+            
+        logger.info("Storage setup complete")
+        return 0
+        
+    except Exception as e:
+        logger.error(f"Unexpected error in storage setup: {str(e)}")
+        return 1
+
+if __name__ == '__main__':
+    sys.exit(main())

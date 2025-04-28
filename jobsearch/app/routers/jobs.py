@@ -3,8 +3,7 @@ from typing import List, Union, Optional, Dict
 from sqlalchemy.orm import Session
 from datetime import datetime
 
-from ..models.jobs import JobBase, JobCreate, JobResponse, JobSearchParams, JobApplicationStatus
-from ..models import JobResponse
+from ..models.jobs import JobResponse, JobApplicationStatus
 from ..dependencies import get_db
 
 # Import core functionality from installed package

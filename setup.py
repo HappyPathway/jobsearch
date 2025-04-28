@@ -4,7 +4,7 @@ setup(
     name="jobsearch",
     version="1.0.0",
     packages=find_packages(),
-    python_requires=">=3.8",
+    python_requires=">=3.9",
     install_requires=[
         "google-cloud-storage",
         "google-generativeai",
@@ -14,7 +14,11 @@ setup(
         "python-slugify",
         "google-cloud-secret-manager",
         "beautifulsoup4",
-        "requests",
+        "requests>=2.32.2",
+        "python-jose[cryptography]",
+        "playwright",
+        "PyJWT",
+        "pydantic-ai>=0.1.6",
     ],
     extras_require={
         "dev": [
@@ -34,8 +38,6 @@ setup(
         "Development Status :: 4 - Beta",
         "Intended Audience :: End Users/Desktop",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.12",
     ],
 )

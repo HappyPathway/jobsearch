@@ -1,90 +1,153 @@
-# AI Module
+# AI Integration
 
-The AI module provides utilities for structured interaction with language models, primarily focused on getting well-formatted, structured responses from Gemini.
+## Overview
 
-## StructuredPrompt Class
+The platform uses Google's Gemini Pro for various AI-powered features through structured prompting and output validation.
 
-The main component of the AI module is the `StructuredPrompt` class, which helps ensure that responses from the language model are properly structured according to expected schemas.
+## Components
 
-### Features
-
-- **Structured Response Validation**: Ensures JSON responses match an expected structure
-- **Automatic Error Recovery**: Attempts to fix malformed JSON responses
-- **Retry Logic**: Automatically retries failed requests with improved prompting
-- **JSON Cleaning**: Handles common JSON formatting issues in model outputs
-
-### Usage Example
+### 1. Structured Prompting (`core/ai.py`)
 
 ```python
-from jobsearch.core.ai import StructuredPrompt
-
-# Initialize with default settings (Gemini 1.5 Pro)
-prompt_helper = StructuredPrompt()
-
-# Define the expected structure
-expected_structure = {
-    "job_title": str,
-    "company": str,
-    "skills_required": [str],
-    "match_score": int
-}
-
-# Example data to guide the model
-example_data = {
-    "job_title": "Cloud Architect",
-    "company": "TechCorp",
-    "skills_required": ["Terraform", "AWS", "Kubernetes"],
-    "match_score": 85
-}
-
-# Get structured response
-result = prompt_helper.get_structured_response(
-    prompt="Analyze this job posting and extract key information...",
-    expected_structure=expected_structure,
-    example_data=example_data,
-    temperature=0.2
-)
-
-if result:
-    # Use the structured data
-    print(f"Job: {result['job_title']} at {result['company']}")
-    print(f"Required skills: {', '.join(result['skills_required'])}")
-    print(f"Match score: {result['match_score']}%")
+class StructuredPrompt:
+    """Handles structured interactions with Gemini."""
+    
+    def __init__(self):
+        self.model = genai.GenerativeModel('gemini-1.0-pro')
+        
+    async def get_structured_response(
+        self,
+        prompt: str,
+        expected_structure: dict,
+        example_data: dict
+    ) -> Optional[dict]:
+        """Generate structured content from Gemini."""
 ```
 
-### Parameters
+### 2. Use Cases
 
-- **model_name**: The Gemini model to use (default: 'gemini-1.5-pro')
-- **max_retries**: Maximum number of retry attempts for failed responses (default: 3)
-- **max_output_tokens**: Maximum output tokens for the model response (default: 2000)
+#### Job Analysis
+- Match scoring
+- Requirements extraction
+- Cultural fit assessment
+- Growth potential evaluation
 
-### Methods
+#### Profile Enhancement
+- Skills categorization
+- Experience summarization
+- Achievement highlighting
+- Target role identification
 
-#### get_structured_response
+#### Content Generation
+- Cover letter customization
+- Professional summaries
+- Career narratives
+- Medium articles
+
+## Integration Points
+
+### 1. Job Search
+```python
+async def analyze_job_with_gemini(job_info: JobInfo) -> JobAnalysis:
+    """Analyze job posting for fit and requirements."""
+```
+
+### 2. Profile Management
+```python
+def generate_target_roles(
+    experiences: List[Experience],
+    skills: List[Skill]
+) -> List[TargetRole]:
+    """Generate and score potential career targets."""
+```
+
+### 3. Document Generation
+```python
+def enhance_content_with_gemini(
+    content: str,
+    context: dict
+) -> str:
+    """Enhance written content for specific audiences."""
+```
+
+## Error Handling
+
+1. **Rate Limiting**
+   - Exponential backoff
+   - Request queuing
+   - Failure tracking
+
+2. **Content Validation**
+   - Schema validation
+   - Content safety checks
+   - Quality assurance
+
+3. **Fallbacks**
+   - Template-based generation
+   - Cached responses
+   - Manual override options
+
+## Monitoring
+
+### Metrics
+- Token usage
+- Response times
+- Error rates
+- Quality scores
+
+### Logging
+- Request/response pairs
+- Error details
+- Performance data
+
+## Best Practices
+
+1. **Prompt Engineering**
+   - Clear instructions
+   - Example outputs
+   - Context inclusion
+   - Safety guidelines
+
+2. **Output Processing**
+   - Schema validation
+   - Content filtering
+   - Format normalization
+
+3. **Error Management**
+   - Graceful degradation
+   - User feedback
+   - Error recovery
+
+4. **Cost Control**
+   - Token optimization
+   - Caching strategy
+   - Rate limiting
+
+## Configuration
 
 ```python
-def get_structured_response(
-    self,
-    prompt: str,
-    expected_structure: Union[Dict, List],
-    example_data: Optional[Union[Dict, List]] = None,
-    temperature: float = 0.1
-) -> Optional[Any]
+AI_CONFIG = {
+    "model": "gemini-1.0-pro",
+    "temperature": 0.7,
+    "max_tokens": 1000,
+    "timeout": 30,
+    "retry_count": 3
+}
 ```
 
-Gets a structured response from the model with validation and retry logic.
+## Security
 
-- **prompt**: The base prompt to send to the model
-- **expected_structure**: Dictionary or List describing the expected JSON structure
-- **example_data**: Optional example of the expected data structure
-- **temperature**: Model temperature (default: 0.1 for consistent structured output)
-- **Returns**: Parsed JSON data matching the expected structure, or None if failed
+1. **API Security**
+   - Key rotation
+   - Access logging
+   - Request signing
 
-### Internal Methods
+2. **Content Safety**
+   - Input validation
+   - Output filtering
+   - PII protection
 
-- **_clean_json_string**: Cleans up common JSON formatting issues
-- **_validate_json_structure**: Validates that parsed JSON matches the expected structure
-
-## Integration with Other Modules
-
-The AI module is primarily used by strategy generation components and job analysis tools to extract structured data from job descriptions, generate customized job search strategies, and analyze career data.
+3. **Data Privacy**
+   - Data minimization
+   - Local processing
+   - Secure storage

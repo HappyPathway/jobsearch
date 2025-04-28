@@ -6,7 +6,11 @@ python-dotenv
 python-slugify
 google-cloud-secret-manager
 beautifulsoup4
-requests
+requests>=2.32.2
+python-jose[cryptography]
+playwright
+PyJWT
+pydantic-ai>=0.1.6
 
 [dev]
 pytest

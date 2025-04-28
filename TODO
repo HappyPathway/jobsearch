@@ -286,3 +286,47 @@ This implementation uses Gemini to search for public information about companies
 ## cached jobs
 ERROR: Error retrieving cached jobs: (sqlite3.OperationalError) no such column: job_cache.location
 [SQL: SELECT job_cache.id AS job_cache_id, job_cache.url AS job_cache_url, job_cache.title AS job_cache_title, job_cache.company AS job_cache_company, job_cache.description AS job_cache_description, job_cache.location AS job_cache_location, job_cache.post_date AS job_cache_post_date, job_cache.first_seen_date AS job_cache_first_seen_date, job_cache.last_seen_date AS job_cache_last_seen_date, job_cache.match_score AS job_cache_match_score, job_cache.application_priority AS job_cache_application_priority, job_cache.key_requirements AS job_cache_key_requirements, job_cache.culture_indicators AS job_cache_culture_indicators, job_cache.career_growth_potential AS job_cache_career_growth_potential, job_cache.search_query AS job_cache_search_query, job_cache.total_years_experience AS job_cache_total_years_experience, job_cache.candidate_gaps AS job_cache_candidate_gaps, job_cache.location_type AS job_cache_location_type, job_cache.company_size AS job_cache_company_size, job_cache.company_stability AS job_cache_company_stability, job_cache.glassdoor_rating AS job_cache_glassdoor_rating, job_cache.employee_count AS job_cache_employee_count, job_cache.year_founded AS job_cache_year_founded, job_cache.growth_stage AS job_cache_growth_stage, job_cache.market_position AS job_cache_market_position, job_cache.development_opportunities AS job_cache_development_opportunities 
+
+
+# StructuredPrompts
+.```bash
+/jobsearch/core/ai.py:13:class StructuredPrompt:
+./jobsearch/core/__init__.py:3:from .prompts import StructuredPrompt
+./jobsearch/core/__init__.py:5:__all__ = ['StructuredPrompt']
+./jobsearch/core/prompts.py:5:class StructuredPrompt:
+./jobsearch/core/prompt.py:9:class StructuredPrompt:
+./jobsearch/features/glassdoor/analyzer.py:5:from jobsearch.core.prompt import StructuredPrompt
+./jobsearch/features/glassdoor/analyzer.py:23:        self.prompt_helper = StructuredPrompt()
+./jobsearch/features/profile_management/resume_parser.py:12:from jobsearch.core.ai import StructuredPrompt
+./jobsearch/features/profile_management/resume_parser.py:19:# Initialize StructuredPrompt
+./jobsearch/features/profile_management/resume_parser.py:20:structured_prompt = StructuredPrompt()
+./jobsearch/features/profile_management/parser.py:12:from jobsearch.core.ai import StructuredPrompt
+./jobsearch/features/profile_management/parser.py:38:        # Initialize StructuredPrompt
+./jobsearch/features/profile_management/parser.py:39:        structured_prompt = StructuredPrompt()
+./jobsearch/features/profile_management/summarizer.py:11:from jobsearch.core.prompts import StructuredPrompt
+./jobsearch/features/profile_management/summarizer.py:60:    # Initialize StructuredPrompt
+./jobsearch/features/profile_management/summarizer.py:61:    structured_prompt = StructuredPrompt()
+./jobsearch/features/profile_management/cover_letter_parser.py:10:from jobsearch.core.ai import StructuredPrompt
+./jobsearch/features/profile_management/cover_letter_parser.py:14:# Initialize StructuredPrompt
+./jobsearch/features/profile_management/cover_letter_parser.py:15:structured_prompt = StructuredPrompt()
+./jobsearch/features/document_generation/generator.py:21:from jobsearch.core.ai import StructuredPrompt
+./jobsearch/features/document_generation/generator.py:36:# Initialize StructuredPrompt
+./jobsearch/features/document_generation/generator.py:37:structured_prompt = StructuredPrompt()
+./jobsearch/features/document_generation/generator.py:454:        # First pass: Generate structured content with StructuredPrompt
+./jobsearch/features/web_presence/medium.py:35:from scripts.structured_prompt import StructuredPrompt
+./jobsearch/features/web_presence/medium.py:59:        self.structured_prompt = StructuredPrompt()
+./jobsearch/features/web_presence/github_pages.py:15:from structured_prompt import StructuredPrompt
+./jobsearch/features/web_presence/github_pages.py:24:        # Initialize StructuredPrompt
+./jobsearch/features/web_presence/github_pages.py:25:        structured_prompt = StructuredPrompt()
+./jobsearch/features/web_presence/github_pages.py:75:        # Initialize StructuredPrompt
+./jobsearch/features/web_presence/github_pages.py:76:        structured_prompt = StructuredPrompt()
+./jobsearch/features/job_search/search.py:17:from jobsearch.core.ai import StructuredPrompt
+./jobsearch/scripts/strategy_generator.py:11:from ..core.ai import StructuredPrompt
+./jobsearch/scripts/strategy_generator.py:106:        structured_prompt = StructuredPrompt()
+./jobsearch/scripts/strategy_generator.py:301:        prompt = StructuredPrompt()
+./jobsearch/scripts/job_analysis.py:10:from ..core.ai import StructuredPrompt
+./jobsearch/scripts/job_analysis.py:27:        structured_prompt = StructuredPrompt()
+./docs/structured_output.md:14:Our `StructuredPrompt` class in `jobsearch/core/ai.py` currently uses the text-based approach. Here's how we can improve it using the latest best practices.
+./docs/structured_output.md:122:from jobsearch.core.ai import StructuredPrompt
+./docs/ai.md:19:from jobsearch.core.ai import StructuredPrompt
+./scripts/profile_parser.py:12:from jobsearch.core.ai import StructuredPrompt```

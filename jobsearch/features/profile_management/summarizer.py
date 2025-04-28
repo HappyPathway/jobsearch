@@ -1,173 +1,255 @@
-import logging
-import re
-from datetime import datetime
-from dotenv import load_dotenv
-import os
+"""Profile data combination and summarization using core components."""
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
 import json
-import google.generativeai as genai
-from jobsearch.core.database import Experience, Skill, TargetRole, get_session
-from jobsearch.core.ai import StructuredPrompt
 
-load_dotenv()
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+from jobsearch.core.logging import setup_logging
+from jobsearch.core.database import get_session
+from jobsearch.core.storage import GCSManager
+from jobsearch.core.ai import AIEngine
+from jobsearch.core.monitoring import setup_monitoring
+from jobsearch.core.models import (
+    Experience, 
+    Skill, 
+    TargetRole, 
+    ResumeSection, 
+    CoverLetterSection
+)
+from jobsearch.core.markdown import MarkdownGenerator
+from jobsearch.core.schemas import (
+    ProfileData,
+    ExperienceData,
+    SkillData,
+    TargetRoleData,
+    ProfessionalSummary,
+    Tagline
+)
 
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+# Initialize core components
+logger = setup_logging('profile_summarizer')
+storage = GCSManager()
+ai_engine = AIEngine(feature_name='profile_summarization') 
+markdown = MarkdownGenerator()
+monitoring = setup_monitoring('profile')
 
-def fetch_data():
-    """Get experiences, skills, and existing target roles from database using SQLAlchemy"""
-    with get_session() as session:
-        linkedin_exp = session.query(Experience).order_by(Experience.start_date.desc()).all()
-        linkedin_exp = [
-            (exp.company, exp.title, exp.start_date, exp.end_date, exp.description)
-            for exp in linkedin_exp
-        ]
-        
-        skills = session.query(Skill).all()
-        skill_names = [skill.skill_name for skill in skills]
-        
-        # Fetch existing target roles
-        existing_roles = session.query(TargetRole).order_by(TargetRole.priority).all()
-        target_roles = [
-            {
-                "role_name": role.role_name,
-                "priority": role.priority,
-                "match_score": role.match_score
-            }
-            for role in existing_roles
-        ]
-        
-        return linkedin_exp, skill_names, target_roles
-
-def format_experiences(exps):
-    out = []
-    for e in exps:
-        # e: (company, title, start_date, end_date, description)
-        out.append(f"- **{e[1]}** at **{e[0]}** ({e[2]} - {e[3]}): {e[4]}")
-    return "\n".join(out)
-
-def generate_target_roles(experiences, skills, existing_roles):
-    """Use Gemini to generate and score target roles based on profile data"""
-    roles_str = "\n".join([f"- {r['role_name']} (Priority: {r['priority']}, Match: {r['match_score']}%)" 
-                          for r in existing_roles]) if existing_roles else "No existing roles"
-    
-    # Initialize StructuredPrompt
-    structured_prompt = StructuredPrompt()
-
-    # Define expected structure
-    expected_structure = [{
-        "role_name": str,
-        "priority": int,
-        "match_score": float,
-        "reasoning": str,
-        "source": str,
-        "requirements": [str],
-        "next_steps": [str]
-    }]
-
-    # Example data
-    example_data = [{
-        "role_name": "Senior Cloud Architect",
-        "priority": 1,
-        "match_score": 85.5,
-        "reasoning": "Strong match for cloud infrastructure and system design experience",
-        "source": "AI generated",
-        "requirements": [
-            "Experience with major cloud platforms",
-            "Strong system design skills"
-        ],
-        "next_steps": [
-            "Highlight cloud migration projects",
-            "Showcase architecture decisions"
-        ]
-    }]
-
-    # Get structured response
-    roles = structured_prompt.get_structured_response(
-        prompt=f"""You are an expert career advisor with deep knowledge of tech industry roles.
-Analyze this professional's background and generate appropriate target roles.
-
-Current target roles being considered:
-{roles_str}
-
-Experience:
-{format_experiences(experiences)}
-
-Skills: {', '.join(skills)}
-
-Focus on senior/principal level roles in cloud, DevOps, and platform engineering.
-Generate 3-5 role recommendations.
-
-Each role should have:
-1. Clear job title that matches real job postings
-2. Priority (1-5, where 1 is highest)
-3. Match score (0-100)
-4. Brief reasoning for the recommendation
-5. Key requirements needed
-6. Next steps to strengthen candidacy""",
-        expected_structure=expected_structure,
-        example_data=example_data
-    )
-
-    if not roles:
-        logger.error("Failed to generate target roles")
-        return []
-
-    # Validate and normalize each role
-    for role in roles:
-        # Required fields
-        role['role_name'] = str(role.get('role_name', '')).strip()
-        role['priority'] = max(1, min(5, int(role.get('priority', 5))))
-        role['match_score'] = max(0, min(100, float(role.get('match_score', 0))))
-        role['reasoning'] = str(role.get('reasoning', '')).strip()
-        role['source'] = str(role.get('source', 'AI generated')).strip()
-        
-        # Optional fields with defaults
-        if 'requirements' not in role:
-            role['requirements'] = []
-        if 'next_steps' not in role:
-            role['next_steps'] = []
-            
-        # Ensure lists contain strings
-        role['requirements'] = [str(req).strip() for req in role['requirements']]
-        role['next_steps'] = [str(step).strip() for step in role['next_steps']]
-    
-    return roles
-
-def update_target_roles(roles):
-    """Update target roles in the database"""
-    if not roles:
-        return
-        
-    with get_session() as session:
-        # Clear existing roles
-        session.query(TargetRole).delete()
-        
-        # Add new roles
-        for role in roles:
-            target_role = TargetRole(
-                role_name=role['role_name'],
-                priority=role['priority'],
-                match_score=role['match_score'],
-                reasoning=role['reasoning'],
-                source=role['source'],
-                last_updated=datetime.now().strftime("%Y-%m-%d")
-            )
-            session.add(target_role)
-        
-        logger.info(f"Successfully updated {len(roles)} target roles")
-
-def main():
+def fetch_data() -> Tuple[List[ExperienceData], List[SkillData], List[TargetRoleData]]:
+    """Get data from database using core database session."""
     try:
-        logger.info("Generating target roles from profile data")
-        experiences, skills, existing_roles = fetch_data()
-        roles = generate_target_roles(experiences, skills, existing_roles)
-        logger.info("Updating target roles in database")
-        update_target_roles(roles)
-        logger.info("Successfully updated target roles")
+        monitoring.increment('fetch_data')
+        with get_session() as session:
+            # Get experiences in reverse chronological order
+            experiences = session.query(Experience).order_by(
+                Experience.end_date.desc()
+            ).all()
+            
+            # Build experience data objects
+            exp_data = []
+            for exp in experiences:
+                exp_data.append(ExperienceData(
+                    company=exp.company,
+                    title=exp.title,
+                    start_date=exp.start_date,
+                    end_date=exp.end_date,
+                    description=exp.description,
+                    skills=[skill.skill_name for skill in exp.skills]
+                ))
+            
+            # Get unique skills
+            skills = session.query(Skill).all()
+            skill_data = [
+                SkillData(skill_name=skill.skill_name)
+                for skill in skills
+            ]
+            
+            # Get existing target roles
+            roles = session.query(TargetRole).order_by(
+                TargetRole.priority.desc()
+            ).all()
+            role_data = [
+                TargetRoleData(
+                    role_name=role.role_name,
+                    priority=role.priority,
+                    match_score=role.match_score,
+                    requirements=json.loads(role.requirements) if role.requirements else [],
+                    next_steps=json.loads(role.next_steps) if role.next_steps else []
+                )
+                for role in roles
+            ]
+            
+            monitoring.track_success('fetch_data')
+            return exp_data, skill_data, role_data
+            
     except Exception as e:
-        logger.error(f"Error in main process: {str(e)}")
-        raise
+        monitoring.track_error('fetch_data', str(e))
+        logger.error(f"Error fetching profile data: {str(e)}")
+        return [], [], []
+
+async def generate_summary() -> Optional[ProfessionalSummary]:
+    """Generate professional summary using core AI engine."""
+    try:
+        monitoring.increment('generate_summary')
+        experiences, skills, roles = fetch_data()
+        
+        if not experiences:
+            logger.error("No experience data available")
+            return None
+            
+        # Use AI to generate summary
+        summary = await ai_engine.generate(
+            prompt=f"""Generate a professional summary based on:
+
+EXPERIENCE:
+{experiences[:3]}  # Most recent experiences
+
+SKILLS:
+{[skill.skill_name for skill in skills]}
+
+TARGET ROLES:
+{[role.role_name for role in roles]}
+
+Create a compelling professional summary that:
+1. Highlights key achievements
+2. Emphasizes relevant skills
+3. Shows career progression
+4. Aligns with target roles""",
+            output_type=ProfessionalSummary
+        )
+        
+        if summary:
+            monitoring.track_success('generate_summary')
+            return summary
+            
+        monitoring.track_failure('generate_summary')
+        logger.error("Failed to generate summary")
+        return None
+        
+    except Exception as e:
+        monitoring.track_error('generate_summary', str(e))
+        logger.error(f"Error generating summary: {str(e)}")
+        return None
+
+async def generate_tagline() -> Optional[Tagline]:
+    """Generate professional tagline using core AI engine."""
+    try:
+        monitoring.increment('generate_tagline')
+        experiences, skills, roles = fetch_data()
+        
+        if not experiences:
+            logger.error("No experience data available")
+            return None
+            
+        # Use AI to generate tagline
+        tagline = await ai_engine.generate(
+            prompt=f"""Generate a professional tagline based on:
+
+Current Role: {experiences[0].title} at {experiences[0].company}
+Top Skills: {[skill.skill_name for skill in skills[:5]]}
+Target Roles: {[role.role_name for role in roles]}
+
+Create a concise, impactful tagline that:
+1. Captures professional identity
+2. Highlights key expertise
+3. Aligns with career goals""",
+            output_type=Tagline
+        )
+        
+        if tagline:
+            monitoring.track_success('generate_tagline')
+            return tagline
+            
+        monitoring.track_failure('generate_tagline')
+        logger.error("Failed to generate tagline")
+        return None
+        
+    except Exception as e:
+        monitoring.track_error('generate_tagline', str(e))
+        logger.error(f"Error generating tagline: {str(e)}")
+        return None
+
+async def save_combined_profile() -> bool:
+    """Save combined profile markdown file."""
+    try:
+        monitoring.increment('save_profile')
+        
+        # Get data components
+        summary = await generate_summary()
+        tagline = await generate_tagline()
+        experiences, skills, roles = fetch_data()
+        
+        if not summary or not tagline:
+            logger.error("Missing required profile components")
+            return False
+            
+        # Generate markdown content
+        content = [
+            "# Professional Profile\n\n",
+            f"## {tagline.tagline}\n\n",
+            "## Summary\n\n"
+        ]
+        
+        for para in summary.summary:
+            content.append(f"{para}\n\n")
+            
+        content.append("## Key Points\n\n")
+        for point in summary.key_points:
+            content.append(f"- {point}\n")
+            
+        content.append("\n## Experience\n\n")
+        for exp in experiences:
+            content.extend([
+                f"### {exp.title} at {exp.company}\n",
+                f"_{exp.start_date} - {exp.end_date}_\n\n",
+                f"{exp.description}\n\n",
+                "**Skills:** " + ", ".join(exp.skills) + "\n\n"
+            ])
+            
+        content.append("## Skills\n\n")
+        content.append(", ".join([skill.skill_name for skill in skills]))
+        
+        content.append("\n\n## Target Roles\n\n")
+        for role in roles:
+            content.extend([
+                f"### {role.role_name}\n",
+                f"Priority: {role.priority}\n",
+                f"Match Score: {role.match_score}%\n\n",
+                "**Requirements:**\n",
+                *[f"- {req}\n" for req in role.requirements],
+                "\n**Next Steps:**\n",
+                *[f"- {step}\n" for step in role.next_steps],
+                "\n"
+            ])
+            
+        # Save to file
+        profile_path = Path(__file__).parent.parent.parent.parent / 'combined_profile.md'
+        with open(profile_path, 'w') as f:
+            f.write(''.join(content))
+            
+        # Upload to GCS
+        storage.upload_file(profile_path, 'profiles/combined_profile.md')
+        
+        monitoring.track_success('save_profile')
+        return True
+        
+    except Exception as e:
+        monitoring.track_error('save_profile', str(e))
+        logger.error(f"Error saving combined profile: {str(e)}")
+        return False
+
+async def main() -> int:
+    """Main entry point."""
+    try:
+        logger.info("Starting profile summarization")
+        if await save_combined_profile():
+            logger.info("Successfully generated and saved combined profile")
+            return 0
+            
+        logger.error("Failed to generate combined profile")
+        return 1
+        
+    except Exception as e:
+        logger.error(f"Error in profile summarization: {str(e)}")
+        return 1
 
 if __name__ == "__main__":
-    main()
+    import asyncio
+    exit(asyncio.run(main()))

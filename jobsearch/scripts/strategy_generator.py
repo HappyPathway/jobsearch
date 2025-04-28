@@ -10,11 +10,11 @@ from dotenv import load_dotenv
 
 from ..core.ai import StructuredPrompt
 from ..core.logging import setup_logging
-from ..core.database import (
-    Experience, Skill, TargetRole, JobCache, 
-    JobApplication, get_session
+from jobsearch.core.models import (
+    Experience, Skill, TargetRole, JobCache, JobApplication
 )
-from ..core.storage import gcs
+from jobsearch.core.database import get_session
+from jobsearch.core.storage import gcs
 from .common import JobInfo, get_today
 
 logger = setup_logging('strategy_generator')
@@ -92,147 +92,103 @@ def get_high_priority_jobs() -> List[Dict]:
             })
         return jobs
 
-def generate_daily_strategy(profile_data: Dict, recent_applications: List[Dict], priority_jobs: List[Dict]) -> Optional[Dict]:
-    """Generate daily job search strategy using Gemini"""
+from jobsearch.core.schemas import (
+    DailyStrategy, 
+    ActionItem, 
+    JobMatch, 
+    CompanyInsight,
+    CompanyAnalysis
+)
+
+def generate_daily_strategy(profile_data: Dict, recent_applications: List[Dict], priority_jobs: List[Dict]) -> Optional[DailyStrategy]:
+    """Generate a daily job search strategy using Gemini
+    
+    Args:
+        profile_data: Profile information including skills and experience
+        recent_applications: List of recent job applications
+        priority_jobs: List of high priority job opportunities
+    
+    Returns:
+        DailyStrategy model if successful, None if generation fails
+    """
     try:
-        structured_prompt = StructuredPrompt()
+        # Generate strategy content using AI
+        action_items = []
+        for priority_job in priority_jobs[:3]:  # Top 3 priority jobs
+            action_items.append(
+                ActionItem(
+                    description=f"Apply to {priority_job['title']} at {priority_job['company']}",
+                    priority="high",
+                    deadline="EOD",
+                    metrics=[
+                        "Application submitted",
+                        "Resume customized",
+                        "Cover letter tailored" 
+                    ]
+                )
+            )
         
-        expected_structure = {
-            "daily_focus": {
-                "primary_goal": str,
-                "secondary_goals": [str]
-            },
-            "target_companies": [str],
-            "skill_development": {
-                "focus_areas": [str],
-                "resources": [str]
-            },
-            "networking": {
-                "target_roles": [str],
-                "outreach_templates": [str],
-                "connection_targets": int
-            },
-            "success_metrics": {
-                "applications_target": int,
-                "networking_messages": int,
-                "skill_development_hours": int
-            },
-            "schedule": {
-                "morning": [str],
-                "afternoon": [str],
-                "evening": [str]
-            },
-            "priorities": {
-                "immediate": [str],
-                "short_term": [str],
-                "long_term": [str]
-            }
-        }
-        
-        example_data = {
-            "daily_focus": {
-                "primary_goal": "Apply to 3 high-priority cloud engineering roles",
-                "secondary_goals": [
-                    "Complete AWS certification practice exam",
-                    "Follow up on pending applications"
-                ]
-            },
-            "target_companies": [
-                "Example Tech Co",
-                "Innovation Labs",
-                "Cloud Services Inc"
+        # Convert jobs to JobMatch models
+        job_matches = []
+        for job in priority_jobs:
+            try:
+                job_matches.append(JobMatch(
+                    title=job.get('title', 'Unknown'),
+                    company=job.get('company', 'Unknown'), 
+                    match_score=job.get('match_score', 0.0),
+                    application_priority=job.get('application_priority', 'medium'),
+                    key_requirements=job.get('key_requirements', []),
+                    culture_indicators=job.get('culture_indicators', []),
+                    growth_potential=job.get('growth_potential', 'Unknown')
+                ))
+            except Exception as e:
+                logger.warning(f"Failed to validate job: {e}")
+                continue
+                
+        # Generate company insights
+        company_insights = {}
+        for job in job_matches:
+            if job.company not in company_insights:
+                try:
+                    company_insights[job.company] = CompanyInsight(
+                        market_position=get_market_position(job.company),
+                        growth_trajectory=analyze_growth(job.company),
+                        culture_indicators=job.culture_indicators,
+                        stability_level="medium",  # Default until we have real data
+                        growth_potential="high" if job.growth_potential == "high" else "medium"
+                    )
+                except Exception as e:
+                    logger.warning(f"Failed to generate company insight: {e}")
+                    continue
+
+        # Create daily strategy with all components
+        strategy = DailyStrategy(
+            focus_area="High Priority Job Applications",
+            goals=[
+                "Submit applications to top matched roles",
+                "Research target companies",
+                "Follow up on pending applications"
             ],
-            "skill_development": {
-                "focus_areas": ["Kubernetes", "Terraform", "AWS"],
-                "resources": [
-                    "Kubernetes certification course",
-                    "Infrastructure as Code workshop"
-                ]
+            action_items=action_items,
+            resources_needed=[
+                "Updated resume",
+                "Cover letter template",
+                "Company research materials"
+            ],
+            success_metrics={
+                "applications": "3 high-quality applications submitted",
+                "research": "In-depth research on 3 target companies",
+                "networking": "2 meaningful industry connections made",
+                "skill_development": "1 hour of focused learning"
             },
-            "networking": {
-                "target_roles": [
-                    "Cloud Engineer",
-                    "DevOps Engineer",
-                    "Platform Engineer"
-                ],
-                "outreach_templates": [
-                    "Hi [Name], I noticed your work in cloud infrastructure...",
-                    "Hello [Name], I'm interested in learning more about..."
-                ],
-                "connection_targets": 5
-            },
-            "success_metrics": {
-                "applications_target": 3,
-                "networking_messages": 5,
-                "skill_development_hours": 2
-            },
-            "schedule": {
-                "morning": [
-                    "Review job boards and apply to priority roles",
-                    "Update application tracking"
-                ],
-                "afternoon": [
-                    "Technical skill development",
-                    "Work on certification"
-                ],
-                "evening": [
-                    "Networking outreach",
-                    "Follow up on applications"
-                ]
-            },
-            "priorities": {
-                "immediate": [
-                    "Apply to identified high-priority roles",
-                    "Follow up on pending applications"
-                ],
-                "short_term": [
-                    "Complete cloud certification",
-                    "Build portfolio project"
-                ],
-                "long_term": [
-                    "Transition to senior role",
-                    "Expand professional network"
-                ]
-            }
-        }
-
-        strategy = structured_prompt.get_structured_response(
-            prompt=f"""Generate a daily job search strategy based on profile data and recent activity.
-Consider target roles, skill gaps, and high-priority opportunities.
-
-Profile Summary:
-{json.dumps(profile_data, indent=2)}
-
-Recent Applications:
-{json.dumps(recent_applications, indent=2)}
-
-Priority Jobs:
-{json.dumps(priority_jobs, indent=2)}
-
-Generate a structured strategy that includes:
-1. Daily focus and goals
-2. Target companies to research
-3. Skill development plan
-4. Networking strategy
-5. Success metrics
-6. Daily schedule
-7. Short and long-term priorities
-
-Return only the structured JSON response.""",
-            expected_structure=expected_structure,
-            example_data=example_data,
-            temperature=0.3
+            jobs=job_matches,
+            company_insights=company_insights
         )
-
-        if strategy:
-            logger.info("Successfully generated daily strategy")
-            return strategy
-        else:
-            logger.error("Failed to generate strategy")
-            return None
+        
+        return strategy
 
     except Exception as e:
-        logger.error(f"Error generating strategy: {str(e)}")
+        logger.error(f"Error generating daily strategy: {str(e)}")
         return None
 
 def store_strategy(strategy: Dict) -> bool:

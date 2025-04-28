@@ -6,8 +6,9 @@ from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 from datetime import datetime
 from dotenv import load_dotenv
-from logging_utils import setup_logging
-from models import get_session, JobApplication, JobCache
+from jobsearch.core.logging import setup_logging
+from jobsearch.core.database import get_session
+from jobsearch.core.models import JobApplication, JobCache
 import time
 
 logger = setup_logging('slack_notifier')

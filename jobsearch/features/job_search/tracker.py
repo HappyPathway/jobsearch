@@ -3,7 +3,7 @@ import sys
 import argparse
 from datetime import datetime
 from pathlib import Path
-from logging_utils import setup_logging
+from jobsearch.core.logging import setup_logging
 from models import Session, JobCache, JobApplication
 from dotenv import load_dotenv
 

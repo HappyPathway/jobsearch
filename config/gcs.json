@@ -1,5 +1,6 @@
 {
-  "GCS_BUCKET_NAME": "happypathway-jobsearch-680290a2-uqeeqtww",
-  "created_at": "2025-04-18 17:49:23",
-  "repository": "happypathway-jobsearch"
+	"GCS_BUCKET_NAME": "jobsearch-data-test",
+	"GOOGLE_CLOUD_PROJECT": "happypathway-1522441039906",
+	"LOCATION": "US",
+	"STORAGE_CLASS": "STANDARD"
 }

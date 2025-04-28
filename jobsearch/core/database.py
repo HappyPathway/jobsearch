@@ -1,188 +1,311 @@
-"""Database models and SQLAlchemy configuration."""
-
+"""Database configuration and session management."""
+from sqlalchemy import create_engine, inspect, text
+from sqlalchemy.orm import declarative_base, sessionmaker, Session
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, Table, Text, JSON
 from pathlib import Path
-from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, Table, Text
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker, Session
+import os
 from contextlib import contextmanager
+from typing import Optional, Dict, List, Union
 
-from .storage import gcs
-from .logging import logger
+from jobsearch.core.logging import setup_logging
+from jobsearch.core.storage import GCSManager
+from jobsearch.core.monitoring import setup_monitoring
+from jobsearch.core.schemas import StorageConfig
 
+# Initialize core components
+logger = setup_logging('core_database')  
+monitoring = setup_monitoring('database')
+storage = GCSManager()
+
+# Initialize base class for declarative models
 Base = declarative_base()
 
-# Association table for experience-skill many-to-many relationship
+def get_db_path() -> Path:
+    """Get the database file path."""
+    return Path(__file__).parent.parent.parent / 'career_data.db'
+
+def create_tables_if_missing(engine):
+    """Create missing tables in the database."""
+    try:
+        monitoring.increment('create_tables')
+        inspector = inspect(engine)
+        existing_tables = inspector.get_table_names()
+        
+        with engine.begin() as conn:
+            for table in Base.metadata.sorted_tables:
+                if table.name not in existing_tables:
+                    logger.info(f"Creating missing table: {table.name}")
+                    table.create(conn)
+                    
+        monitoring.track_success('create_tables')
+        
+    except Exception as e:
+        monitoring.track_error('create_tables', str(e))
+        logger.error(f"Error creating tables: {str(e)}")
+        raise
+
+def check_and_update_schema(engine):
+    """Check if all columns exist and add missing ones."""
+    try:
+        monitoring.increment('check_schema')
+        inspector = inspect(engine)
+        create_tables_if_missing(engine)
+        
+        with engine.begin() as conn:
+            for table in Base.metadata.sorted_tables:
+                existing_columns = {col['name'] for col in inspector.get_columns(table.name)}
+                for column in table.columns:
+                    if column.name not in existing_columns:
+                        column_type = column.type.compile(engine.dialect)
+                        
+                        # Handle default values for existing rows
+                        default_value = "NULL"
+                        if column.default is not None:
+                            if isinstance(column.default.arg, str):
+                                default_value = f"'{column.default.arg}'"
+                            else:
+                                default_value = str(column.default.arg)
+                        elif not column.nullable:
+                            if isinstance(column.type, String):
+                                default_value = "''"
+                            elif isinstance(column.type, (Integer, Float)):
+                                default_value = "0"
+                            else:
+                                default_value = "NULL"
+                                
+                        # SQLite specific ALTER TABLE
+                        sql = text(f"ALTER TABLE {table.name} ADD COLUMN {column.name} {column_type} DEFAULT {default_value}")
+                        
+                        try:
+                            conn.execute(sql)
+                            # Remove the default constraint if it wasn't originally specified
+                            if column.default is None and not column.nullable:
+                                update_sql = text(f"UPDATE {table.name} SET {column.name} = {default_value}")
+                                conn.execute(update_sql)
+                            logger.info(f"Added column {column.name} to table {table.name}")
+                            
+                        except Exception as e:
+                            logger.error(f"Error adding column {column.name} to {table.name}: {str(e)}")
+                            raise
+                            
+        monitoring.track_success('check_schema')
+        
+    except Exception as e:
+        monitoring.track_error('check_schema', str(e))
+        logger.error(f"Error checking schema: {str(e)}")
+        raise
+
+def get_engine():
+    """Create the SQLAlchemy engine with the latest database."""
+    try:
+        monitoring.increment('get_engine')
+        db_path = get_db_path()
+        
+        # Ensure we have the latest database from GCS
+        storage.sync_db()
+        
+        engine = create_engine(f'sqlite:///{db_path}')
+        check_and_update_schema(engine)
+        
+        monitoring.track_success('get_engine')
+        return engine
+        
+    except Exception as e:
+        monitoring.track_error('get_engine', str(e))
+        logger.error(f"Error getting database engine: {str(e)}")
+        raise
+
+# Initialize the engine once on module import
+engine = get_engine()
+SessionFactory = sessionmaker(bind=engine)
+
+@contextmanager
+def get_session() -> Session:
+    """Get a managed database session with GCS sync and locking."""
+    try:
+        monitoring.increment('get_session')
+        if not storage.acquire_lock():
+            monitoring.track_failure('get_session')
+            raise Exception("Could not acquire database lock after retries")
+            
+        storage.sync_db()  # Sync after acquiring lock
+        session = SessionFactory()
+        
+        try:
+            yield session
+            session.commit()
+            
+            # Upload to GCS after successful commit
+            storage.upload_db()
+            
+            monitoring.track_success('get_session')
+            
+        except Exception as e:
+            session.rollback()
+            monitoring.track_error('get_session', str(e))
+            raise
+            
+        finally:
+            session.close()
+            storage.release_lock()  # Always release lock
+            
+    except Exception as e:
+        monitoring.track_error('get_session', str(e))
+        logger.error(f"Error in database session: {str(e)}")
+        raise
+
+# Association table for many-to-many relationships
 experience_skills = Table(
     'experience_skills', Base.metadata,
     Column('experience_id', Integer, ForeignKey('experiences.id')),
     Column('skill_id', Integer, ForeignKey('skills.id'))
 )
 
+# Base models for common database tables
 class Experience(Base):
+    """Model for work experiences."""
     __tablename__ = 'experiences'
     
-    id = Column(Integer, primary_key=True)
-    company = Column(String)
-    title = Column(String)
-    start_date = Column(String)
-    end_date = Column(String)
-    description = Column(Text)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    company: Mapped[str]
+    title: Mapped[str]
+    start_date: Mapped[str]
+    end_date: Mapped[str]
+    description: Mapped[str]
     
     skills = relationship('Skill', secondary=experience_skills, back_populates='experiences')
-
+    
 class Skill(Base):
+    """Model for professional skills."""
     __tablename__ = 'skills'
     
-    id = Column(Integer, primary_key=True)
-    skill_name = Column(String, unique=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    skill_name: Mapped[str] = mapped_column(unique=True)
     
     experiences = relationship('Experience', secondary=experience_skills, back_populates='skills')
-
+    
 class TargetRole(Base):
+    """Model for target career roles."""
     __tablename__ = 'target_roles'
     
-    id = Column(Integer, primary_key=True)
-    role_name = Column(String, unique=True)
-    priority = Column(Integer)
-    match_score = Column(Float)
-    reasoning = Column(Text)
-    source = Column(String)
-    last_updated = Column(String)
-    requirements = Column(Text)  # JSON array of requirements
-    next_steps = Column(Text)  # JSON array of action items
-
+    id: Mapped[int] = mapped_column(primary_key=True)
+    role_name: Mapped[str] = mapped_column(unique=True)
+    priority: Mapped[int]
+    match_score: Mapped[float]
+    reasoning: Mapped[str] = mapped_column(Text)
+    source: Mapped[str]
+    last_updated: Mapped[str]
+    requirements: Mapped[str] = mapped_column(JSON)
+    next_steps: Mapped[str] = mapped_column(JSON)
+    
 class ResumeSection(Base):
+    """Model for resume content sections."""
     __tablename__ = 'resume_sections'
     
-    id = Column(Integer, primary_key=True)
-    section_name = Column(String, unique=True)
-    content = Column(Text)
-
+    id: Mapped[int] = mapped_column(primary_key=True)
+    section_type: Mapped[str]  # summary, experience, education, skills
+    title: Mapped[str]
+    content: Mapped[str] = mapped_column(Text)
+    order: Mapped[int]
+    
 class ResumeExperience(Base):
+    """Model for tailored experience summaries."""
     __tablename__ = 'resume_experience'
     
-    id = Column(Integer, primary_key=True)
-    company = Column(String)
-    title = Column(String)
-    start_date = Column(String)
-    end_date = Column(String)
-    location = Column(String)
-    description = Column(Text)
-
+    id: Mapped[int] = mapped_column(primary_key=True)
+    experience_id: Mapped[int] = mapped_column(ForeignKey('experiences.id'))
+    role_id: Mapped[int] = mapped_column(ForeignKey('target_roles.id'))
+    tailored_description: Mapped[str] = mapped_column(Text)
+    
 class ResumeEducation(Base):
+    """Model for education entries."""
     __tablename__ = 'resume_education'
     
-    id = Column(Integer, primary_key=True)
-    institution = Column(String)
-    degree = Column(String)
-    field = Column(String)
-    graduation_date = Column(String)
-    gpa = Column(String)
-
+    id: Mapped[int] = mapped_column(primary_key=True)
+    institution: Mapped[str]
+    degree: Mapped[str]
+    field: Mapped[str]
+    start_date: Mapped[str]
+    end_date: Mapped[str]
+    description: Mapped[Optional[str]] = mapped_column(Text)
+    
 class CoverLetterSection(Base):
+    """Model for cover letter sections."""
     __tablename__ = 'cover_letter_sections'
     
-    id = Column(Integer, primary_key=True)
-    section_name = Column(String, unique=True)
-    content = Column(Text)
-
+    id: Mapped[int] = mapped_column(primary_key=True)
+    section_type: Mapped[str]  # opener, body, closing
+    content_template: Mapped[str] = mapped_column(Text)
+    style_notes: Mapped[str] = mapped_column(Text)
+    tone: Mapped[str]
+    
 class JobCache(Base):
+    """Model for job postings and analysis."""
     __tablename__ = 'job_cache'
     
-    id = Column(Integer, primary_key=True)
-    url = Column(String, unique=True, index=True)
-    title = Column(String)
-    company = Column(String)
-    description = Column(Text)
-    location = Column(String)
-    post_date = Column(String)
-    first_seen_date = Column(String)
-    last_seen_date = Column(String)
-    match_score = Column(Float)
-    application_priority = Column(String)
-    key_requirements = Column(Text)  # JSON array
-    culture_indicators = Column(Text)  # JSON array
-    career_growth_potential = Column(String)
-    search_query = Column(String)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    url: Mapped[str] = mapped_column(unique=True, index=True)
+    title: Mapped[str]
+    company: Mapped[str]
+    location: Mapped[str]
+    description: Mapped[str] = mapped_column(Text)
+    post_date: Mapped[Optional[str]]
+    first_seen_date: Mapped[str]
+    last_seen_date: Mapped[str]
+    search_query: Mapped[Optional[str]]
     
-    # New fields for enhanced analysis
-    total_years_experience = Column(Integer, default=0)
-    candidate_gaps = Column(Text)  # JSON array
-    location_type = Column(String, default='unknown')  # remote|hybrid|onsite
+    # Analysis fields
+    match_score: Mapped[Optional[float]]
+    key_requirements: Mapped[List[str]] = mapped_column(JSON)
+    culture_indicators: Mapped[List[str]] = mapped_column(JSON)
+    career_growth_potential: Mapped[str]
+    total_years_experience: Mapped[int]
+    candidate_gaps: Mapped[List[str]] = mapped_column(JSON)
+    location_type: Mapped[str]
     
-    # Company overview fields
-    company_size = Column(String)  # startup|midsize|large|enterprise
-    company_stability = Column(String)  # high|medium|low
-    glassdoor_rating = Column(String)
-    employee_count = Column(String)
-    year_founded = Column(String)
-    growth_stage = Column(String)  # early|growth|mature|declining
-    market_position = Column(String)  # leader|challenger|follower
-    development_opportunities = Column(Text)  # JSON array
+    # Company analysis fields
+    company_size: Mapped[str]
+    company_stability: Mapped[str]
+    glassdoor_rating: Mapped[str]
+    employee_count: Mapped[str]
+    industry: Mapped[str]
+    funding_stage: Mapped[str]
+    benefits: Mapped[List[str]] = mapped_column(JSON)
+    tech_stack: Mapped[List[str]] = mapped_column(JSON)
     
     applications = relationship('JobApplication', back_populates='job')
-
+    
 class JobApplication(Base):
+    """Model for job application tracking."""
     __tablename__ = 'job_applications'
     
-    id = Column(Integer, primary_key=True)
-    job_cache_id = Column(Integer, ForeignKey('job_cache.id'))
-    application_date = Column(String, index=True)
-    status = Column(String)
-    resume_path = Column(String)
-    cover_letter_path = Column(String)
-    notes = Column(Text)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    job_cache_id: Mapped[int] = mapped_column(ForeignKey('job_cache.id'))
+    application_date: Mapped[str] = mapped_column(index=True)
+    status: Mapped[str]  # applied, interviewing, rejected, accepted
+    resume_path: Mapped[str]  # GCS path
+    cover_letter_path: Mapped[str]  # GCS path
+    notes: Mapped[str] = mapped_column(Text)
     
     job = relationship('JobCache', back_populates='applications')
-
+    contacts = relationship('RecruiterContact', back_populates='application')
+    
 class RecruiterContact(Base):
+    """Model for tracking recruiter interactions."""
     __tablename__ = 'recruiter_contacts'
     
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    title = Column(String)
-    company = Column(String, index=True)
-    url = Column(String, unique=True)
-    source = Column(String)
-    found_date = Column(String)
-    contacted_date = Column(String, nullable=True)
-    status = Column(String, default='identified')  # identified, contacted, responded, scheduled, closed
-    notes = Column(Text, nullable=True)
-
-def get_engine():
-    """Get SQLAlchemy engine with latest database from GCS"""
-    db_path = Path(__file__).parent.parent.parent / 'career_data.db'
-    engine = create_engine(f'sqlite:///{db_path}')
+    id: Mapped[int] = mapped_column(primary_key=True)
+    application_id: Mapped[Optional[int]] = mapped_column(ForeignKey('job_applications.id'))
+    name: Mapped[str]
+    title: Mapped[str]
+    company: Mapped[str] = mapped_column(index=True)
+    email: Mapped[Optional[str]]
+    linkedin_url: Mapped[Optional[str]]
+    source: Mapped[str]
+    found_date: Mapped[str]
+    last_contact_date: Mapped[Optional[str]]
+    status: Mapped[str]  # identified, contacted, responded, scheduled, closed
+    notes: Mapped[str] = mapped_column(Text)
     
-    # Ensure we have the latest database from GCS
-    gcs.sync_db()
-    
-    return engine
-
-engine = get_engine()
-SessionFactory = sessionmaker(bind=engine)
-
-@contextmanager
-def get_session():
-    """Session context manager that handles GCS sync and locking"""
-    if not gcs.acquire_lock():
-        logger.error("Could not acquire database lock after retries. Exiting gracefully.")
-        raise Exception("Database is currently locked by another process. Please try again later.")
-
-    session = SessionFactory()
-    try:
-        yield session
-        session.commit()
-        # Upload the database after successful commit
-        gcs.upload_db()
-    except Exception as e:
-        session.rollback()
-        raise
-    finally:
-        if session:
-            session.close()
-        gcs.release_lock()
-
-def create_tables_if_missing(engine):
-    """Create missing tables in the database"""
-    Base.metadata.create_all(engine)
+    application = relationship('JobApplication', back_populates='contacts')

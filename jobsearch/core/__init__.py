@@ -1,15 +1,14 @@
-"""Core package containing reusable modules and utilities."""
+"""Core functionality for the jobsearch package."""
 
-from .ai import StructuredPrompt
-from .database import Base, get_session, get_engine
-from .storage import GCSManager
+# Import core components
 from .logging import setup_logging
+from .database import get_session, Base, engine
+from .storage import gcs
 
 __all__ = [
-    'StructuredPrompt',
-    'Base',
-    'get_session',
-    'get_engine',
-    'GCSManager',
     'setup_logging',
+    'get_session',
+    'Base',
+    'engine',
+    'gcs',
 ]

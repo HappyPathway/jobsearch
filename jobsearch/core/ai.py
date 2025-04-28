@@ -1,153 +1,157 @@
-"""AI utilities for structured interaction with language models."""
-
-import json
-import re
-import logging
-from typing import Any, Dict, List, Optional, Union
+"""Core AI functionality with secure secrets and monitoring."""
+import os
+from typing import Any, Dict, Optional, Type, Union
 import google.generativeai as genai
+from pydantic import BaseModel
+from pydantic_ai import Agent, Prompt
+from pydantic_ai.monitoring import LogfireMonitoring
 
-logger = logging.getLogger(__name__)
+from jobsearch.core.secrets import secret_manager
+from jobsearch.core.logging import setup_logger
+from jobsearch.core.monitoring_config import monitoring_config
 
-class StructuredPrompt:
-    """Helper class for getting structured responses from language models."""
+logger = setup_logger('core_ai')
+
+def configure_gemini():
+    """Configure Gemini API with secure credentials."""
+    api_key = secret_manager.get_secret('GEMINI_API_KEY')
+    if not api_key:
+        raise ValueError("Could not retrieve Gemini API key from Secret Manager")
+    genai.configure(api_key=api_key)
+
+class AIEngine:
+    """Core AI engine with monitoring and type safety."""
     
-    def __init__(self, model_name: str = 'gemini-1.5-pro', max_retries: int = 3, max_output_tokens: int = 2000):
-        self.model = genai.GenerativeModel(model_name)
-        self.max_retries = max_retries
-        self.max_output_tokens = max_output_tokens
-
-    def _clean_json_string(self, json_str: str) -> str:
-        """Clean up common JSON formatting issues"""
-        # Remove markdown code block formatting
-        json_str = re.sub(r'^```.*?\n', '', json_str)
-        json_str = re.sub(r'\n```$', '', json_str)
-        
-        # Try to extract just the JSON if there's other text
-        if match := re.search(r'(\{[\s\S]*\}|\[[\s\S]*\])', json_str):
-            json_str = match.group(1)
-        
-        # Fix common JSON issues
-        json_str = re.sub(r'(?<!["\\])"(?![":{},\s\]])', '\\"', json_str)  # Escape unescaped quotes
-        json_str = re.sub(r',(\s*[}\]])', r'\1', json_str)  # Remove trailing commas
-        json_str = re.sub(r'}\s*{', '},{', json_str)  # Fix object separation
-        json_str = re.sub(r'\\n|\\r', ' ', json_str)  # Remove newlines in strings
-        json_str = re.sub(r'\s+', ' ', json_str)  # Normalize whitespace
-        json_str = re.sub(r'(?<=[\[{,])\s*([^"{\[]+?):\s*"', r'"\1":"', json_str)  # Fix unquoted property names
-        
-        return json_str
-
-    def _validate_json_structure(self, data: Any, expected_structure: Dict) -> bool:
-        """Validate that the parsed JSON matches the expected structure"""
-        if isinstance(expected_structure, dict):
-            if not isinstance(data, dict):
-                return False
-            for key, value_type in expected_structure.items():
-                if key not in data:
-                    return False
-                if not self._validate_json_structure(data[key], value_type):
-                    return False
-            return True
-        elif isinstance(expected_structure, list):
-            if not isinstance(data, list):
-                return False
-            if not data:  # Empty list is valid
-                return True
-            return all(self._validate_json_structure(item, expected_structure[0]) for item in data)
-        else:
-            return isinstance(data, expected_structure)
-
-    def get_structured_response(
-        self,
-        prompt: str,
-        expected_structure: Union[Dict, List],
-        example_data: Optional[Union[Dict, List]] = None,
-        temperature: float = 0.1
-    ) -> Optional[Any]:
-        """
-        Get a structured response from the model with validation and retry logic.
+    def __init__(self, feature_name: str = 'default'):
+        """Initialize the AI engine.
         
         Args:
-            prompt: The base prompt to send to the model
-            expected_structure: Dictionary or List describing the expected JSON structure
-            example_data: Optional example of the expected data structure
-            temperature: Model temperature (default: 0.1 for consistent structured output)
+            feature_name: Name of the feature using the engine
+        """
+        self.feature_name = feature_name
+        self.instrumentation = monitoring_config.get_instrumentation_config(feature_name)
+        
+        # Configure monitoring
+        self.monitoring = LogfireMonitoring(
+            project_id="jobsearch-ai",
+            environment=os.getenv("ENVIRONMENT", "development"),
+            service_name=feature_name
+        )
+        
+        # Configure Gemini
+        configure_gemini()
+    
+    def get_agent(
+        self,
+        model: str = 'gemini-1.5-pro',
+        output_type: Optional[Type[BaseModel]] = None
+    ) -> Agent:
+        """Get a monitored AI agent.
+        
+        Args:
+            model: Model to use
+            output_type: Expected output type
             
         Returns:
-            Parsed JSON data matching the expected structure, or None if failed
+            Configured Agent instance
         """
-        attempts = 0
-        while attempts < self.max_retries:
+        return Agent(
+            model=model,
+            output_type=output_type,
+            monitoring=self.monitoring,
+            instrumentation=self.instrumentation
+        )
+    
+    def get_prompt(
+        self,
+        template: str,
+        example: Optional[Union[Dict, BaseModel]] = None
+    ) -> Prompt:
+        """Get a monitored prompt.
+        
+        Args:
+            template: Prompt template
+            example: Optional example data
+            
+        Returns:
+            Configured Prompt instance
+        """
+        return Prompt(
+            template=template,
+            example=example,
+            monitoring=self.monitoring,
+            instrumentation=self.instrumentation
+        )
+        
+    async def generate(
+        self,
+        prompt: str,
+        output_type: Type[BaseModel],
+        example: Optional[Dict[str, Any]] = None,
+        max_retries: int = 3
+    ) -> Optional[BaseModel]:
+        """Generate content with monitoring and error handling.
+        
+        Args:
+            prompt: The prompt to use
+            output_type: Expected output type
+            example: Optional example data
+            max_retries: Maximum retry attempts
+            
+        Returns:
+            Generated content or None on failure
+        """
+        agent = self.get_agent(output_type=output_type)
+        
+        for attempt in range(max_retries):
             try:
-                # Enhance prompt with structure requirements
-                enhanced_prompt = prompt
-                if example_data:
-                    enhanced_prompt += f"\n\nExpected format:\n{json.dumps(example_data, indent=2)}"
-                enhanced_prompt += "\n\nReturn only valid JSON matching this structure. No other text."
-
-                # Get model response
-                response = self.model.generate_content(
-                    enhanced_prompt,
-                    generation_config={
-                        "max_output_tokens": self.max_output_tokens,
-                        "temperature": temperature,
-                    }
+                return await agent.generate(
+                    prompt=prompt,
+                    example=example,
+                    generation_config=monitoring_config.get_generation_config(self.feature_name)
                 )
-
-                if not response or not response.text:
-                    logger.error("Empty response from model")
-                    attempts += 1
-                    continue
-
-                # Clean and parse JSON
-                json_str = self._clean_json_string(response.text)
-                data = json.loads(json_str)
-
-                # Validate structure
-                if self._validate_json_structure(data, expected_structure):
-                    return data
-
-                # If structure validation failed, retry with explicit error
-                logger.warning("Response didn't match expected structure, retrying...")
-                attempts += 1
                 
-                # Add structure validation error to next attempt
-                enhanced_prompt += f"\n\nPrevious response didn't match expected structure. Please fix and return only valid JSON."
-
-            except json.JSONDecodeError as e:
-                logger.warning(f"JSON parsing error: {str(e)}")
-                attempts += 1
-                
-                # If JSON parsing failed, ask model to fix the JSON
-                fix_prompt = f"""The previous response was not valid JSON. Please fix the JSON formatting issues and return only valid JSON:
-
-Previous response:
-{response.text}
-
-Fix the JSON formatting and return ONLY the corrected JSON."""
-
-                try:
-                    fix_response = self.model.generate_content(
-                        fix_prompt,
-                        generation_config={
-                            "max_output_tokens": self.max_output_tokens,
-                            "temperature": 0.1,
-                        }
-                    )
-                    
-                    if fix_response and fix_response.text:
-                        json_str = self._clean_json_string(fix_response.text)
-                        data = json.loads(json_str)
-                        
-                        if self._validate_json_structure(data, expected_structure):
-                            return data
-                            
-                except Exception as e:
-                    logger.warning(f"Error fixing JSON: {str(e)}")
-                    continue
-
             except Exception as e:
-                logger.error(f"Error getting structured response: {str(e)}")
-                attempts += 1
+                logger.error(
+                    f"Generation error in {self.feature_name} "
+                    f"(attempt {attempt + 1}/{max_retries}): {str(e)}"
+                )
+                if attempt == max_retries - 1:
+                    return None
+    
+    async def generate_text(
+        self,
+        prompt: str,
+        max_length: Optional[int] = None,
+        max_retries: int = 3
+    ) -> Optional[str]:
+        """Generate free-form text with monitoring.
+        
+        Args:
+            prompt: The prompt to use
+            max_length: Optional maximum length
+            max_retries: Maximum retry attempts
+            
+        Returns:
+            Generated text or None on failure
+        """
+        agent = self.get_agent()
+        
+        for attempt in range(max_retries):
+            try:
+                return await agent.generate_text(
+                    prompt=prompt,
+                    max_length=max_length,
+                    generation_config=monitoring_config.get_generation_config(self.feature_name)
+                )
+                
+            except Exception as e:
+                logger.error(
+                    f"Text generation error in {self.feature_name} "
+                    f"(attempt {attempt + 1}/{max_retries}): {str(e)}"
+                )
+                if attempt == max_retries - 1:
+                    return None
 
-        logger.error(f"Failed to get valid structured response after {self.max_retries} attempts")
-        return None
+# Global instance
+ai_engine = AIEngine()

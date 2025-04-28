@@ -8,8 +8,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from app.main import app
-from app.dependencies import get_db
+from jobsearch.app.main import app
+from jobsearch.app.dependencies import get_db
 from jobsearch.core.database import Base
 
 # Create test database
