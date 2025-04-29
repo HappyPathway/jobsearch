@@ -1,4 +1,32 @@
-"""PDF generation utilities for the job search platform."""
+"""PDF generation utilities for the job search platform.
+
+This module provides functionality for generating PDF documents from templates
+or plain text. It supports loading templates from local directories or Google
+Cloud Storage, and provides specialized methods for creating resumes and
+cover letters.
+
+Example:
+    ```python
+    from jobsearch.core.pdf import PDFGenerator
+    
+    # Create a PDF generator
+    pdf_gen = PDFGenerator()
+    
+    # Generate a PDF from a template
+    pdf_gen.generate_pdf(
+        template_name='resume.html',
+        context={'name': 'John Doe', 'skills': ['Python', 'SQL']},
+        output_path='resume.pdf'
+    )
+    
+    # Generate a PDF from plain text
+    pdf_gen.generate_from_text(
+        text='Plain text content',
+        output_path='output.pdf',
+        title='Simple Document'
+    )
+    ```
+"""
 from pathlib import Path
 import tempfile
 from typing import Optional, Union, Dict, Any
@@ -12,7 +40,16 @@ storage = GCSManager()
 logger = setup_logging('pdf_generator')
 
 class PDFGenerator:
-    """Handles PDF generation from HTML templates and text content."""
+    """Handles PDF generation from HTML templates and text content.
+    
+    This class provides methods to generate PDF documents using WeasyPrint.
+    It can generate PDFs from HTML templates (loaded from local files or GCS)
+    or from plain text content.
+    
+    Attributes:
+        template_dir (Path, optional): Directory containing HTML templates
+        templates_loaded (dict): Cache of loaded templates
+    """
 
     def __init__(self, template_dir: Optional[Union[str, Path]] = None):
         """Initialize PDF generator.

@@ -38,7 +38,7 @@ class JobSearchFeature(BaseFeature):
     @property
     def system_context(self) -> dict:
         """Get the current system context for AI operations."""
-        with self.context.db() as session:
+        with get_session() as session:
             experiences = session.query(Experience).all()
             skills = session.query(Skill).all()
             target_roles = session.query(TargetRole).all()
@@ -156,7 +156,7 @@ class JobSearchFeature(BaseFeature):
         try:
             self.monitoring.increment('update_cache')
             
-            with self.context.db() as session:
+            with get_session() as session:
                 for job, analysis in zip(jobs, analyses):
                     # Update or create job cache entry
                     cached = session.query(JobCache).filter_by(url=job.url).first()

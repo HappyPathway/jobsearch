@@ -1,4 +1,21 @@
-"""Core AI functionality with secure secrets and monitoring."""
+"""Core AI functionality with secure secrets and monitoring.
+
+This module provides a standardized interface for AI interactions using
+Google's Gemini API. It includes monitoring, type safety, error handling,
+and integration with the project's secret management system.
+
+Example:
+    ```python
+    from jobsearch.core.ai import AIEngine
+    from my_types import JobAnalysis
+    
+    ai_engine = AIEngine(feature_name='job_analyzer')
+    result = await ai_engine.generate(
+        prompt="Analyze this job posting: ...",
+        output_type=JobAnalysis
+    )
+    ```
+"""
 import os
 from typing import Any, Dict, Optional, Type, Union
 import google.generativeai as genai
@@ -7,13 +24,20 @@ from pydantic_ai import Agent, Prompt
 from pydantic_ai.monitoring import LogfireMonitoring
 
 from jobsearch.core.secrets import secret_manager
-from jobsearch.core.logging import setup_logger
+from jobsearch.core.logging import setup_logging
 from jobsearch.core.monitoring_config import monitoring_config
 
-logger = setup_logger('core_ai')
+logger = setup_logging('core_ai')
 
 def configure_gemini():
-    """Configure Gemini API with secure credentials."""
+    """Configure Gemini API with secure credentials.
+    
+    Retrieves the Gemini API key from Secret Manager and
+    configures the Gemini client.
+    
+    Raises:
+        ValueError: If the API key can't be retrieved
+    """
     api_key = secret_manager.get_secret('GEMINI_API_KEY')
     if not api_key:
         raise ValueError("Could not retrieve Gemini API key from Secret Manager")

@@ -18,7 +18,6 @@ class FeatureContext(BaseModel):
         super().__init__(feature_name=feature_name)
         self.logger = setup_logging(feature_name)
         self.storage = GCSManager()
-        self.db = get_session()
         self.monitoring = setup_monitoring(feature_name)
 
 class BaseFeature:

@@ -20,10 +20,33 @@ logger = setup_logging('markdown_generator')
 monitoring = setup_monitoring('markdown')
 
 class MarkdownGenerator:
-    """Generates and formats markdown content."""
+    """Generates and formats markdown content.
+    
+    This class provides methods to generate and format markdown content for various purposes,
+    including job search strategies, profiles, job analyses, and GitHub Pages.
+    It uses templates and structured data to create consistent output.
+    
+    Attributes:
+        templates_loaded (dict): A cache of loaded templates.
+        template_dir (Path, optional): Directory where templates are stored.
+    """
     
     def format_strategy(self, strategy: DailyStrategy) -> str:
-        """Format a job search strategy as markdown."""
+        """Format a job search strategy as markdown.
+        
+        Converts a DailyStrategy object into a formatted markdown document with sections
+        for daily focus, target companies, networking targets, and action items.
+        
+        Args:
+            strategy (DailyStrategy): The strategy object containing all components
+                of a daily job search strategy.
+                
+        Returns:
+            str: The formatted markdown content.
+            
+        Raises:
+            Exception: If there's an error during formatting.
+        """
         try:
             monitoring.increment('strategy_format')
             

@@ -1,4 +1,22 @@
-"""SQLAlchemy models for job search functionality."""
+"""SQLAlchemy models for job search functionality.
+
+This module defines the SQLAlchemy ORM models used throughout the application.
+It includes models for job data, application tracking, user profiles, and
+other core entities. The module also provides utility functions for
+database schema management.
+
+Example:
+    ```python
+    from jobsearch.core.models import JobCache, JobApplication
+    from jobsearch.core.database import get_session
+    
+    # Query jobs with high match scores
+    with get_session() as session:
+        jobs = session.query(JobCache).filter(
+            JobCache.match_score >= 0.8
+        ).all()
+    ```
+"""
 from datetime import datetime
 from typing import List, Optional, Dict, Any
 from sqlalchemy import Column, Integer, String, Float, JSON, ForeignKey, Table, Text, inspect, text
@@ -16,7 +34,18 @@ storage = GCSManager()
 monitoring = setup_monitoring('models')
 
 def create_tables_if_missing(engine):
-    """Create missing tables in the database."""
+    """Create missing tables in the database.
+    
+    This function checks which tables defined in the models do not exist
+    in the database and creates them. It's used during application startup
+    to ensure the database schema is properly initialized.
+    
+    Args:
+        engine: SQLAlchemy engine connected to the database
+        
+    Raises:
+        Exception: If there's an error creating tables
+    """
     try:
         monitoring.increment('create_tables')
         inspector = inspect(engine)

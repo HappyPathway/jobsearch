@@ -1,15 +1,40 @@
-# JobSearch Core Library Documentation
+# JobSearch Documentation
 
-This documentation covers the core modules of the JobSearch application. The core library provides essential functionality for database operations, cloud storage management, logging, AI interactions, and other foundational services used throughout the application.
+This documentation covers all aspects of the JobSearch automation platform, organized into three main sections:
 
-## Core Modules
+## Core Documentation
 
-- [AI Module](ai.md) - Structured interactions with language models
-- [Database Module](database.md) - Database schema and session management
-- [Database Initialization](db_init.md) - Database setup and initialization
-- [Logging](logging.md) - Logging configuration and utilities
-- [Logging Utilities](logging_utils.md) - Additional logging utility functions
-- [Models](models.md) - Core data models
-- [Prompt](prompt.md) - Prompt engineering and management
-- [Storage](storage.md) - Cloud storage operations and file management
-- [Setup Storage](setup_storage.md) - Storage initialization utilities
+- [Architecture](ARCHITECTURE.md#overview) - System architecture and design
+  - [Feature Agent System](ARCHITECTURE.md#core-components)
+  - [Template System](ARCHITECTURE.md#template-management)
+  - [Pipeline Processing](ARCHITECTURE.md#pipeline-processing)
+
+- [Core Components](CORE.md#overview) - Foundational services
+  - [AI Integration](CORE.md#ai-integration)
+  - [Database Management](CORE.md#database-management)
+  - [Cloud Storage](CORE.md#cloud-storage)
+  - [Monitoring](CORE.md#monitoring)
+
+- [Development](DEVELOPMENT.md#overview) - Tools and workflows
+  - [VS Code Extension](DEVELOPMENT.md#vs-code-extension)
+  - [MCP Integration](DEVELOPMENT.md#mcp-integration)
+  - [Testing](DEVELOPMENT.md#testing-patterns)
+
+## Quick Links
+
+### Implementation Examples
+- [Feature Implementation](ARCHITECTURE.md#feature-implementation-pattern)
+- [Template Usage](CORE.md#template-examples)
+- [Error Handling](CORE.md#error-handling)
+- [Testing Patterns](DEVELOPMENT.md#testing-patterns)
+
+### Workflows
+- [Development Workflow](DEVELOPMENT.md#development-workflow)
+- [Testing Workflow](DEVELOPMENT.md#testing-workflow)
+- [Deployment](DEVELOPMENT.md#deployment)
+
+### Best Practices
+- [Core Library Usage](CORE.md#best-practices)
+- [Feature Development](ARCHITECTURE.md#best-practices)
+- [Template Design](CORE.md#template-best-practices)
+- [Testing Guidelines](DEVELOPMENT.md#testing-guidelines)

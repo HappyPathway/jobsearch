@@ -1,0 +1,58 @@
+# JobSearch Automation Platform
+
+> A modular AI-powered career automation platform that manages job applications, generates customized documents, and maintains professional web presence. Built on a core library of reusable components with type-safe AI interactions, template-driven configuration, and standardized building blocks.
+
+The platform uses a feature-based architecture where each feature inherits from a base feature agent class providing AI capabilities, template management, and core service integration. Features must use core library components rather than implementing feature-specific versions.
+
+## Core Architecture
+
+- [Base Feature Agent](docs/ARCHITECTURE.md#core-components): Type-safe feature implementation pattern
+- [Core Services](docs/CORE.md#overview): AI, database, storage, logging, and monitoring
+- [Template System](docs/ARCHITECTURE.md#template-management): Template-driven configuration
+- [Development Guide](docs/DEVELOPMENT.md#overview): Tools, practices, and workflows
+
+## Features
+
+- [Document Generation](jobsearch/features/document_generation/feature.py): Resume and cover letter generation
+  - [Generator](jobsearch/features/document_generation/generator.py): Document creation logic
+  - [Templates](jobsearch/features/document_generation/templates/): Document templates
+  - [Tests](tests/test_document_generation.py): Feature tests
+
+- [Job Search](jobsearch/features/job_search/feature.py): Job discovery and analysis
+  - [Search](jobsearch/features/job_search/search.py): Job search implementation
+  - [Analysis](jobsearch/features/job_search/analysis.py): Job analysis logic
+  - [Tests](tests/test_job_search.py): Feature tests
+
+- [Strategy Generation](jobsearch/features/strategy_generation/feature.py): Job search strategy
+  - [Generator](jobsearch/features/strategy_generation/generator.py): Strategy creation
+  - [Templates](jobsearch/features/strategy_generation/templates/): Strategy templates
+  - [Tests](tests/test_strategy_generation.py): Feature tests
+
+## Core Components
+
+- [AI Engine](jobsearch/core/ai.py): Type-safe AI interactions
+- [Database](jobsearch/core/database.py): Data models and sessions
+- [Storage](jobsearch/core/storage.py): Cloud storage operations
+- [Logging](jobsearch/core/logging.py): Structured logging
+- [Monitoring](jobsearch/core/monitoring.py): Error tracking and metrics
+
+## Development
+
+- [VS Code Extension](docs/DEVELOPMENT.md#vs-code-extension): Extension architecture
+- [MCP Integration](docs/DEVELOPMENT.md#mcp-integration): Model context protocol
+- [Testing](docs/DEVELOPMENT.md#testing-patterns): Testing patterns and tools
+- [Project Status](README.md#project-status): Current status and roadmap
+
+## Implementation Examples
+
+- [Feature Implementation](docs/ARCHITECTURE.md#feature-implementation-pattern): New feature guide
+- [Template Usage](docs/CORE.md#template-examples): Template system examples
+- [Error Handling](docs/CORE.md#error-handling): Error handling patterns
+- [Testing Examples](docs/DEVELOPMENT.md#testing-examples): Test implementation
+
+## Infrastructure
+
+- [Cloud Functions](functions/): Serverless implementations
+- [Database](jobsearch/core/models.py): Database schema
+- [CI/CD](terraform/): Infrastructure as code
+- [Testing](tests/): Test suite and utilities

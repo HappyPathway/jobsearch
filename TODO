@@ -1,332 +1,195 @@
-# Slack Notifications Intergration 
-
-1. Set up Slack API Integration:
-   - Create a Slack App in the Slack API dashboard (api.slack.com)
-   - Set up appropriate permissions (chat:write, files:write)
-   - Generate and securely store OAuth tokens
-   - Add to environment variables (SLACK_API_TOKEN, SLACK_CHANNEL_ID)
-
-2. Create a Slack Notification Module (scripts/slack_notifier.py):
-   - Implement function to send basic text notifications
-   - Implement function to upload and share resume/cover letter PDFs
-   - Implement function to send job application summaries with links
-
-3. Integrate with Document Generation Process:
-   - Modify generate_documents.py to call Slack notification functions
-   - Send notification when new resume/cover letter is generated
-   - Include job title, company, and match score in the notification
-   - Upload generated PDFs as attachments
-
-4. Create Job Application Status Dashboard in Slack:
-   - Daily summary of pending applications
-   - Notifications for status changes
-   - Reminders for follow-ups
-
-5. Add Command-line Options:
-   - Make Slack notifications optional via command line flags
-   - Allow specifying different channels for different notification types
-
-6. Security Considerations:
-   - Store API tokens securely
-   - Ensure no sensitive personal information is shared in public channels
-   - Implement rate limiting to avoid API throttling
-
-# Slackbot Integration and Cloud Function Enhancements
-
-## File Retrieval for Slackbot
-
-### Overview
-Enable Slackbot to retrieve files from Google Cloud Storage (GCS) and present them in Slack:
-- **Markdown Files (`.md`)**: Display the content directly in Slack as rendered Markdown.
-- **PDF Files (`.pdf`)**: Upload the file to Slack as an attachment.
-
-### Implementation Steps
-1. **Slack Command**:
-   - Add a new slash command `/get-file` in the Slack app configuration.
-   - Set the request URL to the Cloud Function's endpoint.
-
-2. **Cloud Function Logic**:
-   - Fetch the file from GCS based on the file name provided in the Slack command.
-   - For Markdown files:
-     - Download the content from GCS.
-     - Use Slack's `mrkdwn` block type to render the content directly in Slack.
-   - For PDF files:
-     - Download the file to a temporary directory.
-     - Upload the file to Slack as an attachment using the `files_upload` API.
-   - For unsupported file types:
-     - Send an error message to Slack.
-
-3. **Example Slack Interaction**:
-   - **User Input**: `/get-file strategy_2025-04-20.md`
-   - **Bot Response**: Render the Markdown content directly in Slack.
-   - **User Input**: `/get-file resume.pdf`
-   - **Bot Response**: Upload the `resume.pdf` file to Slack as an attachment.
-
----
-
-## Converting GitHub Actions to Cloud Functions with Slackbot Commands
-
-### Actions to Convert
-1. **Job Strategy Generation**:
-   - **Command**: `/generate-strategy`
-   - **Options**:
-     - `job_limit`: Number of jobs per search query (default: 5).
-     - `include_recruiters`: Include recruiter information (default: false).
-     - `generate_documents`: Generate application documents (default: false).
-     - `generate_article`: Generate a Medium article (default: false).
-     - `preview_article`: Generate a Medium article in preview mode (default: false).
-   - **Examples**:
-     - `/generate-strategy`
-     - `/generate-strategy job_limit:10`
-     - `/generate-strategy include_recruiters:true`
-
-2. **Medium Article Generation**:
-   - **Command**: `/generate-article`
-   - **Options**:
-     - `skill`: Focus the article on a specific skill.
-     - `preview`: Generate the article in preview mode (default: false).
-   - **Examples**:
-     - `/generate-article`
-     - `/generate-article skill:Python`
-     - `/generate-article preview:true`
-
-3. **Profile Data Management**:
-   - **Commands**:
-     - `/update-profile`: Update LinkedIn profile data.
-     - `/update-resume`: Update resume data.
-     - `/update-cover-letter`: Update cover letter data.
-     - `/combine-profile-data`: Combine and summarize all profile data.
-
-4. **GitHub Pages Deployment**:
-   - **Command**: `/deploy-pages`
-   - **Description**: Deploy the GitHub Pages site with the latest updates.
-
-5. **Strategy File Cleanup**:
-   - **Command**: `/cleanup-strategies`
-   - **Options**:
-     - `retention_days`: Number of days to retain files (default: 7).
-   - **Examples**:
-     - `/cleanup-strategies`
-     - `/cleanup-strategies retention_days:30`
-
----
-
-## Setting Up the Slackbot
-
-### 1. Create a Slack App
-- Go to [Slack API Dashboard](https://api.slack.com/apps) and create a new app.
-- Enable the following features:
-  - **Slash Commands**: Add commands like `/generate-strategy` and `/get-file`.
-  - **Interactive Components**: Enable for buttons, dropdowns, etc.
-
-### 2. Configure Permissions
-- Add the following OAuth scopes:
-  - `chat:write`
-  - `files:write`
-  - `commands`
-
-### 3. Set Up Environment Variables
-- Add the following environment variables to the Cloud Functions:
-  - `SLACK_API_TOKEN`: OAuth token for the Slack bot.
-  - `GCS_BUCKET_NAME`: Name of the GCS bucket where files are stored.
-
-### 4. Deployment Configuration
-- Update `cloudbuild.yaml` to include the environment variables:
-  ```yaml
-  steps:
-    - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-      args:
-        - gcloud
-        - functions
-        - deploy
-        - generate-job-strategy
-        - --runtime=python39
-        - --trigger-http
-        - --set-env-vars=SLACK_API_TOKEN=${_SLACK_API_TOKEN},GCS_BUCKET_NAME=${_GCS_BUCKET_NAME}
-  ```
-
-### 5. Testing
-- Test each Slack command to ensure proper functionality:
-  - Verify file retrieval for Markdown and PDF files.
-  - Verify job strategy generation and other actions.
-
----
-
-## Additional Features
-
-### Slack Notifications
-- **Resume Generation**:
-  - Notify when a new resume or cover letter is generated.
-  - Include job title, company, and match score in the notification.
-  - Upload generated PDFs as attachments.
-- **Job Application Status Dashboard**:
-  - Daily summary of pending applications.
-  - Notifications for status changes.
-  - Reminders for follow-ups.
-
-### Security Considerations
-- Store API tokens securely.
-- Ensure no sensitive personal information is shared in public channels.
-- Implement rate limiting to avoid API throttling.
-
-# Secrets Management
+# Core Library Migration Plan
 
 ## Overview
-Properly managing secrets is critical to ensure the security of sensitive information such as API keys, tokens, and credentials. This section outlines the steps to identify, organize, and migrate secrets to Google Secret Manager.
+This document outlines the plan to migrate all features to use the new core library patterns, ensuring consistent use of:
+- BaseFeature inheritance
+- Type-safe contexts and outputs
+- Template-based prompting
+- Core service integration
 
-### Current Secrets
-The following secrets are currently in use across the project:
+## Priority 1: Core Component Updates
 
-#### `.env` File Secrets
-- `GEMINI_API_KEY`: API key for Google Gemini.
-- `MEDIUM_API_TOKEN`: API token for Medium.
-- `GCS_BUCKET_NAME`: Name of the Google Cloud Storage bucket.
-- `SLACK_API_TOKEN`: OAuth token for the Slack bot.
-- `SLACK_CHANNEL_ID`: Default Slack channel ID for notifications.
+### Base Infrastructure
+- [ ] Enhance BaseFeature class
+  - [ ] Add missing utility methods
+  - [ ] Improve error handling
+  - [ ] Add context manager support
+  - [ ] Document extension points
 
-#### GitHub Repository Secrets
-- `GITHUB_TOKEN`: Token for GitHub Actions.
-- `GOOGLE_CREDENTIALS`: JSON credentials for Google Cloud authentication.
+### Template System
+- [ ] Expand TemplateManager
+  - [ ] Add template inheritance
+  - [ ] Add custom filters
+  - [ ] Add validation hooks
+  - [ ] Create template testing utilities
 
-### Migration to Google Secret Manager
-1. **Identify All Secrets**:
-   - Audit the `.env` file and GitHub repository secrets to ensure all secrets are accounted for.
+### Testing Infrastructure
+- [ ] Create BaseFeatureTest class
+- [ ] Add template test helpers
+- [ ] Add mock AI response system
+- [ ] Add common assertions
 
-2. **Create Secrets in Google Secret Manager**:
-   - Use the Google Cloud Console or CLI to create secrets for each key.
-   - Example CLI command:
-     ```bash
-     gcloud secrets create GEMINI_API_KEY --data-file=.env
-     ```
+## Priority 2: Job Search Feature
 
-3. **Update Cloud Functions**:
-   - Modify the Cloud Functions to fetch secrets from Google Secret Manager instead of environment variables.
-   - Use the `google-cloud-secretmanager` library to access secrets.
-   - Example:
-     ```python
-     from google.cloud import secretmanager
+### Context and Types
+- [ ] Update JobSearchContext
+  - [ ] Add missing fields
+  - [ ] Document all fields
+  - [ ] Add validation
 
-     def get_secret(secret_name):
-         client = secretmanager.SecretManagerServiceClient()
-         name = f"projects/<project-id>/secrets/{secret_name}/versions/latest"
-         response = client.access_secret_version(request={"name": name})
-         return response.payload.data.decode("UTF-8")
-     ```
+### Templates
+- [ ] Move prompts to templates/
+  - [ ] system.j2
+  - [ ] search.j2
+  - [ ] analyze.j2
+  - [ ] score.j2
 
-4. **Update GitHub Actions**:
-   - Replace GitHub repository secrets with references to Google Secret Manager.
-   - Use the `google-github-actions/auth` action to authenticate with Google Cloud.
-   - Example:
-     ```yaml
-     - name: Authenticate to Google Cloud
-       uses: google-github-actions/auth@v0
-       with:
-         credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
+### Components
+- [ ] Migrate search.py to use core web scraper
+- [ ] Migrate analysis.py to use core AI engine
+- [ ] Migrate strategy.py to use template system
+- [ ] Update tracker.py to use core database
 
-     - name: Access Secret
-       run: |
-         gcloud secrets versions access latest --secret="GEMINI_API_KEY"
-     ```
+## Priority 3: Document Generation
 
-5. **Secure Local Development**:
-   - Use a `.env.local` file for local development.
-   - Ensure `.env.local` is added to `.gitignore` to prevent accidental commits.
+### Context and Types
+- [ ] Create DocumentContext
+- [ ] Create GeneratedDocument type
+- [ ] Add validation rules
 
-6. **Audit and Remove Legacy Secrets**:
-   - Verify that all secrets are successfully migrated.
-   - Remove secrets from `.env` and GitHub repository once migration is complete.
+### Templates
+- [ ] Migrate HTML templates
+- [ ] Create document prompts
+- [ ] Add template inheritance
+
+### Components
+- [ ] Update generator.py to use core AI
+- [ ] Update pdf.py to use core storage
+- [ ] Add document-specific tools
+
+## Priority 4: Strategy Generation
+
+### Context and Types
+- [ ] Create StrategyContext
+- [ ] Create Strategy output types
+- [ ] Add validation
+
+### Templates
+- [ ] Create strategy templates
+  - [ ] daily.j2
+  - [ ] weekly.j2
+  - [ ] focused.j2
+
+### Components
+- [ ] Update generator.py
+- [ ] Update formatter.py to use core markdown
+- [ ] Add strategy-specific tools
+
+## Priority 5: Profile Management
+
+### Context and Types
+- [ ] Create ProfileContext
+- [ ] Create profile-specific types
+- [ ] Add validation rules
+
+### Components
+- [ ] Update scraper.py to use core web scraper
+- [ ] Update parsers to use core AI engine
+- [ ] Update summarizer to use template system
+
+## Priority 6: Web Presence
+
+### Context and Types
+- [ ] Create WebPresenceContext
+- [ ] Create content types
+- [ ] Add validation
+
+### Templates
+- [ ] Create content templates
+- [ ] Add template inheritance
+- [ ] Add custom filters
+
+### Components
+- [ ] Update github_pages.py
+- [ ] Update medium.py
+- [ ] Update content_agent.py
+
+## Priority 7: Glassdoor Feature
+
+### Context and Types
+- [ ] Create GlassdoorContext
+- [ ] Create company analysis types
+- [ ] Add validation
+
+### Components
+- [ ] Update scraper.py
+- [ ] Update analyzer.py
+- [ ] Add Glassdoor-specific tools
+
+## Next Steps
+
+### 1. Core Components (Week 1)
+1. Enhance BaseFeature class
+2. Expand TemplateManager
+3. Create test infrastructure
+4. Document extension points
+
+### 2. Job Search Migration (Week 2)
+1. Create template structure
+2. Update context types
+3. Migrate components
+4. Add tests
+
+### 3. Documentation (Week 3)
+1. Add migration guide
+2. Document template patterns
+3. Create examples
+4. Update architecture docs
+
+### 4. Remaining Features (Weeks 4-6)
+1. Document generation
+2. Strategy generation
+3. Profile management
+4. Web presence
+5. Glassdoor integration
+
+## Migration Guidelines
+
+### Feature Migration Steps
+1. Create feature-specific types
+2. Convert prompts to templates
+3. Update feature class to inherit BaseFeature
+4. Add feature-specific tools
+5. Add tests
+6. Update documentation
 
 ### Best Practices
-- **Access Control**: Limit access to secrets based on the principle of least privilege.
-- **Rotation**: Regularly rotate secrets to minimize the impact of potential leaks.
-- **Monitoring**: Enable logging and monitoring for secret access to detect unauthorized usage.
-- **Encryption**: Ensure all secrets are encrypted at rest and in transit.
+1. Use core components instead of feature-specific implementations
+2. Keep templates simple and focused
+3. Add comprehensive type hints
+4. Write tests for all changes
+5. Document all public interfaces
 
-### Next Steps
-1. Create a list of all secrets currently in use.
-2. Migrate secrets to Google Secret Manager.
-3. Update Cloud Functions and GitHub Actions to use Google Secret Manager.
-4. Test the updated configuration to ensure functionality.
-5. Remove legacy secrets from `.env` and GitHub repository.
+### Testing Requirements
+1. Unit tests for feature class
+2. Template validation tests
+3. Integration tests with core
+4. Error handling tests
+5. Performance benchmarks
 
-# analyze_job_with_gemini
-Gemini doesn't have enough information in its prompt to be able really analyze the job. 
-We haven't told it which criteri to judge by.
+## Questions to Address
 
+1. Template Organization
+- How to handle complex templates?
+- When to use inheritance?
+- How to version templates?
 
-# current errors
-there's some weird stuff happening with the formatting here, the description has location and post date in the same string. the description should be locaition and the data should be split so that the post date gets its own field in the json. 
+2. Performance
+- Template caching strategy?
+- AI response caching?
+- Database optimization?
 
-# code sanity
-I'm pretty sure we're having Gemini return structured data, lets make sure that it's aware of this. Please find all Gemini queries that are not explicitly defining the structure of it's returned data. 
-
-
-# Glassdoor
-
-Adding Glassdoor Company Research to Job Analysis
-I can implement a feature to search for company information on Glassdoor as part of the job analysis process. This would enrich the company_overview section with more accurate data based on Glassdoor's company profiles.
-
-
-Now, let's update the job analysis function to incorporate this company research:
-
-Finally, let's make sure the UI displays this additional company information:
-
-Benefits of this Implementation:
-Enhanced Company Insights: Job seekers get valuable information about potential employers
-Better Decision Making: More context about company size, industry, and stability
-Reduced Research Time: Automatic compilation of company information
-This implementation uses Gemini to search for public information about companies, pulling data from various sources including Glassdoor, LinkedIn, and company websites, then structured into a consistent format for your job search.
-
-
-# Migrations
-## target_roles
-* WARNING: Error accessing database for target roles: (sqlite3.OperationalError) no such column: target_roles.requirements
-[SQL: SELECT target_roles.id AS target_roles_id, target_roles.role_name AS target_roles_role_name, target_roles.priority AS target_roles_priority, target_roles.match_score AS target_roles_match_score, target_roles.reasoning AS target_roles_reasoning, target_roles.source AS target_roles_source, target_roles.last_updated AS target_roles_last_updated, target_roles.requirements AS target_roles_requirements, target_roles.next_steps AS target_roles_next_steps 
-
-## cached jobs
-ERROR: Error retrieving cached jobs: (sqlite3.OperationalError) no such column: job_cache.location
-[SQL: SELECT job_cache.id AS job_cache_id, job_cache.url AS job_cache_url, job_cache.title AS job_cache_title, job_cache.company AS job_cache_company, job_cache.description AS job_cache_description, job_cache.location AS job_cache_location, job_cache.post_date AS job_cache_post_date, job_cache.first_seen_date AS job_cache_first_seen_date, job_cache.last_seen_date AS job_cache_last_seen_date, job_cache.match_score AS job_cache_match_score, job_cache.application_priority AS job_cache_application_priority, job_cache.key_requirements AS job_cache_key_requirements, job_cache.culture_indicators AS job_cache_culture_indicators, job_cache.career_growth_potential AS job_cache_career_growth_potential, job_cache.search_query AS job_cache_search_query, job_cache.total_years_experience AS job_cache_total_years_experience, job_cache.candidate_gaps AS job_cache_candidate_gaps, job_cache.location_type AS job_cache_location_type, job_cache.company_size AS job_cache_company_size, job_cache.company_stability AS job_cache_company_stability, job_cache.glassdoor_rating AS job_cache_glassdoor_rating, job_cache.employee_count AS job_cache_employee_count, job_cache.year_founded AS job_cache_year_founded, job_cache.growth_stage AS job_cache_growth_stage, job_cache.market_position AS job_cache_market_position, job_cache.development_opportunities AS job_cache_development_opportunities 
-
-
-# StructuredPrompts
-.```bash
-/jobsearch/core/ai.py:13:class StructuredPrompt:
-./jobsearch/core/__init__.py:3:from .prompts import StructuredPrompt
-./jobsearch/core/__init__.py:5:__all__ = ['StructuredPrompt']
-./jobsearch/core/prompts.py:5:class StructuredPrompt:
-./jobsearch/core/prompt.py:9:class StructuredPrompt:
-./jobsearch/features/glassdoor/analyzer.py:5:from jobsearch.core.prompt import StructuredPrompt
-./jobsearch/features/glassdoor/analyzer.py:23:        self.prompt_helper = StructuredPrompt()
-./jobsearch/features/profile_management/resume_parser.py:12:from jobsearch.core.ai import StructuredPrompt
-./jobsearch/features/profile_management/resume_parser.py:19:# Initialize StructuredPrompt
-./jobsearch/features/profile_management/resume_parser.py:20:structured_prompt = StructuredPrompt()
-./jobsearch/features/profile_management/parser.py:12:from jobsearch.core.ai import StructuredPrompt
-./jobsearch/features/profile_management/parser.py:38:        # Initialize StructuredPrompt
-./jobsearch/features/profile_management/parser.py:39:        structured_prompt = StructuredPrompt()
-./jobsearch/features/profile_management/summarizer.py:11:from jobsearch.core.prompts import StructuredPrompt
-./jobsearch/features/profile_management/summarizer.py:60:    # Initialize StructuredPrompt
-./jobsearch/features/profile_management/summarizer.py:61:    structured_prompt = StructuredPrompt()
-./jobsearch/features/profile_management/cover_letter_parser.py:10:from jobsearch.core.ai import StructuredPrompt
-./jobsearch/features/profile_management/cover_letter_parser.py:14:# Initialize StructuredPrompt
-./jobsearch/features/profile_management/cover_letter_parser.py:15:structured_prompt = StructuredPrompt()
-./jobsearch/features/document_generation/generator.py:21:from jobsearch.core.ai import StructuredPrompt
-./jobsearch/features/document_generation/generator.py:36:# Initialize StructuredPrompt
-./jobsearch/features/document_generation/generator.py:37:structured_prompt = StructuredPrompt()
-./jobsearch/features/document_generation/generator.py:454:        # First pass: Generate structured content with StructuredPrompt
-./jobsearch/features/web_presence/medium.py:35:from scripts.structured_prompt import StructuredPrompt
-./jobsearch/features/web_presence/medium.py:59:        self.structured_prompt = StructuredPrompt()
-./jobsearch/features/web_presence/github_pages.py:15:from structured_prompt import StructuredPrompt
-./jobsearch/features/web_presence/github_pages.py:24:        # Initialize StructuredPrompt
-./jobsearch/features/web_presence/github_pages.py:25:        structured_prompt = StructuredPrompt()
-./jobsearch/features/web_presence/github_pages.py:75:        # Initialize StructuredPrompt
-./jobsearch/features/web_presence/github_pages.py:76:        structured_prompt = StructuredPrompt()
-./jobsearch/features/job_search/search.py:17:from jobsearch.core.ai import StructuredPrompt
-./jobsearch/scripts/strategy_generator.py:11:from ..core.ai import StructuredPrompt
-./jobsearch/scripts/strategy_generator.py:106:        structured_prompt = StructuredPrompt()
-./jobsearch/scripts/strategy_generator.py:301:        prompt = StructuredPrompt()
-./jobsearch/scripts/job_analysis.py:10:from ..core.ai import StructuredPrompt
-./jobsearch/scripts/job_analysis.py:27:        structured_prompt = StructuredPrompt()
-./docs/structured_output.md:14:Our `StructuredPrompt` class in `jobsearch/core/ai.py` currently uses the text-based approach. Here's how we can improve it using the latest best practices.
-./docs/structured_output.md:122:from jobsearch.core.ai import StructuredPrompt
-./docs/ai.md:19:from jobsearch.core.ai import StructuredPrompt
-./scripts/profile_parser.py:12:from jobsearch.core.ai import StructuredPrompt```
+3. Error Handling
+- How to handle template errors?
+- AI failure fallbacks?
+- Data validation errors?

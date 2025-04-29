@@ -1,8 +1,32 @@
-"""Logging configuration for the jobsearch package."""
+"""Logging configuration for the jobsearch package.
+
+This module provides a standardized logging configuration for the entire
+jobsearch package. It ensures consistent log formatting and behavior
+across all components of the application.
+
+Example:
+    ```python
+    from jobsearch.core.logging import setup_logging
+    
+    logger = setup_logging('my_module')
+    logger.info('This is an info message')
+    logger.error('This is an error message')
+    ```
+"""
 import logging
 
 def setup_logging(logger_name: str) -> logging.Logger:
-    """Set up logging configuration."""
+    """Set up standardized logging configuration.
+    
+    Creates and configures a logger with consistent formatting and behavior.
+    If the logger already has handlers, it will not be reconfigured.
+    
+    Args:
+        logger_name: The name for the logger, typically the module name
+    
+    Returns:
+        A configured logger instance
+    """
     # Get or create logger
     logger = logging.getLogger(logger_name)
     

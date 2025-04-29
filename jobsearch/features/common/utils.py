@@ -10,7 +10,18 @@ logger = logging.getLogger(__name__)
 
 @contextmanager
 def session_scope():
-    """Provide a transactional scope around a series of operations."""
+    """DEPRECATED: Use jobsearch.core.database.get_session instead.
+    
+    This function will be removed in a future version. The core get_session
+    function provides proper GCS sync and locking functionality.
+    """
+    import warnings
+    warnings.warn(
+        "session_scope() is deprecated. Use jobsearch.core.database.get_session instead.",
+        DeprecationWarning,
+        stacklevel=2
+    )
+    
     if not gcs.acquire_lock():
         logger.error("Could not acquire database lock after retries. Exiting gracefully.")
         raise Exception("Database is currently locked by another process. Please try again later.")

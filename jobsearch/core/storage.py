@@ -1,10 +1,29 @@
-"""Google Cloud Storage integration with monitoring."""
+"""Google Cloud Storage integration with monitoring.
+
+This module provides a unified interface for interacting with Google Cloud Storage.
+It handles file management, database synchronization, locking mechanisms,
+and provides specialized methods for common operations used across the application.
+
+Example:
+    ```python
+    from jobsearch.core.storage import gcs
+    
+    # Upload a file
+    gcs.upload_file('local_path.txt', 'remote_path.txt')
+    
+    # Download a file
+    gcs.download_file('remote_path.txt', 'local_path.txt')
+    
+    # Sync database
+    gcs.sync_db()
+    ```
+"""
 import os
 import json
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Dict, List, Union
+from typing import Optional, Dict, List, Union, Tuple
 from google.cloud import storage
 from google.cloud.exceptions import NotFound
 
@@ -17,9 +36,27 @@ logger = setup_logging('storage')
 monitoring = setup_monitoring('storage')
 
 class GCSManager:
-    """Manages interaction with Google Cloud Storage."""
+    """Manages interaction with Google Cloud Storage.
+    
+    This class provides methods for:
+    - Database synchronization with GCS
+    - File upload and download operations
+    - Locking mechanism for concurrent access control
+    - Safe operations with retry logic
+    - Application-specific file operations
+    
+    Attributes:
+        client: Google Cloud Storage client
+        bucket: GCS bucket instance
+        db_blob_name: Name of the database file in GCS
+        local_db_path: Path to the local database file
+        db_lock_blob_name: Name of the lock file in GCS
+        lock_retry_attempts: Number of attempts to acquire a lock
+        lock_retry_delay: Delay between lock attempts in seconds
+    """
     
     def __init__(self):
+        """Initialize the GCS manager with default configuration."""
         self.client = storage.Client()
         self.db_blob_name = 'career_data.db'
         self.local_db_path = Path(__file__).parent.parent / 'career_data.db'
@@ -34,7 +71,15 @@ class GCSManager:
         self._ensure_bucket()
         
     def _get_bucket_name(self) -> str:
-        """Get bucket name from config file."""
+        """Get bucket name from config file.
+        
+        Returns:
+            The name of the GCS bucket to use
+            
+        Raises:
+            FileNotFoundError: If the config file is not found
+            KeyError: If the bucket_name is not in the config file
+        """
         try:
             monitoring.increment('config_read')
             if not self.config_path.exists():
